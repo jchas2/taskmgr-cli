@@ -1,14 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "taskmgr", "taskmgr\taskmgr.csproj", "{94EF9902-DCEE-4333-935C-AD35E73002FF}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35013.160
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "taskmgr", "taskmgr\taskmgr.csproj", "{94EF9902-DCEE-4333-935C-AD35E73002FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Task.Manager.Cli.Utils", "Task.Manager.Cli.Utils\Task.Manager.Cli.Utils.csproj", "{2302D08C-FE18-4D74-B351-45BD65966CB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Task.Manager.Cli.Utils", "Task.Manager.Cli.Utils\Task.Manager.Cli.Utils.csproj", "{2302D08C-FE18-4D74-B351-45BD65966CB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Task.Manager.Internal.Abstractions", "Task.Manager.Internal.Abstractions\Task.Manager.Internal.Abstractions.csproj", "{B543896E-AB2C-4A33-AD2F-CE75DA82A0A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Task.Manager.Internal.Abstractions", "Task.Manager.Internal.Abstractions\Task.Manager.Internal.Abstractions.csproj", "{B543896E-AB2C-4A33-AD2F-CE75DA82A0A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Task.Manager.System", "Task.Manager.System\Task.Manager.System.csproj", "{25681BE6-8974-4AB4-BF66-32CA1E40CFB7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Task.Manager.System", "Task.Manager.System\Task.Manager.System.csproj", "{25681BE6-8974-4AB4-BF66-32CA1E40CFB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Task.Manager.Win32", "Task.Manager.Win32\Task.Manager.Win32.csproj", "{BDD619F0-CB5C-4A5B-9AB9-D955ADB00A7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Task.Manager.Win32", "Task.Manager.Win32\Task.Manager.Win32.csproj", "{BDD619F0-CB5C-4A5B-9AB9-D955ADB00A7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Task.Manager.System.UnitTests", "..\tests\Task.Manager.System.UnitTests\Task.Manager.System.UnitTests.csproj", "{EF0070B9-7821-48D3-9587-E6034CD61083}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +41,12 @@ Global
 		{BDD619F0-CB5C-4A5B-9AB9-D955ADB00A7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDD619F0-CB5C-4A5B-9AB9-D955ADB00A7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDD619F0-CB5C-4A5B-9AB9-D955ADB00A7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF0070B9-7821-48D3-9587-E6034CD61083}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF0070B9-7821-48D3-9587-E6034CD61083}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF0070B9-7821-48D3-9587-E6034CD61083}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF0070B9-7821-48D3-9587-E6034CD61083}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
