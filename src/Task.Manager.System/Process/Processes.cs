@@ -6,20 +6,22 @@ public class Processes
 {
     private const int InitialBufSize = 512;
     private List<ProcessInfo> _allProcesses;
-
+    private bool _isWindows = false;
+    
     public Processes()
     {
         _allProcesses = new List<ProcessInfo>(capacity: InitialBufSize);
+        _isWindows = OperatingSystem.IsWindows();
     }
 
     public IList<ProcessInfo> GetAll()
     {
         _allProcesses.Clear();
-        var procs = SysDiag::Process.GetProcesses();
+        SysDiag::Process[] procs = SysDiag::Process.GetProcesses();
 
         for (int i = 0; i < procs.Length; i++) {
-
-            if (procs[i].Id == 0) {
+            // On Windows, ignore the system "idle" process auto assigned to Pid 0.
+            if (_isWindows && procs[i].Id == 0) {
                 continue;
             }
 

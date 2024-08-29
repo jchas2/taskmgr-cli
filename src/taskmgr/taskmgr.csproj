@@ -16,4 +16,8 @@
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Task.Manager.System\Task.Manager.System.csproj" />
+    </ItemGroup>
+
 </Project>
