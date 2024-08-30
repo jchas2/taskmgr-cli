@@ -15,8 +15,10 @@ public struct ProcessInfo
     public string CmdLine;
     public long UsedMemory;
     public long DiskUsage;
-    public long DiskOperations;
-    public TimeSpan ProcessorTime;
-    public TimeSpan ProcessorUserTime;
-    public TimeSpan ProcessorKernelTime;
+    // public long DiskOperations;
+    // public TimeSpan ProcessorTime;
+    // public TimeSpan ProcessorUserTime;
+    // public TimeSpan ProcessorKernelTime;
+    public ProcessTimeInfo CurrentTimes;
+    public ProcessTimeInfo NextTimes;
 }

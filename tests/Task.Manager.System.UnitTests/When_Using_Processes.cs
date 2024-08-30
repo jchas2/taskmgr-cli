@@ -16,15 +16,20 @@ namespace Task.Manager.System.UnitTests
         public void Should_Return_ProcessInfos()
         {
             var processes = new TaskMgrProcess::Processes();
-            var sw = new Stopwatch();
 
             for (int i = 0; i < 10; i++) {
-                sw.Start();
-                processes.GetAll();
-                sw.Stop();
-                _testOutputHelper.WriteLine($"ms: {sw.ElapsedMilliseconds}");
-                sw.Reset();
+                var timeTaken = Time(() => processes.GetAll());
+                Debug.Assert(timeTaken.Milliseconds < 25);
+                _testOutputHelper.WriteLine($"ms: {timeTaken.Milliseconds}");
             }
+        }
+
+        private TimeSpan Time(Action toTime)
+        {
+            var timer = Stopwatch.StartNew();
+            toTime();
+            timer.Stop();
+            return timer.Elapsed;
         }
     }
 }
