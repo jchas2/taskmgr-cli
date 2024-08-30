@@ -2,7 +2,7 @@
 
 namespace Task.Manager.System.Process;
 
-public class Processes
+public class Processes : IProcesses
 {
     private const int InitialBufSize = 512;
     private List<ProcessInfo> _allProcesses;
