@@ -3,10 +3,12 @@
 namespace Task.Manager.Interop.Win32;
 
 // Following declarations are found in the platform sdk header file MinWinBase.h
-
-[StructLayout(LayoutKind.Sequential)]
-struct FILETIME
+public class MinWinBase
 {
-    public uint dwLowDateTime;
-    public uint dwHighDateTime;
+    [StructLayout(LayoutKind.Sequential)]
+    public struct FILETIME
+    {
+        public uint dwLowDateTime;
+        public uint dwHighDateTime;
+    }
 }

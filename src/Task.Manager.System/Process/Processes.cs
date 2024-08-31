@@ -1,4 +1,5 @@
-﻿using SysDiag = System.Diagnostics;
+﻿using Microsoft.Win32.SafeHandles;
+using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
 
@@ -26,6 +27,11 @@ public class Processes : IProcesses
                 continue;
             }
 #endif
+            // Skip any process that generates an "Access Denied" Exception.
+            if (null == TryGetSafeProcessHandle(procs[i])) {
+                continue;
+            }
+            
             var currentTimes = new ProcessTimeInfo();
             MapProcessTimes(procs[i], ref currentTimes);
             
@@ -75,5 +81,18 @@ public class Processes : IProcesses
         ptInfo.DiskOperations = 0;
         ptInfo.KernelTime = proc.PrivilegedProcessorTime;
         ptInfo.UserTime = proc.UserProcessorTime;
+    }
+
+    private SafeProcessHandle? TryGetSafeProcessHandle(SysDiag::Process proc)
+    {
+        try {
+            // On Windows (with elevated access) this call can still throw an
+            // an "Access denied" Exception. This is usually for the "system"
+            // process assigned to Pid 4.
+            return proc.SafeHandle;
+        }
+        catch (Exception) {
+            return null;
+        }
     }
 }

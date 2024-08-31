@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Task.Manager.Interop.Mach;
+using Task.Manager.Interop.Win32;
 using Task.Manager.System.Process;
 
 namespace Task.Manager;
@@ -18,13 +19,36 @@ public class Processor
     {
         var allProcs = _processes.GetAll();
 
-
-
+#if __WIN32__
+        GetSystemTimes();
+#endif
+#if __APPLE__
         var cpuLoadInfo = GetHostCpuLoadInfo();
-
+#endif
         return allProcs;
     }
 
+#if __WIN32__
+    private void GetSystemTimes()
+    {
+        MinWinBase.FILETIME idleTime;
+        MinWinBase.FILETIME kernelTime;
+        MinWinBase.FILETIME userTime;
+
+        if (ProcessThreadsApi.GetSystemTimes(
+            out idleTime,
+            out kernelTime,
+            out userTime)) {
+
+        }
+        else {
+            int error = Marshal.GetLastWin32Error();  
+            Debug.WriteLine(error);
+        }
+    }
+#endif
+
+#if __APPLE__
     private MachHost.HostCpuLoadInfo GetHostCpuLoadInfo()
     {
         IntPtr host = MachHost.host_self();
@@ -54,5 +78,6 @@ public class Processor
         }
 
         return info;
-    }    
+    }
+#endif
 }

@@ -8,8 +8,8 @@ public class ProcessThreadsApi
 {
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    static extern bool GetSystemTimes(
-        out FILETIME idleTime, 
-        out FILETIME kernelTime, 
-        out FILETIME userTime);
+    public static extern bool GetSystemTimes(
+        out MinWinBase.FILETIME idleTime, 
+        out MinWinBase.FILETIME kernelTime, 
+        out MinWinBase.FILETIME userTime);
 }
