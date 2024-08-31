@@ -20,11 +20,12 @@ public class Processes : IProcesses
         SysDiag::Process[] procs = SysDiag::Process.GetProcesses();
 
         for (int i = 0; i < procs.Length; i++) {
+#if __WIN32__
             // On Windows, ignore the system "idle" process auto assigned to Pid 0.
             if (_isWindows && procs[i].Id == 0) {
                 continue;
             }
-
+#endif
             var currentTimes = new ProcessTimeInfo();
             MapProcessTimes(procs[i], ref currentTimes);
             
@@ -46,7 +47,7 @@ public class Processes : IProcesses
                 // ProcessorUserTime = procs[i].UserProcessorTime,
                 // ProcessorKernelTime = procs[i].PrivilegedProcessorTime
             };
-
+            
             _allProcesses.Add(procInfo);
         }
         

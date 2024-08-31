@@ -15,12 +15,15 @@ public class MachHost
         public uint nice;
     }
     
-    const int HOST_CPU_LOAD_INFO = 3;
+    public const int HOST_CPU_LOAD_INFO = 3;
     
-    [DllImport("libc")]
-    static extern int host_statistics(
-        int host_priv, 
+    [DllImport("libSystem.dylib", SetLastError = true)]
+    public static extern IntPtr host_self();
+    
+    [DllImport("libSystem.dylib", SetLastError = true)]
+    public static extern int host_statistics(
+        IntPtr host_priv, 
         int flavor, 
-        IntPtr info, 
-        ref int count);
+        IntPtr host_info_out, 
+        ref int host_info_outCnt);
 }

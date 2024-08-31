@@ -16,7 +16,16 @@
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <DefineConstants>__WIN32__</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('MacOS'))">
+        <DefineConstants>__APPLE__</DefineConstants>
+    </PropertyGroup>
+    
     <ItemGroup>
+      <ProjectReference Include="..\Task.Manager.Interop.Mach\Task.Manager.Interop.Mach.csproj" />
+      <ProjectReference Include="..\Task.Manager.Interop.Win32\Task.Manager.Interop.Win32.csproj" />
       <ProjectReference Include="..\Task.Manager.System\Task.Manager.System.csproj" />
     </ItemGroup>
 
