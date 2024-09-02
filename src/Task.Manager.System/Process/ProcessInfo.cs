@@ -4,11 +4,11 @@ namespace Task.Manager.System.Process;
 
 public struct ProcessInfo
 {
-    public nint Pid;
+    public int Pid;
     public SafeProcessHandle Handle;
     public int ThreadCount;
     public long BasePriority;
-    public nint ParentPid;
+    public int ParentPid;
     public string ExeName;
     public string FileDescription;
     public string UserName;

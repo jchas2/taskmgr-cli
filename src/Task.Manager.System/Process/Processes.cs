@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32.SafeHandles;
+using System.Runtime.CompilerServices;
 using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
@@ -76,6 +77,7 @@ public class Processes : IProcesses
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void MapProcessTimes(SysDiag::Process proc, ref ProcessTimeInfo ptInfo)
     {
         ptInfo.DiskOperations = 0;
