@@ -1,4 +1,4 @@
-﻿namespace Task.Manager;
+﻿namespace Task.Manager.System;
 
 public struct SystemTimes
 {

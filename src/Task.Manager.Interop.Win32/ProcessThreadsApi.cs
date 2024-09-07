@@ -4,12 +4,12 @@ namespace Task.Manager.Interop.Win32;
 
 // Following declarations are found in the platform sdk header file ProcessThreadsApi.h
 
-public class ProcessThreadsApi
+public static class ProcessThreadsApi
 {
-    [DllImport("kernel32.dll", SetLastError = true)]
+    [DllImport(Libraries.Kernel32, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool GetSystemTimes(
-        out MinWinBase.FILETIME idleTime, 
-        out MinWinBase.FILETIME kernelTime, 
+        out MinWinBase.FILETIME idleTime,
+        out MinWinBase.FILETIME kernelTime,
         out MinWinBase.FILETIME userTime);
 }

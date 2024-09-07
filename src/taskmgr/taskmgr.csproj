@@ -24,8 +24,6 @@
     </PropertyGroup>
     
     <ItemGroup>
-      <ProjectReference Include="..\Task.Manager.Interop.Mach\Task.Manager.Interop.Mach.csproj" />
-      <ProjectReference Include="..\Task.Manager.Interop.Win32\Task.Manager.Interop.Win32.csproj" />
       <ProjectReference Include="..\Task.Manager.System\Task.Manager.System.csproj" />
     </ItemGroup>
 
