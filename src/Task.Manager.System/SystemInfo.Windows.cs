@@ -8,7 +8,7 @@ public static partial class SystemInfo
 {
 #if __WIN32__
     public static bool GetCpuTimes(ref SystemTimes systemTimes)
-	{
+    {
         MinWinBase.FILETIME idleFileTime;
         MinWinBase.FILETIME kernelFileTime;
         MinWinBase.FILETIME userFileTime;
