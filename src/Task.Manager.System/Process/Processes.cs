@@ -33,8 +33,8 @@ public class Processes : IProcesses
                 continue;
             }
             
-            var currentTimes = new ProcessTimeInfo();
-            MapProcessTimes(procs[i], ref currentTimes);
+            var previousTimes = new ProcessTimeInfo();
+            MapProcessTimes(procs[i], ref previousTimes);
             
             var procInfo = new ProcessInfo {
                 Pid = procs[i].Id,
@@ -48,7 +48,7 @@ public class Processes : IProcesses
                 CmdLine = string.Empty,
                 UsedMemory = procs[i].VirtualMemorySize64,
                 DiskUsage = 0,
-                CurrentTimes = currentTimes,
+                PreviousTimes = previousTimes,
                 // DiskOperations = 0,
                 // ProcessorTime = procs[i].TotalProcessorTime,
                 // ProcessorUserTime = procs[i].UserProcessorTime,
@@ -81,8 +81,8 @@ public class Processes : IProcesses
     private void MapProcessTimes(SysDiag::Process proc, ref ProcessTimeInfo ptInfo)
     {
         ptInfo.DiskOperations = 0;
-        ptInfo.KernelTime = proc.PrivilegedProcessorTime;
-        ptInfo.UserTime = proc.UserProcessorTime;
+        ptInfo.KernelTime = proc.PrivilegedProcessorTime.Ticks;
+        ptInfo.UserTime = proc.UserProcessorTime.Ticks;
     }
 
     private SafeProcessHandle? TryGetSafeProcessHandle(SysDiag::Process proc)

@@ -9,7 +9,9 @@ public class When_Using_Processor
     {
         var processes = new Processes();
         var processor = new Processor(processes);
-        processor.GetProcesses();
+        var allProcs = processor.GetProcesses();
 
+        var q = allProcs.OrderByDescending(p => p.ProcessorTime);
+        var ql = q.ToList();
     }
 }

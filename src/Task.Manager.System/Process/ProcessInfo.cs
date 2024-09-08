@@ -2,23 +2,23 @@
 
 namespace Task.Manager.System.Process;
 
-public struct ProcessInfo
+public class ProcessInfo
 {
-    public int Pid;
-    public SafeProcessHandle Handle;
-    public int ThreadCount;
-    public long BasePriority;
-    public int ParentPid;
-    public string ExeName;
-    public string FileDescription;
-    public string UserName;
-    public string CmdLine;
-    public long UsedMemory;
-    public long DiskUsage;
-    // public long DiskOperations;
-    // public TimeSpan ProcessorTime;
-    // public TimeSpan ProcessorUserTime;
-    // public TimeSpan ProcessorKernelTime;
-    public ProcessTimeInfo CurrentTimes;
-    public ProcessTimeInfo NextTimes;
+    public int Pid { get; set; }
+    public SafeProcessHandle? Handle { get; set; }
+    public int ThreadCount { get; set; }
+    public long BasePriority { get; set; }
+    public int ParentPid { get; set; }
+    public string? ExeName { get; set; }
+    public string? FileDescription { get; set; }
+    public string? UserName { get; set; }
+    public string? CmdLine { get; set; }
+    public long UsedMemory { get; set; }
+    public long DiskUsage { get; set; }
+    public long DiskOperations { get; set; }
+    public double ProcessorTime { get; set; }
+    public double ProcessorUserTime { get; set; }
+    public double ProcessorKernelTime { get; set; }
+    public ProcessTimeInfo PreviousTimes { get; set; }
+    public ProcessTimeInfo CurrentTimes { get; set; }
 }

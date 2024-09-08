@@ -36,5 +36,5 @@ public static partial class SystemInfo
 
         return true;
     }
-}
 #endif
+}
