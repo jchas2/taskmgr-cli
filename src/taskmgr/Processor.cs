@@ -16,11 +16,10 @@ public class Processor
     public IList<ProcessInfo> GetProcesses()
     {
         int updateTime = 1000;
+        
         GetSystemTimes(out SystemTimes prevSysTimes);
         var allProcs = _processes.GetAll();
-
         Thread.Sleep(updateTime);
-
         GetSystemTimes(out SystemTimes sysTimes);
 
         var sysTimesDeltas = new SystemTimes();
@@ -33,7 +32,7 @@ public class Processor
         for (int i = 0; i < allProcs.Count; i++) {
             var currTimes = new ProcessTimeInfo();
             _processes.GetProcessTimes(allProcs[i].Pid, ref currTimes);
-            allProcs[i].CurrentTimes =currTimes;
+            allProcs[i].CurrentTimes = currTimes;
             
             long procKernelDiff = allProcs[i].CurrentTimes.KernelTime - allProcs[i].PreviousTimes.KernelTime;
             long procUserDiff = allProcs[i].CurrentTimes.UserTime - allProcs[i].PreviousTimes.UserTime;
