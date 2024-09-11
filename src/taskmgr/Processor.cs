@@ -30,6 +30,14 @@ public class Processor
         long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User;
 
         for (int i = 0; i < allProcs.Count; i++) {
+
+            if (allProcs[i].ExeName != null) {
+                string? s = allProcs[i].ExeName;
+                if (s != null && s.Contains("acrobat", StringComparison.CurrentCultureIgnoreCase)) {
+                    Console.WriteLine("acrobat");                    
+                }
+            }
+            
             var currTimes = new ProcessTimeInfo();
             _processes.GetProcessTimes(allProcs[i].Pid, ref currTimes);
             allProcs[i].CurrentTimes = currTimes;

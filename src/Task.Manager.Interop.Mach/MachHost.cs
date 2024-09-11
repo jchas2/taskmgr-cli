@@ -6,24 +6,29 @@ namespace Task.Manager.Interop.Mach;
 
 public class MachHost
 {
+    // Const to set the host_statistics64 flavor arg.
+    public const int HOST_CPU_LOAD_INFO = 3;
+
+    // Consts used to index into HostCpuLoadInfo::cpu_ticks.
+    public const int CPU_STATE_USER = 0;
+    public const int CPU_STATE_SYSTEM = 1;
+    public const int CPU_STATE_IDLE = 2;
+    public const int CPU_STATE_NICE = 3;
+
+    [DllImport("libSystem.dylib", SetLastError = true)]
+    public static extern IntPtr host_self();
+
     [StructLayout(LayoutKind.Sequential)]
     public struct HostCpuLoadInfo
     {
-        public uint user;
-        public uint system;
-        public uint idle;
-        public uint nice;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public ulong[] cpu_ticks;
     }
     
-    public const int HOST_CPU_LOAD_INFO = 3;
-    
-    [DllImport("libSystem.dylib", SetLastError = true)]
-    public static extern IntPtr host_self();
-    
-    [DllImport("libSystem.dylib", SetLastError = true)]
-    public static extern int host_statistics(
-        IntPtr host_priv, 
+    [DllImport("libSystem.dylib")]
+    public static extern int host_statistics64(
+        IntPtr host, 
         int flavor, 
-        IntPtr host_info_out, 
-        ref int host_info_outCnt);
+        IntPtr hostInfo, 
+        ref int hostInfoCount);    
 }
