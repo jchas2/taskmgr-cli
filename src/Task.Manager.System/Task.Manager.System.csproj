@@ -21,6 +21,7 @@
         <DefineConstants>__APPLE__</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
+      <ProjectReference Include="..\Task.Manager.Internal.Abstractions\Task.Manager.Internal.Abstractions.csproj" />
       <ProjectReference Include="..\Task.Manager.Interop.Mach\Task.Manager.Interop.Mach.csproj" />
       <ProjectReference Include="..\Task.Manager.Interop.Win32\Task.Manager.Interop.Win32.csproj" />
     </ItemGroup>
