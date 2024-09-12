@@ -1,6 +1,6 @@
 using Task.Manager.Internal.Abstractions;
 
-namespace Task.Manager.System;
+namespace Task.Manager.System.Configuration;
 
 public class Config
 {
@@ -9,7 +9,8 @@ public class Config
         ArgumentNullException.ThrowIfNull(fileSys);
         ArgumentNullException.ThrowIfNull(path);
 
-        if (false == fileSys.Exists(path)) {
+        if (false == fileSys.Exists(path))
+        {
             throw new Exception();
         }
 
@@ -18,10 +19,23 @@ public class Config
     }
 
     // Use a ConfigLoadException, ConfigParseException, derive from ConfigException for better error handling at the higher levels.
-    
+
+    public static Config FromString(string str)
+    {
+        ArgumentNullException.ThrowIfNull(str);
+        return FromStringInternal(str);
+    }
+
     private static Config FromStringInternal(string buf)
     {
         var config = new Config();
         return config;
+    }
+
+    private static void ParseString(string str)
+    {
+
+
+
     }
 }
