@@ -6,8 +6,8 @@ public class Config
 {
     public static Config FromFile(IFileSystem fileSys, string path)
     {
-        if (fileSys == null) throw new ArgumentNullException(nameof(fileSys));
-        if (path == null) throw new ArgumentNullException(nameof(path));
+        ArgumentNullException.ThrowIfNull(fileSys);
+        ArgumentNullException.ThrowIfNull(path);
 
         if (false == fileSys.Exists(path)) {
             throw new Exception();
@@ -17,6 +17,8 @@ public class Config
         return FromStringInternal(buf);
     }
 
+    // Use a ConfigLoadException, ConfigParseException, derive from ConfigException for better error handling at the higher levels.
+    
     private static Config FromStringInternal(string buf)
     {
         var config = new Config();
