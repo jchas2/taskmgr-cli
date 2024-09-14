@@ -1,87 +1,128 @@
-﻿using System.Text;
+﻿using System.Collections.ObjectModel;
+using System.Text;
+using Task.Manager.Internal.Abstractions;
 
 namespace Task.Manager.System.Configuration;
 
-public sealed class ConfigParser
+public class ConfigParser : IDisposable
 {
-    public IList<ConfigSection> Parse(string str)
+    private const int EndOfFile = -1;
+    private readonly TextReader _reader;
+    private readonly IList<ConfigSection> _sections;
+    
+    public ConfigParser(string str)
     {
         ArgumentNullException.ThrowIfNull(str);
-        string[] lines = str.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        ParseLines(lines);
-        return new List<ConfigSection>();
+
+        _reader = new StringReader(str);
+        _sections = new List<ConfigSection>();
     }
 
-    private void ParseLines(string[] lines)
+    public ConfigParser(IFileSystem fileSys, string path)
     {
-        for (int i = 0; i < lines.Length; i++) {
-            ParseLine(lines[i]);
+        ArgumentNullException.ThrowIfNull(path);
+
+        if (false == fileSys.Exists(path)) {
+            throw new InvalidOperationException();
         }
+
+        _reader = new StreamReader(path);
+        _sections = new List<ConfigSection>();
     }
 
-    private void ParseLine(string line)
+    ~ConfigParser() => 
+        Dispose();
+    
+    public void Dispose() =>
+        _reader.Dispose();
+
+    public bool Parse()
     {
-        for (int ptr = 0; ptr < line.Length; ptr++) {
-            char ch = line[ptr];
-
-            if (ch == '#' || ch == ';') {
-                return;
-            }
-
-            if (ch == '[') {
-                string? section = GetSectionIdentifier(line, ++ptr);
-                if (string.IsNullOrWhiteSpace(section)) {
-
-                }
-            }
-
-            if(char.IsWhiteSpace(ch)) {
-                
-            }
-        }
-    }
-
-    private string? GetSectionIdentifier(string line, int ptr)
-    {
-        var buf = new StringBuilder();
-
-        for ( ;; ) {
-            if (ptr >= line.Length) {
-                return null;
-            }
-
-            char ch = line[ptr];
-
-            if (ch == ']') {
-                return buf.ToString();
-            }
-            
-            if (char.IsLetterOrDigit(ch)) {
-                buf.Append(ch);
-            }
-            else if (ch == '-') {
-                buf.Append(ch);
-            }
-
-            ptr++;
-        }
-    }
-
-    private (string? key, string? val) GetKeyValue(string line, int ptr)
-    {
-        var keyBuf = new StringBuilder();
-        var valBuf = new StringBuilder();
+        bool result = true;
+        bool inComment = false;
+        ConfigSection? section = null;
 
         for (;;) {
-            if (ptr >= line.Length) {
-                return (null, null);
+            int ch = _reader.Read();
+
+            if (ch == EndOfFile) {
+                break;
             }
 
-            char ch = line[ptr];
+            char c = (char)ch;
 
-            ptr++;
+            if (c == '\n') {
+                inComment = false;
+                continue;
+            }
+
+            if (inComment) {
+                continue;
+            }
+            
+            if (char.IsWhiteSpace(c)) {
+                continue;
+            }
+
+            if (c == '#' || c == ';') {
+                inComment = true;
+                continue;
+            }
+
+            if (c == '[') {
+                section = new ConfigSection();
+
+                if (false == ParseSection(section)) {
+                    return false;
+                }
+                
+                _sections.Add(section);
+                continue;
+            }
+
+            if (false == char.IsLetterOrDigit(c)) {
+                break;
+            }
+            
         }
 
-        //return (keyBuf.ToString(), valBuf.ToString());
-    } 
+        return result;
+    }
+    
+    private bool ParseSection(ConfigSection configSection)
+    {
+        var buf = new StringBuilder();
+        
+        for (;;) {
+            int ch = _reader.Read();
+            if (ch == EndOfFile) {
+                return false;
+            }
+
+            char c = (char)ch;
+
+            if (c == ']') {
+                break;
+            }
+
+            if (char.IsWhiteSpace(c)) {
+                return false;
+            }
+
+            if (false == char.IsLetterOrDigit(c)) {
+                return false;
+            }
+
+            buf.Append(c);
+        }
+
+        if (buf.Length == 0) {
+            return false;
+        }
+        
+        configSection.Name = buf.ToString();
+        return true;
+    }
+
+    public IList<ConfigSection> Sections => _sections;
 }

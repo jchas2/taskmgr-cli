@@ -2,18 +2,12 @@ using System.Drawing;
 
 namespace Task.Manager.System.Configuration;
 
-public class ConfigSection
+public sealed class ConfigSection
 {
-    private readonly string _name;
+    private string _name = string.Empty;
     private readonly Dictionary<string, string> _keys;
 
-    public ConfigSection(string name)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-
-        _name = name;
-        _keys = new Dictionary<string, string>();
-    }
+    public ConfigSection() => _keys = new Dictionary<string, string>();
 
     public void Add(string key, string value)
     {
@@ -50,6 +44,12 @@ public class ConfigSection
     public bool GetBool(string key) => GetBool(key, false);
 
     public bool GetBool(string key, bool defaultValue) => TryParse(key, bool.Parse, false);
+
+    public string Name
+    {
+        get => _name;
+        set => _name = value ?? throw new ArgumentNullException(nameof(Name));
+    }
 
     private T TryParse<T>(string key, Func<string, T> parseMethod, T defaultValue)
     {

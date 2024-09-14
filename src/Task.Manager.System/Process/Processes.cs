@@ -7,7 +7,7 @@ namespace Task.Manager.System.Process;
 public class Processes : IProcesses
 {
     private const int InitialBufSize = 512;
-    private List<ProcessInfo> _allProcesses;
+    private readonly IList<ProcessInfo> _allProcesses;
     private bool _isWindows = false;
     
     public Processes()
