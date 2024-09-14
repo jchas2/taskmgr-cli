@@ -4,11 +4,12 @@ namespace Task.Manager.System.Configuration;
 
 public sealed class ConfigParser
 {
-    public void Parse(string str)
+    public IList<ConfigSection> Parse(string str)
     {
         ArgumentNullException.ThrowIfNull(str);
         string[] lines = str.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         ParseLines(lines);
+        return new List<ConfigSection>();
     }
 
     private void ParseLines(string[] lines)
@@ -18,7 +19,7 @@ public sealed class ConfigParser
         }
     }
 
-    private void ParseLine(in string line)
+    private void ParseLine(string line)
     {
         for (int ptr = 0; ptr < line.Length; ptr++) {
             char ch = line[ptr];
@@ -28,8 +29,8 @@ public sealed class ConfigParser
             }
 
             if (ch == '[') {
-                string? sectionName = GetSectionIdentifier(line, ++ptr);
-                if (string.IsNullOrWhiteSpace(sectionName)) {
+                string? section = GetSectionIdentifier(line, ++ptr);
+                if (string.IsNullOrWhiteSpace(section)) {
 
                 }
             }
@@ -40,11 +41,11 @@ public sealed class ConfigParser
         }
     }
 
-    private string? GetSectionIdentifier(in string line, int ptr)
+    private string? GetSectionIdentifier(string line, int ptr)
     {
         var buf = new StringBuilder();
 
-        for (; ; ) {
+        for ( ;; ) {
             if (ptr >= line.Length) {
                 return null;
             }
@@ -54,12 +55,33 @@ public sealed class ConfigParser
             if (ch == ']') {
                 return buf.ToString();
             }
-
+            
             if (char.IsLetterOrDigit(ch)) {
+                buf.Append(ch);
+            }
+            else if (ch == '-') {
                 buf.Append(ch);
             }
 
             ptr++;
         }
     }
+
+    private (string? key, string? val) GetKeyValue(string line, int ptr)
+    {
+        var keyBuf = new StringBuilder();
+        var valBuf = new StringBuilder();
+
+        for (;;) {
+            if (ptr >= line.Length) {
+                return (null, null);
+            }
+
+            char ch = line[ptr];
+
+            ptr++;
+        }
+
+        //return (keyBuf.ToString(), valBuf.ToString());
+    } 
 }

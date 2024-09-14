@@ -20,7 +20,7 @@ public class Config
 
     // Use a ConfigLoadException, ConfigParseException, derive from ConfigException for better error handling at the higher levels.
 
-    public static Config FromString(string str)
+    public static Config FromString(in string str)
     {
         ArgumentNullException.ThrowIfNull(str);
         return FromStringInternal(str);
@@ -30,12 +30,5 @@ public class Config
     {
         var config = new Config();
         return config;
-    }
-
-    private static void ParseString(string str)
-    {
-
-
-
     }
 }

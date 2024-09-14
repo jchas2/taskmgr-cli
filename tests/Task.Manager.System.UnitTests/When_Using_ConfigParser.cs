@@ -7,19 +7,20 @@ public class When_Using_ConfigParser
     [Fact]
     public void Should_Parse_File()
     {
-        string data = $@"
+        var configParser = new ConfigParser();
+        configParser.Parse(TestConfigFile);
+    }
+
+    private static string TestConfigFile =>
+        $@"
             #####################################################
             # Example Config file.
             #####################################################
             
             [sort]
-            default-sort-key=cpu
-            
-            [display]
-            color=monochrome
-        ";
+            key=cpu
 
-        var configParser = new ConfigParser();
-        configParser.Parse(data);
-    }
+            [ui]
+            display=monochrome       ; colour, monochrome
+        ";
 }
