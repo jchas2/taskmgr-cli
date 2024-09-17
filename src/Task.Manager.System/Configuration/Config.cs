@@ -18,17 +18,17 @@ public class Config
 
     public static Config? FromFile(IFileSystem fileSys, string path)
     {
+        ConfigParser? parser = null;
+
         ArgumentNullException.ThrowIfNull(fileSys);
         ArgumentNullException.ThrowIfNull(path);
 
-        var parser = new ConfigParser(fileSys, path);
-        
+        parser = new ConfigParser(fileSys, path);
+
         return TryParseConfig(parser, out Config config) 
             ? config 
             : null;
     }
-
-    // Use a ConfigLoadException, ConfigParseException, derive from ConfigException for better error handling at the higher levels.
 
     public static Config? FromString(string str)
     {
@@ -58,6 +58,16 @@ public class Config
     {
         get => _sections;
         private set => _sections = value;
+    }
+
+    private static void TryLoadConfig(Action action)
+    {
+        try {
+            action.Invoke();
+        }
+        catch (Exception e) {
+            throw new ConfigLoadException(e.Message, e);
+        }
     }
     
     private static bool TryParseConfig(ConfigParser parser, out Config config)
