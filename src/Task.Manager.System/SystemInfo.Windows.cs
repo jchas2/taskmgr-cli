@@ -31,5 +31,12 @@ public static partial class SystemInfo
 
         return true;
 	}
+    
+    public static bool IsRunningAsRoot()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        var principal = new WindowsPrincipal(identity);
+        return principal.IsInRole(WindowsBuiltInRole.Administrator);
+    }
 #endif
 }

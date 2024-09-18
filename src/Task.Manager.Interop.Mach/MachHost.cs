@@ -15,7 +15,7 @@ public class MachHost
     public const int CPU_STATE_IDLE = 2;
     public const int CPU_STATE_NICE = 3;
 
-    [DllImport("libSystem.dylib", SetLastError = true)]
+    [DllImport(Libraries.LibSystemDyLib, SetLastError = true)]
     public static extern IntPtr host_self();
 
     [StructLayout(LayoutKind.Sequential)]
@@ -25,7 +25,7 @@ public class MachHost
         public ulong[] cpu_ticks;
     }
     
-    [DllImport("libSystem.dylib")]
+    [DllImport(Libraries.LibSystemDyLib)]
     public static extern int host_statistics64(
         IntPtr host, 
         int flavor, 

@@ -30,5 +30,8 @@ public static partial class SystemInfo
 
         return true;
     }
+
+    public static bool IsRunningAsRoot() =>
+        UniStd.geteuid() == 0;
 #endif
 }
