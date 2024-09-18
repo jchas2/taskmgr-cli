@@ -9,4 +9,14 @@ public class When_Using_SystemInfo
         bool result = SystemInfo.GetCpuTimes(ref systemTimes);
         Assert.True(result);
     }
+
+    [Fact]
+    public void Should_Get_Is_Running_As_Root()
+    {
+        // Just invoke the function call for now. Need to determine an alternate way to 
+        // verify if we are running under sudo in MacOS. Windows has a number of alternatives.
+        var result = SystemInfo.IsRunningAsRoot();
+        Assert.True(true);
+    }
 }
+
