@@ -16,14 +16,14 @@ public class When_Using_Processes
     [Fact]
     public void Should_Return_ProcessInfos_In_Minimum_Time()
     {
-        const int NumberOfIterations = 10;
-        const int MaxTimeTakenInMilliseconds = 25;
+        const int numberOfIterations = 10;
+        const int maxTimeTakenInMilliseconds = 25;
 
         var processes = new TaskMgrProcess::Processes();
 
-        for (int i = 0; i < NumberOfIterations; i++) {
+        for (int i = 0; i < numberOfIterations; i++) {
             var timeTaken = Time(() => processes.GetAll());
-            Debug.Assert(timeTaken.Milliseconds < MaxTimeTakenInMilliseconds);
+            Debug.Assert(timeTaken.Milliseconds < maxTimeTakenInMilliseconds);
             _testOutputHelper.WriteLine($"ms: {timeTaken.Milliseconds}");
         }
     }
