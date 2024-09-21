@@ -23,12 +23,12 @@ public class Processes : IProcesses
 
         for (int i = 0; i < procs.Length; i++) {
 #if __WIN32__
-            // On Windows, ignore the system "idle" process auto assigned to Pid 0.
+            /* On Windows, ignore the system "idle" process auto assigned to Pid 0. */
             if (_isWindows && procs[i].Id == 0) {
                 continue;
             }
 #endif
-            // Skip any process that generates an "Access Denied" Exception.
+            /* Skip any process that generates an "Access Denied" Exception. */
             if (null == TryGetSafeProcessHandle(procs[i])) {
                 continue;
             }
@@ -88,9 +88,11 @@ public class Processes : IProcesses
     private SafeProcessHandle? TryGetSafeProcessHandle(SysDiag::Process proc)
     {
         try {
-            // On Windows (with elevated access) this call can still throw an
-            // an "Access denied" Exception. This is usually for the "system"
-            // process assigned to Pid 4.
+            /*
+             * On Windows (with elevated access) this call can still throw an
+             * an "Access denied" Exception. This is usually for the "system"
+             * process assigned to Pid 4.
+             */
             return proc.SafeHandle;
         }
         catch (Exception) {

@@ -119,7 +119,7 @@ public class ConfigParser : IDisposable
                 return false;
             }
 
-            if (false == char.IsLetterOrDigit(c)) {
+            if (false == (char.IsLetterOrDigit(c) || c == '-')) {
                 return false;
             }
 
@@ -166,16 +166,14 @@ public class ConfigParser : IDisposable
             return false;
         }
 
+        /* Keys are mandatory, values are not. */
+        if (keyBuf.Length == 0) {
+            return false;
+        }
+
         var valBuf = new StringBuilder(InitialStringSize);
+        ParseValue(valBuf);
 
-        if (false == ParseValue(valBuf)) {
-            return false;
-        }
-
-        if (keyBuf.Length == 0 || valBuf.Length == 0) {
-            return false;
-        }
-        
         string key = keyBuf.ToString().ToLower();
         string val = valBuf.ToString();
 
@@ -186,15 +184,22 @@ public class ConfigParser : IDisposable
         return true;
     }
 
-    private bool ParseValue(StringBuilder valBuf)
+    private void ParseValue(StringBuilder valBuf)
     {
         bool inComment = false;
+        int ch;
         
         for (;;) {
-            char c = (char)_reader.Read();
+            ch = _reader.Read();
 
+            if (ch == EndOfFile) {
+                return;
+            }
+            
+            char c = (char)ch;
+            
             if (c == '\n') {
-                return valBuf.Length > 0;
+                return;
             }
 
             if (inComment) {

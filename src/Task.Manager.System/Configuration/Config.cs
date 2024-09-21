@@ -51,8 +51,6 @@ public class Config
 
         return _sections.Single(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
     }
-
-    public IList<ConfigSection> GetSections() => _sections;
     
     public IList<ConfigSection> Sections
     {

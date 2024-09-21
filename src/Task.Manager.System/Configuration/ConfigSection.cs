@@ -1,4 +1,4 @@
-using System.Drawing;
+using Task.Manager.Cli.Utils;
 
 namespace Task.Manager.System.Configuration;
 
@@ -7,14 +7,22 @@ public sealed class ConfigSection
     private string _name = string.Empty;
     private readonly Dictionary<string, string> _keys;
 
-    public ConfigSection() => _keys = new Dictionary<string, string>();
+    internal ConfigSection() => _keys = new Dictionary<string, string>();
 
-    public void Add(string key, string value)
+    public ConfigSection(string name)
+    {
+        _name = name ?? throw new ArgumentNullException(nameof(name));
+        _keys = new Dictionary<string, string>();
+    }
+    
+    public ConfigSection Add(string key, string value)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
 
         _keys[key] = value;
+
+        return this;
     }
 
     public bool Contains(string key) => _keys.ContainsKey(key);
@@ -33,9 +41,18 @@ public sealed class ConfigSection
         return _keys[key];
     }
 
-    public Color GetColour(string key) => GetColour(key, Color.Empty);
+    public ConsoleColor GetColour(string key) => GetColour(key, ConsoleColor.Black);
 
-    public Color GetColour(string key, Color defaultValue) => TryParse(key, Color.FromName, defaultValue);
+    public ConsoleColor GetColour(string key, ConsoleColor defaultValue)
+    {
+        string colourName = GetString(key, string.Empty);
+
+        if (string.IsNullOrEmpty(colourName)) {
+            return defaultValue;
+        }
+        
+        return ConsoleColorUtils.FromName(colourName, defaultValue);   
+    }
 
     public int GetInt(string key) => GetInt(key, 0);
 
