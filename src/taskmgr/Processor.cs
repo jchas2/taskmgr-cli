@@ -7,10 +7,12 @@ namespace Task.Manager;
 public class Processor
 {
     private readonly IProcesses _processes;
+    private readonly ISystemInfo _systemInfo;
 
-    public Processor(IProcesses processes)
+    public Processor(IProcesses processes, ISystemInfo systemInfo)
     {
         _processes = processes ?? throw new ArgumentNullException(nameof(processes));
+        _systemInfo = systemInfo ?? throw new ArgumentNullException(nameof(systemInfo));
     }
     
     public IList<ProcessInfo> GetProcesses()
@@ -61,10 +63,13 @@ public class Processor
     private void GetSystemTimes(out SystemTimes systemTimes)
     {
         systemTimes = new SystemTimes();
-        if (false == SystemInfo.GetCpuTimes(ref systemTimes)) {
-            systemTimes.Idle = 0;
-            systemTimes.Kernel = 0;
-            systemTimes.User = 0;
+
+        if (_systemInfo.GetCpuTimes(ref systemTimes)) {
+            return;
         }
+
+        systemTimes.Idle = 0;
+        systemTimes.Kernel = 0;
+        systemTimes.User = 0;
     }
 }

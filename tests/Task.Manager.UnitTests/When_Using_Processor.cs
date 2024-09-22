@@ -1,3 +1,4 @@
+using Task.Manager.System;
 using Task.Manager.System.Process;
 
 namespace Task.Manager.UnitTests;
@@ -8,7 +9,8 @@ public class When_Using_Processor
     public void Should_Return_ProcInfos()
     {
         var processes = new Processes();
-        var processor = new Processor(processes);
+        var systemInfo = new SystemInfo();
+        var processor = new Processor(processes, systemInfo);
         var allProcs = processor.GetProcesses();
 
         var q = allProcs.OrderByDescending(p => p.ProcessorTime);

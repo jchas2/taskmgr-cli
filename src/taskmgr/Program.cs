@@ -1,68 +1,61 @@
 ﻿using System.Diagnostics;
+using System.Reflection.Metadata;
 using System.Text;
-using Task.Manager.System.Process;
-using System.CommandLine;
-using Task.Manager.Configuration;
 using Task.Manager.System;
 using Task.Manager.Cli.Utils;
+using Task.Manager.Internal.Abstractions;
 
 namespace Task.Manager;
 
 class Program
 {
-    private const string MutexId = "Task-Mgr-d3f8e2a1-4b6f-4e8a-9b2d-1c3e4f5a6b7c";
+    private const int UnhandledExceptionExitCode = 1;
+    private const int DebugWait = 3000;
     
-    private static void InitConfig()
+    private static void HandleException(UnhandledExceptionEventArgs ev)
     {
+        if (ev.IsTerminating) {
+            OutputWriter.Error.WriteLine("Runtime has encountered a fatal unhandled Exception.".ToRed());
+        }
         
-    }
-
-    private static Option[] InitOptions()
-    {
-        Option[] opts = {
-            new Option<int>(
-                name: "--pid", 
-                description: "Monitor the given PID.", 
-                getDefaultValue: () => -1),
-            new Option<string>("--username", "Monitor processes for the given username"),
-            new Option<string>("--process", "Monitor processes matching or partially matching the given process name"),
-            new Option<Statistics>(
-                name: "--sort",
-                description: "Sort the process display by sorting on the statistics column in descending order.",
-                getDefaultValue: () => Statistics.Cpu),
-            new Option<string>("--ascending", "Sort the statistics column in ascending order."),
-            new Option<int>(
-                name: "--iterations", 
-                description: "Maximum number of iterations to execute before exiting.",
-                getDefaultValue: () => -1),
-            new Option<int>(
-                name: "--nprocs",
-                description: "Only display up to nprocs processes",
-                getDefaultValue: () => -1),
-        };
-
-        return opts;
+        if (ev.ExceptionObject is Exception e) {
+            OutputWriter.Error.WriteLine(e.Message.ToRed());
+            OutputWriter.Error.WriteLine(e.StackTrace ?? e.ToString());
+            return;
+        }
+        
+        OutputWriter.Error.WriteLine($"Unhandled error: {ev.ExceptionObject.GetType().Name}".ToRed());
     }
     
-    static int Main(string[] args)
+    private static int Main(string[] args)
     {
         using TerminalUTF8Encoder _ = new();
         Console.OutputEncoding = Encoding.UTF8;
 
-        if (false == SystemInfo.IsRunningAsRoot()) {
-            OutputWriter.Error.WriteLine("Application must be run as root user.".ToRed());
-            return -1;
+        AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) => {
+            HandleException(eventArgs);
+        };
+
+        if (args.Any(arg => arg.Equals("--debug", StringComparison.CurrentCultureIgnoreCase))) {
+            OutputWriter.Out.WriteLine($"Waiting for debugger attach to Pid {Environment.ProcessId}");
+            while (false == Debugger.IsAttached) {
+                Thread.Sleep(DebugWait);
+            }
+            Debugger.Break();
         }
         
-        using var mutex = new Mutex(initiallyOwned: false, name: MutexId);
-        
-        if (false == mutex.WaitOne(TimeSpan.Zero, exitContext: false)) {
-            OutputWriter.Error.WriteLine("Another instance of app is already running.".ToRed());
-            return -1;
+        try {
+            var runContext = new RunContext(
+                new FileSystem(),
+                new SystemInfo(),
+                outputWriter: null);
+
+            var app = new TaskMgrApp(runContext);
+            return app.Run(args);
         }
-
-        var options = InitOptions();
-
-        return 0;
+        catch (Exception e) {
+            HandleException(new UnhandledExceptionEventArgs(e, isTerminating: true));
+            return UnhandledExceptionExitCode;
+        }
     }
 }

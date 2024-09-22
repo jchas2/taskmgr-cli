@@ -51,10 +51,10 @@ public static class ConfigBuilder
             .Add(Constants.Keys.Foreground, "darkgray")
             .Add(Constants.Keys.ForegroundHighlight, "white")
             .Add(Constants.Keys.Menubar, "gray")
-            .Add(Constants.Keys.RangeHigh, "darkgray")
+            .Add(Constants.Keys.RangeHigh, "gray")
             .Add(Constants.Keys.RangeLow, "white")
-            .Add(Constants.Keys.RangeMid, "gray")
-            .Add(Constants.Keys.ProcessHeader, "gray"));
+            .Add(Constants.Keys.RangeMid, "darkgray")
+            .Add(Constants.Keys.ProcessHeader, "darkgray"));
 
         return config;
     }
