@@ -24,9 +24,10 @@ public static class ConfigBuilder
             /* These cols must match the Configuration.Statistics enum members. */
             .Add(Constants.Keys.Cols, "pid, process, user, pri, cpu, mem, virt, thrd, disk")
             .Add(Constants.Keys.NProcs, "-1"));
-        
+
         config.Sections.Add(new ConfigSection(Constants.Sections.Sort)
-            .Add(Constants.Keys.Col, "pid"));
+            .Add(Constants.Keys.Col, "pid")
+            .Add(Constants.Keys.Asc, "false"));
         
         /* Max number of iterations to execute before exiting. <= 0 infinite. */
         config.Sections.Add(new ConfigSection(Constants.Sections.Iterations)
