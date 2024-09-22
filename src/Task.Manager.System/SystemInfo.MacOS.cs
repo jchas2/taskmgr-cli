@@ -3,10 +3,10 @@ using Task.Manager.Interop.Mach;
 
 namespace Task.Manager.System;
 
-public static partial class SystemInfo
+public partial class SystemInfo
 {
 #if __APPLE__
-    public static bool GetCpuTimes(ref SystemTimes systemTimes)
+    private static bool GetCpuTimesInternal(ref SystemTimes systemTimes)
     {
         IntPtr host = MachHost.host_self();
         int count = (int)(Marshal.SizeOf(typeof(MachHost.HostCpuLoadInfo)) / sizeof(int));
@@ -24,6 +24,8 @@ public static partial class SystemInfo
 
         var info = Marshal.PtrToStructure<MachHost.HostCpuLoadInfo>(cpuInfoPtr);
         
+        // TODO: Look at Process.OSX.MapTimes. These ticks could be in nanoseconds, which could
+        // be throwing off the calculations later on.
         systemTimes.Idle = (long)info.cpu_ticks[MachHost.CPU_STATE_IDLE];
         systemTimes.Kernel = (long)info.cpu_ticks[MachHost.CPU_STATE_SYSTEM];
         systemTimes.User = (long)info.cpu_ticks[MachHost.CPU_STATE_USER];
@@ -31,7 +33,7 @@ public static partial class SystemInfo
         return true;
     }
 
-    public static bool IsRunningAsRoot() =>
+    private static bool IsRunningAsRootInternal() =>
         UniStd.geteuid() == 0;
 #endif
 }

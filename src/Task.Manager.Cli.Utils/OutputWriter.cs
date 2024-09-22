@@ -1,6 +1,6 @@
-﻿namespace Task.Manager.System;
+﻿namespace Task.Manager.Cli.Utils;
 
-public sealed class OutputWriter
+public sealed class OutputWriter : IOutputWriter
 {
     private readonly TextWriter _writer;
 

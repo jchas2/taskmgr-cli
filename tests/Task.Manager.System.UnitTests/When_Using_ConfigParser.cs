@@ -58,11 +58,28 @@ col=pid
 limit=-1
 
 [theme-colour]
+background=black
+background-highlight=black
+error=red
+foreground=darkgray
+foreground-highlight=white
+menubar=gray
+range-high=red
+range-low=green
+range-mid=yellow
+process-header=cyan
 
 [theme-mono]
-
-[theme-tokyo-night]
-
+background=black
+background-highlight=black
+error=gray
+foreground=darkgray
+foreground-highlight=white
+menubar=gray
+range-high=gray
+range-low=white
+range-mid=darkgray
+process-header=darkgray
 ";
     
     [Fact]

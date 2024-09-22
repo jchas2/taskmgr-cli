@@ -4,10 +4,10 @@ using Task.Manager.Interop.Win32;
 
 namespace Task.Manager.System;
 
-public static partial class SystemInfo
+public partial class SystemInfo
 {
 #if __WIN32__
-    public static bool GetCpuTimes(ref SystemTimes systemTimes)
+    private static bool GetCpuTimesInternal(ref SystemTimes systemTimes)
     {
         MinWinBase.FILETIME idleFileTime;
         MinWinBase.FILETIME kernelFileTime;
@@ -17,11 +17,10 @@ public static partial class SystemInfo
             out idleFileTime,
             out kernelFileTime,
             out userFileTime)) {
-
-            // TODO: Gracefully write error to debug log.
+#if DEBUG
             int error = Marshal.GetLastWin32Error();
-            Debug.WriteLine(error);
-
+            Debug.Assert(error == 0, $"Failed GetSystemTimes(): {Marshal.GetPInvokeErrorMessage(error)}");
+#endif
             return false;
         }
 
@@ -32,7 +31,7 @@ public static partial class SystemInfo
         return true;
 	}
     
-    public static bool IsRunningAsRoot()
+    private static bool IsRunningAsRootInternal()
     {
         using var identity = WindowsIdentity.GetCurrent();
         var principal = new WindowsPrincipal(identity);
