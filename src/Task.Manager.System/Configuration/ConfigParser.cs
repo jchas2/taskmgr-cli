@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 using Task.Manager.Internal.Abstractions;
 
@@ -38,9 +39,8 @@ public class ConfigParser : IDisposable
     public void Dispose() =>
         _reader.Dispose();
 
-    public bool Parse()
+    public void Parse()
     {
-        bool result = true;
         bool inComment = false;
         ConfigSection? section = null;
 
@@ -73,11 +73,7 @@ public class ConfigParser : IDisposable
 
             if (c == '[') {
                 section = new ConfigSection();
-
-                if (false == ParseSection(section)) {
-                    return false;
-                }
-                
+                ParseSection(ref section);
                 _sections.Add(section);
                 continue;
             }
@@ -86,7 +82,8 @@ public class ConfigParser : IDisposable
                 break;
             }
 
-            if (section != null && ParseKey(section, c)) {
+            if (section != null) {
+                ParseKey(ref section, c);
                 continue;
             }
 
@@ -94,63 +91,61 @@ public class ConfigParser : IDisposable
                 break;
             }
         }
-
-        return result;
     }
     
-    private bool ParseSection(ConfigSection section)
+    private void ParseSection(ref ConfigSection section)
     {
         var buf = new StringBuilder(InitialStringSize);
         
         for (;;) {
             int ch = _reader.Read();
+            char c = (char)ch;
             
             if (ch == EndOfFile) {
-                return false;
+                buf.Append(c);
+                throw new ConfigParseException($"End-of-file found reading section name {buf} before closing ']'.");
             }
-
-            char c = (char)ch;
 
             if (c == ']') {
                 break;
             }
 
             if (char.IsWhiteSpace(c)) {
-                return false;
+                buf.Append(c);
+                throw new ConfigParseException($"Unexpected white space char in section name {buf}.");
             }
 
             if (false == (char.IsLetterOrDigit(c) || c == '-')) {
-                return false;
+                buf.Append(c);
+                throw new ConfigParseException($"Unexpected char in section name {buf}. Must be alpha-numeric.");
             }
 
             buf.Append(c);
         }
 
         if (buf.Length == 0) {
-            return false;
+            throw new ConfigParseException("Section name cannot be empty.");
         }
         
         section.Name = buf.ToString();
-        return true;
     }
 
-    private bool ParseKey(ConfigSection section, char initChar)
+    private void ParseKey(ref ConfigSection section, char initChar)
     {
         var keyBuf = new StringBuilder(InitialStringSize);
         keyBuf.Append(initChar);
-        
-        int ch;
+
         char c;
         
         for (;;) {
-            ch = _reader.Read();
+            var ch = _reader.Read();
+            c = (char)ch;
             
             if (ch == EndOfFile) {
-                return false;
+                keyBuf.Append(c);
+                throw new ConfigParseException($"End-of-file found reading key name {keyBuf}.");
             }
-
-            c = (char)ch;
-
+            
             if (false == (char.IsLetterOrDigit(c) || c == '-')) {
                 break;
             }
@@ -163,16 +158,16 @@ public class ConfigParser : IDisposable
         }
 
         if (c != '=') {
-            return false;
+            throw new ConfigParseException($"Expected '=' after key {keyBuf}.");
         }
 
         /* Keys are mandatory, values are not. */
         if (keyBuf.Length == 0) {
-            return false;
+            throw new ConfigParseException("Key name cannot be empty.");
         }
 
         var valBuf = new StringBuilder(InitialStringSize);
-        ParseValue(valBuf);
+        ParseValue(ref valBuf);
 
         string key = keyBuf.ToString().ToLower();
         string val = valBuf.ToString();
@@ -180,11 +175,9 @@ public class ConfigParser : IDisposable
         if (false == section.Contains(key)) {
             section.Add(key, val);
         }
-
-        return true;
     }
 
-    private void ParseValue(StringBuilder valBuf)
+    private void ParseValue(ref StringBuilder valBuf)
     {
         bool inComment = false;
         int ch;

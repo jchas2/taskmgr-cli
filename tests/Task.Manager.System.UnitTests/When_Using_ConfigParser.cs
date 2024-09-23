@@ -86,9 +86,8 @@ process-header=darkgray
     public void Should_Parse_Min_Config_File()
     {
         var configParser = new ConfigParser(MinConfigFile);
-        bool result = configParser.Parse();
+        configParser.Parse();
         
-        Assert.True(result);
         Assert.True(configParser.Sections.Count == 1);
         Assert.Equal("section1", configParser.Sections[0].Name);
         Assert.True(configParser.Sections[0].Contains("key1"));
@@ -100,9 +99,8 @@ process-header=darkgray
     public void Should_Parse_Min_Config_File_With_All_DataTypes()
     {
         var configParser = new ConfigParser(MinConfigFileWithAllDataTypes);
-        bool result = configParser.Parse();
+        configParser.Parse();
         
-        Assert.True(result);
         Assert.True(configParser.Sections.Count == 1);
         Assert.Equal("data-types", configParser.Sections[0].Name);
         Assert.Equal("string value", configParser.Sections[0].GetString("string-key"));

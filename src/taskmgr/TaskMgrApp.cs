@@ -18,25 +18,12 @@ public sealed class TaskMgrApp
         _runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
     }
     
-    private bool GetConfigurationPath(out string? configPath)
-    {
-        configPath = string.Empty;
-        
-        try {
-            configPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            return true;
-        }
-        catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is IOException) {
-            _runContext.OutputWriter.WriteLine($"Unable to get working path: {e.Message}");
-            return false;
-        }
-    }
-    
     private Config InitConfiguration()
     {
         Config? config = null;
         
-        if (false == GetConfigurationPath(out string? configPath) || string.IsNullOrWhiteSpace(configPath)) {
+        if (false == TryGetConfigurationPath(out string? configPath) || string.IsNullOrWhiteSpace(configPath)) {
+            _runContext.OutputWriter.WriteLine("Loading default configuration.");
             config = ConfigBuilder.BuildDefault();
         }
 
@@ -44,7 +31,13 @@ public sealed class TaskMgrApp
             var configFile = Path.Combine(configPath, ConfigFile);
             
             if (_runContext.FileSystem.Exists(configFile)) {
+                _runContext.OutputWriter.WriteLine($"Loading configuration from path {configFile}.");
+                // TODO: TryGetConfigurationFromFile(). Handle ConfigParseException etc.
                 config = Config.FromFile(_runContext.FileSystem, configFile);
+
+                if (config == null) {
+                    
+                }
             }
         }
 
@@ -56,8 +49,12 @@ public sealed class TaskMgrApp
         var pidOption = new Option<int?>(
             name: "--pid",
             description: "Monitor the given PID.");
-        var usernameOption = new Option<string>("--username", "Monitor processes for the given username.");
-        var processOption = new Option<string>("--process", "Monitor processes matching or partially matching the given process name.");
+        var usernameOption = new Option<string>(
+            "--username", 
+            "Monitor processes for the given username.");
+        var processOption = new Option<string>(
+            "--process", 
+            "Monitor processes matching or partially matching the given process name.");
         var sortOption = new Option<Statistics?>(
             name: "--sort",
             description: "Sort the process display by sorting on the statistics column in descending order.");
@@ -104,26 +101,43 @@ public sealed class TaskMgrApp
 
             var filterSection = config.Sections.FirstOrDefault(s => 
                 s.Name.Equals(Constants.Sections.Filter, StringComparison.CurrentCultureIgnoreCase));
-            
-            if (pid.HasValue && pid.Value >= 0) filterSection?.Add( Constants.Keys.Pid, pid.Value.ToString());
-            if (false == string.IsNullOrWhiteSpace(userName)) filterSection?.Add(Constants.Keys.UserName, userName);
-            if (false == string.IsNullOrWhiteSpace(process)) filterSection?.Add(Constants.Keys.Process, process);
+
+            if (pid.HasValue && pid.Value >= 0) {
+                filterSection?.Add( Constants.Keys.Pid, pid.Value.ToString());
+            }
+
+            if (false == string.IsNullOrWhiteSpace(userName)) {
+                filterSection?.Add(Constants.Keys.UserName, userName);
+            }
+
+            if (false == string.IsNullOrWhiteSpace(process)) {
+                filterSection?.Add(Constants.Keys.Process, process);
+            }
 
             var sortSection = config.Sections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.Sort, StringComparison.CurrentCultureIgnoreCase));
-            
-            if (sortColumn.HasValue) sortSection?.Add(Constants.Keys.Col, sortColumn.Value.ToString());
-            if (sortAscending.HasValue) sortSection?.Add(Constants.Keys.Asc, sortAscending.Value.ToString());
+
+            if (sortColumn.HasValue) {
+                sortSection?.Add(Constants.Keys.Col, sortColumn.Value.ToString());
+            }
+
+            if (sortAscending.HasValue) {
+                sortSection?.Add(Constants.Keys.Asc, sortAscending.Value.ToString());
+            }
 
             var iterationsSection = config.Sections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.Iterations, StringComparison.CurrentCultureIgnoreCase));
 
-            if (limit.HasValue && limit.Value >= 0) iterationsSection?.Add(Constants.Keys.Limit, limit.Value.ToString());
+            if (limit.HasValue && limit.Value >= 0) {
+                iterationsSection?.Add(Constants.Keys.Limit, limit.Value.ToString());
+            }
 
             var statsSection = config.Sections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.Stats, StringComparison.CurrentCultureIgnoreCase));
 
-            if (nprocs.HasValue && nprocs.Value > 0) statsSection?.Add(Constants.Keys.NProcs, nprocs.Value.ToString());
+            if (nprocs.HasValue && nprocs.Value > 0) {
+                statsSection?.Add(Constants.Keys.NProcs, nprocs.Value.ToString());
+            }
             
             // TODO - handle Theme. Need a default theme key. Replace "Metres" section with a "Display" section.
 
@@ -157,5 +171,24 @@ public sealed class TaskMgrApp
         int exitCode = rootCommand.Invoke(args);
 
         return exitCode;
+    }
+    
+    private bool TryGetConfigurationPath(out string? configPath)
+    {
+        configPath = string.Empty;
+        
+        try {
+            configPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            return true;
+        }
+        catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is IOException) {
+            _runContext.OutputWriter.WriteLine($"Unable to get working path: {e.Message}.");
+            return false;
+        }
+    }
+
+    private bool TryGetConfigurationFromFile()
+    {
+        return false;
     }
 }
