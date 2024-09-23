@@ -1,6 +1,4 @@
 using Task.Manager.Internal.Abstractions;
-using System.Linq;
-using System.Reflection;
 
 namespace Task.Manager.System.Configuration;
 
@@ -18,16 +16,11 @@ public class Config
 
     public static Config? FromFile(IFileSystem fileSys, string path)
     {
-        ConfigParser? parser = null;
-
         ArgumentNullException.ThrowIfNull(fileSys);
         ArgumentNullException.ThrowIfNull(path);
 
-        parser = new ConfigParser(fileSys, path);
-
-        return TryParseConfig(parser, out Config config) 
-            ? config 
-            : null;
+        var parser = new ConfigParser(fileSys, path);
+        return ParseConfig(parser);
     }
 
     public static Config? FromString(string str)
@@ -35,10 +28,7 @@ public class Config
         ArgumentNullException.ThrowIfNull(str);
 
         var parser = new ConfigParser(str);
-        
-        return TryParseConfig(parser, out Config config) 
-            ? config 
-            : null;
+        return ParseConfig(parser);
     }
     
     public ConfigSection GetSection(string name)
@@ -68,16 +58,11 @@ public class Config
         }
     }
     
-    private static bool TryParseConfig(ConfigParser parser, out Config config)
+    private static Config ParseConfig(ConfigParser parser)
     {
-        config = new Config();
-        bool result = parser.Parse();
-        
-        if (false == result) {
-            return false;
-        }
-
+        var config = new Config();
+        parser.Parse(); 
         config.Sections = parser.Sections;
-        return true;
+        return config;
     }
 }
