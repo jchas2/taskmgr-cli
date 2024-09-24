@@ -20,28 +20,21 @@ public sealed class TaskMgrApp
     
     private Config InitConfiguration()
     {
-        Config? config = null;
-        
         if (false == TryGetConfigurationPath(out string? configPath) || string.IsNullOrWhiteSpace(configPath)) {
-            _runContext.OutputWriter.WriteLine("Loading default configuration.");
-            config = ConfigBuilder.BuildDefault();
+            return ConfigBuilder.BuildDefault();
+        }
+        
+        var configFile = Path.Combine(configPath, ConfigFile);
+
+        if (!_runContext.FileSystem.Exists(configFile)) {
+            return ConfigBuilder.BuildDefault();
+        }
+        
+        if (false == TryGetConfigurationFromFile(configFile, out var config) || null == config) {
+            return ConfigBuilder.BuildDefault();
         }
 
-        if (config == null && false == string.IsNullOrEmpty(configPath)) {
-            var configFile = Path.Combine(configPath, ConfigFile);
-            
-            if (_runContext.FileSystem.Exists(configFile)) {
-                _runContext.OutputWriter.WriteLine($"Loading configuration from path {configFile}.");
-                // TODO: TryGetConfigurationFromFile(). Handle ConfigParseException etc.
-                config = Config.FromFile(_runContext.FileSystem, configFile);
-
-                if (config == null) {
-                    
-                }
-            }
-        }
-
-        return config ??= ConfigBuilder.BuildDefault();
+        return config;
     }
     
     private RootCommand InitRootCommand(Config config)
@@ -58,7 +51,9 @@ public sealed class TaskMgrApp
         var sortOption = new Option<Statistics?>(
             name: "--sort",
             description: "Sort the process display by sorting on the statistics column in descending order.");
-        var ascendingOption = new Option<bool?>("--ascending", "Sort the statistics column in ascending order.");
+        var ascendingOption = new Option<bool?>(
+            name: "--ascending", 
+            description: "Sort the statistics column in ascending order.");
         var limitOption = new Option<int?>(
             name: "--limit",
             description: "Limit the number of iterations to execute before exiting.");
@@ -167,10 +162,32 @@ public sealed class TaskMgrApp
         }
 
         var config = InitConfiguration();
+        VerifyConfiguration(config);
+        
+        
+        
         var rootCommand = InitRootCommand(config);
         int exitCode = rootCommand.Invoke(args);
 
         return exitCode;
+    }
+
+    private bool TryGetConfigurationFromFile(string configFile, out Config? config)
+    {
+        config = null;
+
+        try {
+            config = Config.FromFile(_runContext.FileSystem, configFile);
+            return true;
+        }
+        catch (Exception e) when (e is FileNotFoundException || e is IOException) {
+            _runContext.OutputWriter.WriteLine($"Error loading config: ${e.Message}.".ToRed());
+        }
+        catch (Exception e) when (e is ConfigParseException) {
+            _runContext.OutputWriter.WriteLine($"Error parsing config: {e.Message}.".ToRed());
+        }
+
+        return false;
     }
     
     private bool TryGetConfigurationPath(out string? configPath)
@@ -182,13 +199,13 @@ public sealed class TaskMgrApp
             return true;
         }
         catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is IOException) {
-            _runContext.OutputWriter.WriteLine($"Unable to get working path: {e.Message}.");
+            _runContext.OutputWriter.WriteLine($"Unable to get working path: {e.Message}.".ToRed());
             return false;
         }
     }
 
-    private bool TryGetConfigurationFromFile()
+    private void VerifyConfiguration(Config config)
     {
-        return false;
+        
     }
 }
