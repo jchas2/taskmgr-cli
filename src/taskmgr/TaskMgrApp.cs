@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Data;
 using System.Reflection;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
@@ -16,25 +17,6 @@ public sealed class TaskMgrApp
     public TaskMgrApp(RunContext runContext)
     {
         _runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
-    }
-    
-    private Config InitConfiguration()
-    {
-        if (false == TryGetConfigurationPath(out string? configPath) || string.IsNullOrWhiteSpace(configPath)) {
-            return ConfigBuilder.BuildDefault();
-        }
-        
-        var configFile = Path.Combine(configPath, ConfigFile);
-
-        if (!_runContext.FileSystem.Exists(configFile)) {
-            return ConfigBuilder.BuildDefault();
-        }
-        
-        if (false == TryGetConfigurationFromFile(configFile, out var config) || null == config) {
-            return ConfigBuilder.BuildDefault();
-        }
-
-        return config;
     }
     
     private RootCommand InitRootCommand(Config config)
@@ -161,10 +143,15 @@ public sealed class TaskMgrApp
             return -1;
         }
 
-        var config = InitConfiguration();
-        VerifyConfiguration(config);
-        
-        
+        Config? config = null;
+        if (TryGetConfigurationPath(out string? configPath) && false == string.IsNullOrEmpty(configPath)) {
+            var configFile = Path.Combine(configPath, ConfigFile);
+            if (_runContext.FileSystem.Exists(configFile)) {
+                TryGetConfigurationFromFile(configFile, out config);
+            }            
+        }
+
+        config ??= ConfigBuilder.BuildDefault();
         
         var rootCommand = InitRootCommand(config);
         int exitCode = rootCommand.Invoke(args);
@@ -206,6 +193,24 @@ public sealed class TaskMgrApp
 
     private void VerifyConfiguration(Config config)
     {
+        string[] sections = {
+            Constants.Sections.Filter,
+            Constants.Sections.UX,
+            Constants.Sections.Stats,
+            Constants.Sections.Sort,
+            Constants.Sections.Iterations,
+            Constants.Sections.ThemeColour,
+            Constants.Sections.ThemeMono
+        };
+
+        foreach (var name in sections) {
+            var section = config.Sections.FirstOrDefault(s =>
+                s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
+
+            if (section == null) {
+                config.AddSection(ConfigBuilder.BuildSection(name));
+            }
+        }
         
     }
 }

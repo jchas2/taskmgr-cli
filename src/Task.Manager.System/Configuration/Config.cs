@@ -11,6 +11,16 @@ public class Config
         _sections = new List<ConfigSection>();
     }
 
+    public Config AddSection(ConfigSection section)
+    {
+        if (ContainsSection(section.Name)) {
+            throw new InvalidOperationException($"A section with name {section.Name} already exists.");
+        }
+        
+        Sections.Add(section);
+        return this;
+    }
+    
     public bool ContainsSection(string name) =>
         _sections.Any(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
 
