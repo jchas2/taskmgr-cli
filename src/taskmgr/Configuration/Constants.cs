@@ -5,7 +5,7 @@ public sealed class Constants
     public sealed class Sections
     {
         public const string Filter = "filter";
-        public const string Metres = "metres";
+        public const string UX = "ux";
         public const string Stats = "stats";
         public const string Sort = "sort";
         public const string Iterations = "iterations";
@@ -26,6 +26,7 @@ public sealed class Constants
         public const string Asc = "asc";
         public const string Limit = "limit";
         public const string NProcs = "nprocs";
+        public const string DefaultTheme = "default-theme";
         
         /* Theme keys. */
         public const string Background = "background";
