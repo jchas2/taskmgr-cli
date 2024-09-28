@@ -80,7 +80,7 @@ public sealed class TaskMgrApp
                 s.Name.Equals(Constants.Sections.Filter, StringComparison.CurrentCultureIgnoreCase));
 
             if (pid.HasValue && pid.Value >= 0) {
-                filterSection?.Add( Constants.Keys.Pid, pid.Value.ToString());
+                filterSection?.Add(Constants.Keys.Pid, pid.Value.ToString());
             }
 
             if (false == string.IsNullOrWhiteSpace(userName)) {
@@ -115,8 +115,15 @@ public sealed class TaskMgrApp
             if (nprocs.HasValue && nprocs.Value > 0) {
                 statsSection?.Add(Constants.Keys.NProcs, nprocs.Value.ToString());
             }
-            
-            // TODO - handle Theme. Need a default theme key. Replace "Metres" section with a "Display" section.
+
+            var uxSection = config.Sections.FirstOrDefault(s =>
+                s.Name.Equals(Constants.Sections.UX, StringComparison.CurrentCultureIgnoreCase));
+
+            if (false == string.IsNullOrEmpty(theme)) {
+                uxSection?.Add(Constants.Keys.DefaultTheme, theme);                
+            }
+
+            ConfigBuilder.Merge(config);
 
             TaskMgrApp.RunCommand(config);
         });
@@ -145,7 +152,7 @@ public sealed class TaskMgrApp
 
         Config? config = null;
         if (TryGetConfigurationPath(out string? configPath) && false == string.IsNullOrEmpty(configPath)) {
-            var configFile = Path.Combine(configPath, ConfigFile);
+            string configFile = Path.Combine(configPath, ConfigFile);
             if (_runContext.FileSystem.Exists(configFile)) {
                 TryGetConfigurationFromFile(configFile, out config);
             }            
@@ -211,6 +218,5 @@ public sealed class TaskMgrApp
                 config.AddSection(ConfigBuilder.BuildSection(name));
             }
         }
-        
     }
 }
