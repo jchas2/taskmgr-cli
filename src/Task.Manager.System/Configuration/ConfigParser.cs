@@ -191,14 +191,14 @@ public class ConfigParser : IDisposable
             
             char c = (char)ch;
             
-            if (c == '\n') {
+            if (c == '\r' || c == '\n') {
                 return;
             }
 
             if (inComment) {
                 continue;
             }
-
+            
             if (char.IsWhiteSpace(c)) {
                 valBuf.Append(c);
                 continue;

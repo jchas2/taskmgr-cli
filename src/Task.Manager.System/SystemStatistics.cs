@@ -12,7 +12,7 @@ public class SystemStatistics
     
     /* Cpu */
     public double CpuFrequency { get; set; }
-    private ulong CpuCores { get; set; }
+    public ulong CpuCores { get; set; }
     public string CpuName { get; set; } = string.Empty;
     
     /* System */
