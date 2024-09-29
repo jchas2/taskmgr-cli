@@ -22,7 +22,7 @@ public sealed class SystemHeader
     }
 
     public void Draw(
-        SystemStatistics systemStatistics,
+        SystemStatistics systemStats,
         SystemTimes systemTimes,
         Rectangle bounds)
     {
@@ -38,37 +38,34 @@ public sealed class SystemHeader
         _terminal.WriteEmptyLineTo(offsetX);
         _terminal.Write(menubar);
         _terminal.WriteEmptyLineTo(_terminal.WindowWidth - offsetX - menubar.Length);
+        
         nlines += 2;
 
         _terminal.BackgroundColor = _theme.Background;
-        _terminal.Write(systemStatistics.MachineName);
-        _terminal.Write("  (");
-        _terminal.Write(systemStatistics.OsVersion);
-        _terminal.Write(")  IP ");
-        _terminal.Write(systemStatistics.PrivateIPv4Address);
-        _terminal.Write(" Pub ");
-        _terminal.Write(systemStatistics.PublicIPv4Address);
 
+        _terminal.Write(
+            $"{systemStats.MachineName}  ({systemStats.OsVersion})  IP {systemStats.PrivateIPv4Address} Pub {systemStats.PublicIPv4Address}");
+        
         int nchars =
-            systemStatistics.MachineName.Length + 3 +
-            systemStatistics.OsVersion.Length + 6 +
-            systemStatistics.PrivateIPv4Address.Length + 5 +
-            systemStatistics.PublicIPv4Address.Length;
+            systemStats.MachineName.Length + 3 +
+            systemStats.OsVersion.Length + 6 +
+            systemStats.PrivateIPv4Address.Length + 5 +
+            systemStats.PublicIPv4Address.Length;
         
         _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars);
+        
         nlines++;
         
-        _terminal.Write(systemStatistics.CpuName);
-        _terminal.Write(" (Cores ");
-        _terminal.Write(systemStatistics.CpuCores.ToString());
-        _terminal.Write(")");
+        _terminal.Write(
+            $"{systemStats.CpuName} (Cores {systemStats.CpuCores})");
 
         nchars =
-            systemStatistics.CpuName.Length + 8 +
-            systemStatistics.CpuCores.ToString().Length + 1;
+            systemStats.CpuName.Length + 8 +
+            systemStats.CpuCores.ToString().Length + 1;
 
         _terminal.WriteEmptyLineTo(_terminal.WindowWidth - -nchars);
         _terminal.WriteEmptyLine();
+        
         nlines += 2;
     }
 }
