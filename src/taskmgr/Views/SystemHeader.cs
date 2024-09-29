@@ -63,7 +63,7 @@ public sealed class SystemHeader
             systemStats.CpuName.Length + 8 +
             systemStats.CpuCores.ToString().Length + 1;
 
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - -nchars);
+        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars);
         _terminal.WriteEmptyLine();
         
         nlines += 2;
