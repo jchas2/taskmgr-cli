@@ -64,8 +64,8 @@ public sealed class TaskMgrApp
         rootCommand.SetHandler(context =>
         {
             /*
-             * Map the incoming command line arguments to the current configuration instance.
-             * Only override what's in configuration if a value comes in from the command line.
+             * Map the incoming command line arguments to the current config instance.
+             * Only override what's in config if a value comes in from the command line.
              */
             int? pid = context.ParseResult.GetValueForOption(pidOption);
             string? userName = context.ParseResult.GetValueForOption(usernameOption);
@@ -74,7 +74,7 @@ public sealed class TaskMgrApp
             bool? sortAscending = context.ParseResult.GetValueForOption(ascendingOption);
             int? limit = context.ParseResult.GetValueForOption(limitOption);
             int? nprocs = context.ParseResult.GetValueForOption(nprocsOption);
-            string? theme = context.ParseResult.GetValueForOption(themeOption);
+            string? themeName = context.ParseResult.GetValueForOption(themeOption);
 
             var filterSection = config.Sections.FirstOrDefault(s => 
                 s.Name.Equals(Constants.Sections.Filter, StringComparison.CurrentCultureIgnoreCase));
@@ -119,19 +119,31 @@ public sealed class TaskMgrApp
             var uxSection = config.Sections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.UX, StringComparison.CurrentCultureIgnoreCase));
 
-            if (false == string.IsNullOrEmpty(theme)) {
-                uxSection?.Add(Constants.Keys.DefaultTheme, theme);                
+            if (false == string.IsNullOrEmpty(themeName)) {
+                uxSection?.Add(Constants.Keys.DefaultTheme, themeName);                
             }
 
+            /* Now we have a config that's either been loaded from disk or generated
+             * through the ConfigBuilder with defaults, and has had any command line
+             * args that override a setting applied.
+             *
+             * Now we ensure all settings exist in the config by performing a merge
+             * against the config instance with the default settings from the
+             * ConfigBuilder.
+             */
             ConfigBuilder.Merge(config);
-
-            TaskMgrApp.RunCommand(config);
-        });
+            var theme = new Theme(config);
+            
+            RunCommand(
+                _runContext,
+                config,
+                theme);
+        });   
         
         return rootCommand;
     }
 
-    private static int RunCommand(Config config)
+    private static int RunCommand(RunContext context, Config config, Theme theme)
     {
         return 0;
     }
@@ -195,28 +207,6 @@ public sealed class TaskMgrApp
         catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is IOException) {
             _runContext.OutputWriter.WriteLine($"Unable to get working path: {e.Message}.".ToRed());
             return false;
-        }
-    }
-
-    private void VerifyConfiguration(Config config)
-    {
-        string[] sections = {
-            Constants.Sections.Filter,
-            Constants.Sections.UX,
-            Constants.Sections.Stats,
-            Constants.Sections.Sort,
-            Constants.Sections.Iterations,
-            Constants.Sections.ThemeColour,
-            Constants.Sections.ThemeMono
-        };
-
-        foreach (var name in sections) {
-            var section = config.Sections.FirstOrDefault(s =>
-                s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
-
-            if (section == null) {
-                config.AddSection(ConfigBuilder.BuildSection(name));
-            }
         }
     }
 }

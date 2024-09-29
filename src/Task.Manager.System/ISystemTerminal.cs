@@ -13,8 +13,12 @@ public interface ISystemTerminal
     void Clear();
     ConsoleKeyInfo ReadKey();
     void SetCursorPosition(int left, int top);
+    int WindowWidth { get; }
+    int WindowHeight { get; }
     void Write(char ch);
     void Write(string message);
+    void WriteEmptyLine();
+    void WriteEmptyLineTo(int x);
     void WriteLine(char ch);
     void WriteLine(string message);
 }

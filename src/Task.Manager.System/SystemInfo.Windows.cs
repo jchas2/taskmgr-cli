@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Security.Principal;
 using Task.Manager.Interop.Win32;
 
 namespace Task.Manager.System;
@@ -33,9 +35,19 @@ public partial class SystemInfo
     
     private static bool IsRunningAsRootInternal()
     {
-        using var identity = WindowsIdentity.GetCurrent();
-        var principal = new WindowsPrincipal(identity);
-        return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        /*
+         * Even though we have a pre-processor directive for __WIN32__ set in the .csproj
+         * the compiler will still complain with a "CA1416: Validate platform compatibility"
+         * error unless the .IsOSPlatform guard is in place.
+         */
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
+
+        return false;
     }
 #endif
 }

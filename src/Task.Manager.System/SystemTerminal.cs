@@ -41,12 +41,22 @@ public class SystemTerminal : ISystemTerminal
     public TextWriter StdError => Console.Error;
     public TextReader StdIn => Console.In;
     public TextWriter StdOut => Console.Out;
-    
     public void Clear() => Console.Clear();
     public ConsoleKeyInfo ReadKey() => Console.ReadKey();
     public void SetCursorPosition(int left, int top) => Console.SetCursorPosition(left, top);
+    public int WindowWidth => Console.WindowWidth;
+    public int WindowHeight => Console.WindowHeight;
     public void Write(char ch) => Console.Write(ch);
     public void Write(string message) => Console.Write(message);
+    public void WriteEmptyLine() => WriteEmptyLineTo(Console.WindowWidth);
+
+    public void WriteEmptyLineTo(int x)
+    {
+        for (int i = 0; i < x; i++) {
+            Write(' ');
+        }
+    }
+    
     public void WriteLine(char ch) => Console.WriteLine(ch);
-    public void WriteLine(string message) => Console.WriteLine(message);    
+    public void WriteLine(string message) => Console.WriteLine(message);   
 }
