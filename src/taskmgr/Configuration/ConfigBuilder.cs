@@ -63,8 +63,8 @@ public static class ConfigBuilder
             { Constants.Keys.ForegroundHighlight, "white" },
             { Constants.Keys.Menubar, "gray" },
             { Constants.Keys.RangeHigh, "red" },
-            { Constants.Keys.RangeLow, "green" },
-            { Constants.Keys.RangeMid, "yellow" },
+            { Constants.Keys.RangeLow, "darkgreen" },
+            { Constants.Keys.RangeMid, "darkyellow" },
             { Constants.Keys.ProcessHeader, "cyan" }
         };
 
@@ -148,8 +148,8 @@ public static class ConfigBuilder
                     .Add(Constants.Keys.ForegroundHighlight, "white")
                     .Add(Constants.Keys.Menubar, "gray")
                     .Add(Constants.Keys.RangeHigh, "red")
-                    .Add(Constants.Keys.RangeLow, "green")
-                    .Add(Constants.Keys.RangeMid, "yellow")
+                    .Add(Constants.Keys.RangeLow, "darkgreen")
+                    .Add(Constants.Keys.RangeMid, "darkyellow")
                     .Add(Constants.Keys.ProcessHeader, "cyan");
             case Constants.Sections.ThemeMono:
                 return new ConfigSection(Constants.Sections.ThemeMono)
