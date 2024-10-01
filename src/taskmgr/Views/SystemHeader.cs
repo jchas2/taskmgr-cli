@@ -27,7 +27,7 @@ public sealed class SystemHeader
     public void Draw(
         SystemStatistics systemStats,
         SystemTimes systemTimes,
-        Rectangle bounds)
+        ref Rectangle bounds)
     {
         int nlines = 0;
         
@@ -103,16 +103,70 @@ public sealed class SystemHeader
             _theme);
         
         nchars += DrawColumnLabelValue(
-            "  Cpu:    ",
-            ((double)(systemTimes.Kernel + systemTimes.User) * 100 / 100).ToString("000.0"),
+            "  Cpu:     ",
+            ((double)(systemTimes.Kernel + systemTimes.User) * 100 / 100).ToString("000.0%"),
             userColour,
             _theme);
         
         nchars += DrawColumnLabelValue(
-            "  Mem:    ",
-            (memRatio * 100).ToString("000.0"),
+            "  Mem:     ",
+            (memRatio * 100).ToString("000.0%"),
             memColour,
             _theme);
+        
+        nchars += DrawColumnLabelValue(
+            "  Virt:    ",
+            (virRatio * 100).ToString("000.0%"),
+            virColour,
+            _theme);
+        
+        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars - 4);
+        
+        nlines++;
+        
+        _terminal.Write("Mem ");
+
+        nchars += DrawPercentageBar(
+            "m",
+            memRatio,
+            memColour,
+            _theme);
+
+        nchars += DrawColumnLabelValue(
+            "  User:    ",
+            systemTimes.User.ToString("000.0%"),
+            userColour,
+            _theme);
+
+        nchars += DrawColumnLabelValue(
+            "  Total: ",
+            ((double)(systemStats.TotalPhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            _theme);
+        
+        nchars += DrawColumnLabelValue(
+            "  Total: ",
+            ((double)(systemStats.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            _theme);
+        
+        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars - 4);
+
+        nlines++;
+        
+        _terminal.Write("Vir ");
+
+        nchars += DrawPercentageBar(
+            "v",
+            virRatio,
+            virColour,
+            _theme);
+
+        nchars += DrawColumnLabelValue(
+            "  Kernel: ",
+            ((double)(systemTimes.Kernel)).ToString("000.0%"),
+            kernelColour,
+            _theme);
+        
+        
     }
 
     private int DrawColumnLabelValue(
