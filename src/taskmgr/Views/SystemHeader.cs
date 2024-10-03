@@ -1,5 +1,4 @@
 using System.Drawing;
-using System.Security.Cryptography;
 using Task.Manager.Configuration;
 using Task.Manager.System;
 using Task.Manager.System.Configuration;
@@ -165,8 +164,44 @@ public sealed class SystemHeader
             ((double)(systemTimes.Kernel)).ToString("000.0%"),
             kernelColour,
             _theme);
+
+        nchars += DrawColumnLabelValue(
+            "  Used:  ",
+            ((double)(systemStats.TotalPhysical - systemStats.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            _theme);
         
+        nchars += DrawColumnLabelValue(
+            "  Used:  ",
+            ((double)(systemStats.TotalPageFile - systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            _theme);
         
+        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars - 4);
+
+        nlines++;
+        nchars = 4 + 1 + MetreWidth + 1;
+
+        _terminal.WriteEmptyLineTo(nchars);
+        
+        nlines++;
+        
+        nchars += DrawColumnLabelValue(
+            "  Idle:   ",
+            systemTimes.Idle.ToString("000.0%"),
+            _theme);
+
+        nchars += DrawColumnLabelValue(
+            "  Free:  ",
+            ((double)(systemStats.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            _theme);
+        
+        nchars += DrawColumnLabelValue(
+            "  Free:  ",
+            ((double)(systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            _theme);
+        
+        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars);
+        
+        bounds.Y = nlines;
     }
 
     private int DrawColumnLabelValue(
