@@ -3,9 +3,9 @@ using Task.Manager.Configuration;
 using Task.Manager.System;
 using Task.Manager.System.Configuration;
 
-namespace Task.Manager.Views;
+namespace Task.Manager.Gui;
 
-public sealed class SystemHeader
+public sealed class SystemHeaderView
 {
     private readonly ISystemTerminal _terminal;
     private readonly Config _config;
@@ -13,7 +13,7 @@ public sealed class SystemHeader
 
     private const int MetreWidth = 32;
 
-    public SystemHeader(
+    public SystemHeaderView(
         ISystemTerminal terminal, 
         Config config,
         Theme theme)
