@@ -2,7 +2,7 @@
 
 public class ListViewSubItem
 {
-    private readonly ListViewItem _owner;
+    private ListViewItem _owner;
     private string? _text;
     private SubItemStyle? _style;
 
@@ -44,6 +44,12 @@ public class ListViewSubItem
         }
     }
 
+    internal ListViewItem Owner
+    {
+        get => _owner;
+        set => _owner = value;
+    }
+    
     public ConsoleColor ForegroundColor
     {
         get {
@@ -61,4 +67,6 @@ public class ListViewSubItem
             }
         }
     }
+    
+    
 }
