@@ -123,7 +123,8 @@ public sealed class TaskMgrApp
                 uxSection?.Add(Constants.Keys.DefaultTheme, themeName);                
             }
 
-            /* Now we have a config that's either been loaded from disk or generated
+            /*
+             * Now we have a config that's either been loaded from disk or generated
              * through the ConfigBuilder with defaults, and has had any command line
              * args that override a setting applied.
              *
