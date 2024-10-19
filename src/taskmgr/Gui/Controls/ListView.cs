@@ -19,7 +19,7 @@ public class ListView
     
     public ConsoleColor BackgroundColour { get; set; }
 
-    internal void Clear()
+    internal void ClearItems()
     {
         _items.Clear();
     }
@@ -40,6 +40,8 @@ public class ListView
         return _items[index];
     }
 
+    
+    
     internal void InsertItem(int index, ListViewItem item)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
@@ -47,12 +49,27 @@ public class ListView
         
         _items.Insert(index, item);
     }
+
+    internal int IndexOfItem(ListViewItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
+
+        for (int i = 0; i < _items.Count; i++) {
+            if (_items[i] == item) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
     
     internal void InsertItems(ListViewItem[] items)
     {
         ArgumentNullException.ThrowIfNull(items);
         _items.AddRange(items);
     }
+    
+    internal int ItemCount => _items.Count;
     
     public ListViewItemCollection Items => _itemCollection;
 
@@ -62,5 +79,15 @@ public class ListView
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
             
         _items.RemoveAt(index);
+    }
+
+    internal void RemoveItem(ListViewItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        int index = IndexOfItem(item);
+        
+        if (index != -1) {
+            RemoveAt(index);
+        }
     }
 }

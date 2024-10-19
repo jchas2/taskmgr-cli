@@ -1,6 +1,6 @@
 ﻿namespace Task.Manager.System.UnitTests;
 
-public class When_Using_SystemInfo
+public sealed class When_Using_SystemInfo
 {
     [Fact]
     public void Should_Get_Cpu_Times()

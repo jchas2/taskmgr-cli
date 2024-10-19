@@ -32,8 +32,8 @@ public class ListViewSubItem
             if (_style != null) {
                 return _style.BackgroundColour;
             }
-            
-            return _owner.ListView?.BackgroundColour ?? Console.BackgroundColor;
+
+            return _owner.BackgroundColour;
         }
         set {
             _style ??= new SubItemStyle();
@@ -56,8 +56,8 @@ public class ListViewSubItem
             if (_style != null) {
                 return _style.ForegroundColour;
             }
-            
-            return _owner.ListView?.ForegroundColour ?? Console.ForegroundColor;
+
+            return _owner.ForegroundColour;
         }
         set {
             _style ??= new SubItemStyle();

@@ -11,6 +11,16 @@ public class ListViewItem
         _subItems.Add(new ListViewSubItem(this, text));
     }
 
+    public ListViewItem(
+        string text,
+        ConsoleColor backgroundColor,
+        ConsoleColor foregroundColor)
+        : this(text)
+    {
+        BackgroundColour = backgroundColor;
+        ForegroundColour = foregroundColor;
+    }
+    
     public ListViewItem(string[] items)
     {
         ArgumentNullException.ThrowIfNull(items, nameof(items));
@@ -19,6 +29,16 @@ public class ListViewItem
             ArgumentNullException.ThrowIfNull(items[i], nameof(items));
             _subItems.Add(new ListViewSubItem(this, items[i]));
         }
+    }
+
+    public ListViewItem(
+        string[] items,
+        ConsoleColor backgroundColor,
+        ConsoleColor foregroundColor)
+        : this(items)
+    {
+        BackgroundColour = backgroundColor;
+        ForegroundColour = foregroundColor;
     }
 
     public ListViewItem(ListViewSubItem[] subItems)
@@ -31,9 +51,17 @@ public class ListViewItem
             _subItems.Add(subItems[i]);
         }
     }
-    
-    internal ListView? ListView { get; }
 
+    public ListViewItem(
+        ListViewSubItem[] subItems,
+        ConsoleColor backgroundColor,
+        ConsoleColor foregroundColor)
+        : this(subItems)
+    {
+        BackgroundColour = backgroundColor;
+        ForegroundColour = foregroundColor;
+    }
+    
     public ConsoleColor ForegroundColour
     {
         get => _subItems[0].ForegroundColor;
