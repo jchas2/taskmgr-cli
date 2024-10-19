@@ -1,6 +1,8 @@
-﻿namespace Task.Manager.Gui.Controls;
+﻿using System.Collections;
 
-public sealed class ListViewItemCollection
+namespace Task.Manager.Gui.Controls;
+
+public sealed class ListViewItemCollection : IEnumerable<ListViewItem>
 {
     private readonly ListView _owner;
     
@@ -21,7 +23,7 @@ public sealed class ListViewItemCollection
         _owner.InsertItems(items);
     }
 
-    public void Clear() => _owner.Items.Clear();
+    public void Clear() => _owner.ClearItems();
 
     public bool Contains(ListViewItem item)
     {
@@ -29,25 +31,35 @@ public sealed class ListViewItemCollection
         return _owner.Contains(item);
     }
 
-    public void CopyTo(Array array, int index)
-    {
-        
-    }
-    
-    public int Count { get; }
+    public int Count => _owner.ItemCount;
 
-    // public IEnumerator GetEnumerator()
-    // {
-    // }
+    public IEnumerator<ListViewItem> GetEnumerator()
+    {
+        /* Shallow copy the items and return an enumerator off that container. */
+        var items = new List<ListViewItem>(_owner.Items.Count);
+        
+        for (int i = 0; i < _owner.ItemCount; i++) {
+            items[i] = _owner.GetItemByIndex(i);
+        }
+        
+        return items.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
     public int IndexOf(ListViewItem item)
     {
-        return -1;
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        return _owner.IndexOfItem(item);
     }
 
     public void Remove(ListViewItem item)
     {
-        
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        _owner.RemoveItem(item);
     }
     
     public ListViewItem this[int index]

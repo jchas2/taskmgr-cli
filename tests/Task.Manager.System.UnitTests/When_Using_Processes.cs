@@ -4,7 +4,7 @@ using TaskMgrProcess = Task.Manager.System.Process;
 
 namespace Task.Manager.System.UnitTests;
 
-public class When_Using_Processes
+public sealed class When_Using_Processes
 {
     private readonly ITestOutputHelper _testOutputHelper;
     

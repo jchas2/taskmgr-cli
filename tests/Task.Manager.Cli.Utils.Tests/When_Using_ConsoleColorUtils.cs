@@ -1,24 +1,30 @@
 namespace Task.Manager.Cli.Utils.Tests;
 
-public class When_Using_ConsoleColorUtils
+public sealed class When_Using_ConsoleColorUtils
 {
+    public static TheoryData<string, ConsoleColor> ColourData()
+        => new()
+        {
+            { "Black", ConsoleColor.Black },
+            { "Blue", ConsoleColor.Blue },
+            { "Cyan", ConsoleColor.Cyan },
+            { "Gray", ConsoleColor.Gray },
+            { "Green", ConsoleColor.Green },
+            { "Magenta", ConsoleColor.Magenta },
+            { "Red", ConsoleColor.Red },
+            { "White", ConsoleColor.White },
+            { "Yellow", ConsoleColor.Yellow },
+            { "DarkBlue", ConsoleColor.DarkBlue },
+            { "DarkCyan", ConsoleColor.DarkCyan },
+            { "DarkGreen", ConsoleColor.DarkGreen },
+            { "DarkGray", ConsoleColor.DarkGray },
+            { "DarkMagenta", ConsoleColor.DarkMagenta },
+            { "DarkRed", ConsoleColor.DarkRed },
+            { "DarkYellow", ConsoleColor.DarkYellow }
+        };
+    
     [Theory]
-    [InlineData("Black", ConsoleColor.Black)]
-    [InlineData("Blue", ConsoleColor.Blue)]
-    [InlineData("Cyan", ConsoleColor.Cyan)]
-    [InlineData("Gray", ConsoleColor.Gray)]
-    [InlineData("Green", ConsoleColor.Green)]
-    [InlineData("Magenta", ConsoleColor.Magenta)]
-    [InlineData("Red", ConsoleColor.Red)]
-    [InlineData("White", ConsoleColor.White)]
-    [InlineData("Yellow", ConsoleColor.Yellow)]
-    [InlineData("DarkBlue", ConsoleColor.DarkBlue)]
-    [InlineData("DarkCyan", ConsoleColor.DarkCyan)]
-    [InlineData("DarkGreen", ConsoleColor.DarkGreen)]
-    [InlineData("DarkGray", ConsoleColor.DarkGray)]
-    [InlineData("DarkMagenta", ConsoleColor.DarkMagenta)]
-    [InlineData("DarkRed", ConsoleColor.DarkRed)]
-    [InlineData("DarkYellow", ConsoleColor.DarkYellow)]
+    [MemberData(nameof(ColourData))]
     public void Should_Get_Colour_FromName(string name, ConsoleColor expected)
     {
         var colour = ConsoleColorUtils.FromName(
