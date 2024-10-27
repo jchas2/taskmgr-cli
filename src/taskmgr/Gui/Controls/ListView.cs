@@ -1,55 +1,105 @@
-﻿namespace Task.Manager.Gui.Controls;
+﻿using System.Drawing;
+using Task.Manager.System;
+
+namespace Task.Manager.Gui.Controls;
 
 public class ListView
 {
     /* 
-     * The _itemCollection acts as a proxy for updates to the underlying _items List.
-     * This provides a clean api for interacting with an Items collection on the ListView
+     * The Collections acts as a proxy for updates to the underlying List<T>.
+     * This provides a clean api for interacting with an Collections on the ListView
      * control, similar to the old Win32 ListView common control. 
      */
+    private readonly ListViewColumnHeaderCollection _columnHeaderCollection;
     private readonly ListViewItemCollection _itemCollection;
 
-    /* The container holding the items for rendering. We don't expose this via a public api. */
+    /* The containers holding the List<T> for rendering. We don't expose them via a public api. */
+    private List<ListViewColumnHeader> _columnHeaders = [];
     private List<ListViewItem> _items = [];
 
-    public ListView()
+    private ViewPort _viewPort = new();
+    
+    private ISystemTerminal _terminal;
+
+    public ListView(ISystemTerminal terminal)
     {
+        _terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
         _itemCollection = new ListViewItemCollection(this);
+        _columnHeaderCollection = new ListViewColumnHeaderCollection(this);
     }
     
     public ConsoleColor BackgroundColour { get; set; }
 
-    internal void ClearItems()
-    {
-        _items.Clear();
-    }
+    internal void ClearColumnHeaders() => _columnHeaders.Clear();
+    
+    internal void ClearItems() => _items.Clear();
 
+    internal int ColumnHeaderCount => _columnHeaders.Count;
+
+    public ListViewColumnHeaderCollection ColumnHeaders => _columnHeaderCollection;
+    
+    internal bool Contains(ListViewColumnHeader columnHeader)
+    {
+        ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
+        return _columnHeaders.Contains(columnHeader);
+    }
+    
     internal bool Contains(ListViewItem item)
     {
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         return _items.Contains(item);
     }
+
+    public void Draw(in Rectangle bounds)
+    {
+        _viewPort.Bounds = bounds;
+        
+        DrawHeader();
+        DrawItems();
+    }
+
+    private void DrawHeader()
+    {
+        _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y - 1);
+    }
+
+    private void DrawItem()
+    {
+    }
+    
+    private void DrawItems()
+    {
+    }
     
     public ConsoleColor ForegroundColour { get; set; }
 
+    internal ListViewColumnHeader GetColumnHeaderByIndex(int index)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
+        return _columnHeaders[index];
+    }
+    
     internal ListViewItem GetItemByIndex(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
-
         return _items[index];
     }
 
-    
-    
-    internal void InsertItem(int index, ListViewItem item)
+    internal int IndexOfColumnHeader(ListViewColumnHeader columnHeader)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, _items.Count, nameof(index));
-        
-        _items.Insert(index, item);
-    }
+        ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
 
+        for (int i = 0; i < _columnHeaders.Count; i++) {
+            if (_columnHeaders[i] == columnHeader) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+    
     internal int IndexOfItem(ListViewItem item)
     {
         ArgumentNullException.ThrowIfNull(item, nameof(item));
@@ -62,10 +112,31 @@ public class ListView
 
         return -1;
     }
+
+    internal void InsertColumnHeader(int index, ListViewColumnHeader columnHeader)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
+        ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
+        _columnHeaders.Insert(index, columnHeader);
+    }
+
+    internal void InsertColumnHeaders(ListViewColumnHeader[] columnHeaders)
+    {
+        ArgumentNullException.ThrowIfNull(columnHeaders, nameof(columnHeaders));
+        _columnHeaders.AddRange(columnHeaders);
+    }
     
+    internal void InsertItem(int index, ListViewItem item)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, _items.Count, nameof(index));
+        _items.Insert(index, item);
+    }
+
     internal void InsertItems(ListViewItem[] items)
     {
-        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(items, nameof(items));
         _items.AddRange(items);
     }
     
@@ -77,7 +148,6 @@ public class ListView
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
-            
         _items.RemoveAt(index);
     }
 

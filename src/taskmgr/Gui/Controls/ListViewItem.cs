@@ -61,16 +61,22 @@ public class ListViewItem
         BackgroundColour = backgroundColor;
         ForegroundColour = foregroundColor;
     }
-    
+
+    public ConsoleColor BackgroundColour
+    {
+        get => _subItems[0].BackgroundColor;
+        set => _subItems[0].BackgroundColor = value;
+    }
+
     public ConsoleColor ForegroundColour
     {
         get => _subItems[0].ForegroundColor;
         set => _subItems[0].ForegroundColor = value;
     }
 
-    public ConsoleColor BackgroundColour
+    public string Text
     {
-        get => _subItems[0].BackgroundColor;
-        set => _subItems[0].BackgroundColor = value;
+        get => _subItems[0].Text;
+        set => _subItems[0].Text = value;
     }
 }

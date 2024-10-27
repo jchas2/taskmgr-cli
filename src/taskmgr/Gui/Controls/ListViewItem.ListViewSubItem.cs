@@ -3,10 +3,10 @@
 public class ListViewSubItem
 {
     private ListViewItem _owner;
-    private string? _text;
+    private string _text;
     private SubItemStyle? _style;
 
-    public ListViewSubItem(ListViewItem owner, string? text)
+    public ListViewSubItem(ListViewItem owner, string text)
     {
         _owner = owner;
         _text = text;
@@ -14,7 +14,7 @@ public class ListViewSubItem
 
     public ListViewSubItem(
         ListViewItem owner,
-        string? text,
+        string text,
         ConsoleColor backgroundColor,
         ConsoleColor foregroundColor)
     {
@@ -67,6 +67,10 @@ public class ListViewSubItem
             }
         }
     }
-    
-    
+
+    public string Text
+    {
+        get => _text ?? string.Empty;
+        set => _text = value;
+    }
 }
