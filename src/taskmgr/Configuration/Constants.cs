@@ -34,10 +34,11 @@ public sealed class Constants
         public const string Error = "error";
         public const string Foreground = "foreground";
         public const string ForegroundHighlight = "foreground-highlight";
+        public const string HeaderForeground = "header-foreground";
+        public const string HeaderBackground = "header-background";
         public const string Menubar = "menubar";
         public const string RangeHigh = "range-high";
         public const string RangeLow = "range-low";
         public const string RangeMid = "range-mid";
-        public const string ProcessHeader = "process-header";
     }
 }

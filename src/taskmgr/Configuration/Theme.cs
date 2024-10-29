@@ -18,11 +18,12 @@ public sealed class Theme
         Error = themeSection.GetColour(Constants.Keys.Error, ConsoleColor.Red);
         Foreground = themeSection.GetColour(Constants.Keys.Foreground, ConsoleColor.DarkGray);
         ForegroundHighlight = themeSection.GetColour(Constants.Keys.ForegroundHighlight, ConsoleColor.White);
+        HeaderBackground = themeSection.GetColour(Constants.Keys.HeaderBackground, ConsoleColor.DarkCyan);
+        HeaderForeground = themeSection.GetColour(Constants.Keys.HeaderForeground, ConsoleColor.White);
         Menubar = themeSection.GetColour(Constants.Keys.Menubar, ConsoleColor.Gray);
         RangeHigh = themeSection.GetColour(Constants.Keys.RangeHigh, ConsoleColor.Red);
         RangeLow = themeSection.GetColour(Constants.Keys.RangeLow, ConsoleColor.Green);
         RangeMid = themeSection.GetColour(Constants.Keys.RangeMid, ConsoleColor.Yellow);
-        ProcessHeader = themeSection.GetColour(Constants.Keys.ProcessHeader, ConsoleColor.DarkCyan);
     }
 
     public ConsoleColor Background { get; private set; }
@@ -30,9 +31,10 @@ public sealed class Theme
     public ConsoleColor Error  { get; private set; }
     public ConsoleColor Foreground { get; private set; }
     public ConsoleColor ForegroundHighlight { get; private set; }
+    public ConsoleColor HeaderBackground { get; private set; }
+    public ConsoleColor HeaderForeground { get; private set; }
     public ConsoleColor Menubar { get; private set; }
     public ConsoleColor RangeHigh { get; private set; }
     public ConsoleColor RangeLow { get; private set; }
     public ConsoleColor RangeMid { get; private set; }
-    public ConsoleColor ProcessHeader { get; private set; }
 }

@@ -144,7 +144,10 @@ public sealed class TaskMgrApp
         return rootCommand;
     }
 
-    private static int RunCommand(RunContext context, Config config, Theme theme)
+    private static int RunCommand(
+        RunContext context, 
+        Config config, 
+        Theme theme)
     {
         return 0;
     }

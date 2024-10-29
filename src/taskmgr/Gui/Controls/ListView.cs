@@ -1,4 +1,6 @@
 ﻿using System.Drawing;
+using System.Text;
+using Task.Manager.Configuration;
 using Task.Manager.System;
 
 namespace Task.Manager.Gui.Controls;
@@ -20,10 +22,15 @@ public class ListView
     private ViewPort _viewPort = new();
     
     private ISystemTerminal _terminal;
+    
+    private Theme _theme;
 
-    public ListView(ISystemTerminal terminal)
+    private const int DefaultHeaderWidth = 80;
+
+    public ListView(ISystemTerminal terminal, Theme theme)
     {
         _terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
+        _theme = theme ?? throw new ArgumentNullException(nameof(theme));
         _itemCollection = new ListViewItemCollection(this);
         _columnHeaderCollection = new ListViewColumnHeaderCollection(this);
     }
@@ -61,6 +68,31 @@ public class ListView
     private void DrawHeader()
     {
         _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y - 1);
+        _terminal.BackgroundColor = _theme.HeaderBackground;
+        _terminal.ForegroundColor = _theme.HeaderForeground;
+
+        if (ColumnHeaderCount == 0) {
+            _terminal.WriteEmptyLine();
+            return;
+        }
+
+        /* TODO: This code is terrible, and will perform like a dog. */
+        /* Will look into span<T> + stackalloc char[] to fast build strings */
+        int c = 0;
+        for (int i = 0; i < ColumnHeaderCount; i++) {
+            if (c + _columnHeaders[i].Width >= _terminal.WindowWidth) {
+                break;
+            }
+            
+            string formatString = "{0,";
+            formatString += _columnHeaders[i].RightAligned
+                ? _columnHeaders[i].Width.ToString() + "}"
+                : "-" + _columnHeaders[i].Width.ToString() + "}";
+            
+            _terminal.Write(string.Format(formatString, _columnHeaders[i].Text));
+            
+            c+= _columnHeaders[i].Width;
+        }
     }
 
     private void DrawItem()

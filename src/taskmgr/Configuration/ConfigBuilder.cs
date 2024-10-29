@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Net.Sockets;
 using Task.Manager.System.Configuration;
 
 namespace Task.Manager.Configuration;
@@ -19,6 +20,63 @@ public static class ConfigBuilder
             .AddSection(BuildSection(Constants.Sections.ThemeMono));
     }
 
+    public static ConfigSection BuildSection(string name)
+    {
+        name = name.ToLower();
+        switch (name) {
+            case Constants.Sections.Filter:
+                return new ConfigSection(Constants.Sections.Filter)
+                    .Add(Constants.Keys.Pid, "-1")
+                    .Add(Constants.Keys.UserName, string.Empty)
+                    .Add(Constants.Keys.Process, string.Empty);
+            case Constants.Sections.UX:
+                return new ConfigSection(Constants.Sections.UX)
+                    .Add(Constants.Keys.Bars, "false")
+                    .Add(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour);
+            case Constants.Sections.Stats:
+                return new ConfigSection(Constants.Sections.Stats)
+                    /* These cols must match the Configuration.Statistics enum members. */
+                    .Add(Constants.Keys.Cols, StatsCols)
+                    .Add(Constants.Keys.NProcs, "-1");
+            case Constants.Sections.Sort:
+                return new ConfigSection(Constants.Sections.Sort)
+                    .Add(Constants.Keys.Col, "pid")
+                    .Add(Constants.Keys.Asc, "false");
+            case Constants.Sections.Iterations:
+                return new ConfigSection(Constants.Sections.Iterations)
+                    /* Max number of iterations to execute before exiting. <= 0 infinite. */
+                    .Add(Constants.Keys.Limit, "0");
+            case Constants.Sections.ThemeColour:
+                return new ConfigSection(Constants.Sections.ThemeColour)
+                    .Add(Constants.Keys.Background, "black")
+                    .Add(Constants.Keys.BackgroundHighlight, "black")
+                    .Add(Constants.Keys.Error, "red")
+                    .Add(Constants.Keys.Foreground, "darkgray")
+                    .Add(Constants.Keys.ForegroundHighlight, "white")
+                    .Add(Constants.Keys.Menubar, "gray")
+                    .Add(Constants.Keys.RangeHigh, "red")
+                    .Add(Constants.Keys.RangeLow, "darkgreen")
+                    .Add(Constants.Keys.RangeMid, "darkyellow")
+                    .Add(Constants.Keys.HeaderBackground, "cyan")
+                    .Add(Constants.Keys.HeaderForeground, "white");
+            case Constants.Sections.ThemeMono:
+                return new ConfigSection(Constants.Sections.ThemeMono)
+                    .Add(Constants.Keys.Background, "black")
+                    .Add(Constants.Keys.BackgroundHighlight, "black")
+                    .Add(Constants.Keys.Error, "gray")
+                    .Add(Constants.Keys.Foreground, "darkgray")
+                    .Add(Constants.Keys.ForegroundHighlight, "white")
+                    .Add(Constants.Keys.Menubar, "gray")
+                    .Add(Constants.Keys.RangeHigh, "gray")
+                    .Add(Constants.Keys.RangeLow, "white")
+                    .Add(Constants.Keys.RangeMid, "darkgray")
+                    .Add(Constants.Keys.HeaderBackground, "darkgray")
+                    .Add(Constants.Keys.HeaderForeground, "white");
+            default:
+                throw new InvalidOperationException();
+        }
+    }
+    
     private static ConfigSection GetSection(string name, Config config) =>
         config.ContainsSection(name)
             ? config.GetSection(name)
@@ -65,7 +123,8 @@ public static class ConfigBuilder
             { Constants.Keys.RangeHigh, "red" },
             { Constants.Keys.RangeLow, "darkgreen" },
             { Constants.Keys.RangeMid, "darkyellow" },
-            { Constants.Keys.ProcessHeader, "cyan" }
+            { Constants.Keys.HeaderBackground, "cyan" },
+            { Constants.Keys.HeaderForeground, "white" }
         };
 
         string[,] monoMap = {
@@ -78,7 +137,8 @@ public static class ConfigBuilder
             { Constants.Keys.RangeHigh, "gray" },
             { Constants.Keys.RangeLow, "white" },
             { Constants.Keys.RangeMid, "darkgray" },
-            { Constants.Keys.ProcessHeader, "darkgray" }
+            { Constants.Keys.HeaderBackground, "darkgray" },
+            { Constants.Keys.HeaderForeground, "white" }
         };
         
         string defaultThemeName = uxSection.GetString(Constants.Keys.DefaultTheme, string.Empty);
@@ -110,61 +170,6 @@ public static class ConfigBuilder
             uxSection.AddIfMissing(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour);
             var colourSection = GetSection(Constants.Sections.ThemeColour, withConfig);
             MapColours(colourSection, colourMap);
-        }
-    }
-
-    public static ConfigSection BuildSection(string name)
-    {
-        name = name.ToLower();
-        switch (name) {
-            case Constants.Sections.Filter:
-                return new ConfigSection(Constants.Sections.Filter)
-                    .Add(Constants.Keys.Pid, "-1")
-                    .Add(Constants.Keys.UserName, string.Empty)
-                    .Add(Constants.Keys.Process, string.Empty);
-            case Constants.Sections.UX:
-                return new ConfigSection(Constants.Sections.UX)
-                    .Add(Constants.Keys.Bars, "false")
-                    .Add(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour);
-            case Constants.Sections.Stats:
-                return new ConfigSection(Constants.Sections.Stats)
-                    /* These cols must match the Configuration.Statistics enum members. */
-                    .Add(Constants.Keys.Cols, StatsCols)
-                    .Add(Constants.Keys.NProcs, "-1");
-            case Constants.Sections.Sort:
-                return new ConfigSection(Constants.Sections.Sort)
-                    .Add(Constants.Keys.Col, "pid")
-                    .Add(Constants.Keys.Asc, "false");
-            case Constants.Sections.Iterations:
-                return new ConfigSection(Constants.Sections.Iterations)
-                    /* Max number of iterations to execute before exiting. <= 0 infinite. */
-                    .Add(Constants.Keys.Limit, "0");
-            case Constants.Sections.ThemeColour:
-                return new ConfigSection(Constants.Sections.ThemeColour)
-                    .Add(Constants.Keys.Background, "black")
-                    .Add(Constants.Keys.BackgroundHighlight, "black")
-                    .Add(Constants.Keys.Error, "red")
-                    .Add(Constants.Keys.Foreground, "darkgray")
-                    .Add(Constants.Keys.ForegroundHighlight, "white")
-                    .Add(Constants.Keys.Menubar, "gray")
-                    .Add(Constants.Keys.RangeHigh, "red")
-                    .Add(Constants.Keys.RangeLow, "darkgreen")
-                    .Add(Constants.Keys.RangeMid, "darkyellow")
-                    .Add(Constants.Keys.ProcessHeader, "cyan");
-            case Constants.Sections.ThemeMono:
-                return new ConfigSection(Constants.Sections.ThemeMono)
-                    .Add(Constants.Keys.Background, "black")
-                    .Add(Constants.Keys.BackgroundHighlight, "black")
-                    .Add(Constants.Keys.Error, "gray")
-                    .Add(Constants.Keys.Foreground, "darkgray")
-                    .Add(Constants.Keys.ForegroundHighlight, "white")
-                    .Add(Constants.Keys.Menubar, "gray")
-                    .Add(Constants.Keys.RangeHigh, "gray")
-                    .Add(Constants.Keys.RangeLow, "white")
-                    .Add(Constants.Keys.RangeMid, "darkgray")
-                    .Add(Constants.Keys.ProcessHeader, "darkgray");
-            default:
-                throw new InvalidOperationException();
         }
     }
 }
