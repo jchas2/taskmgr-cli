@@ -25,6 +25,9 @@ public class ListView
     
     private Theme _theme;
 
+    /* Buffer for working with strings when writing out terminal content */
+    private StringBuilder _buf = new(1024);
+    
     private const int DefaultHeaderWidth = 80;
 
     public ListView(ISystemTerminal terminal, Theme theme)
@@ -76,23 +79,32 @@ public class ListView
             return;
         }
 
-        /* TODO: This code is terrible, and will perform like a dog. */
-        /* Will look into span<T> + stackalloc char[] to fast build strings */
+        _buf.Clear();
+
+        /* TODO: Will look into span<T> + stackalloc char[] to fast build strings */
         int c = 0;
+        
         for (int i = 0; i < ColumnHeaderCount; i++) {
             if (c + _columnHeaders[i].Width >= _terminal.WindowWidth) {
                 break;
             }
-            
-            string formatString = "{0,";
-            formatString += _columnHeaders[i].RightAligned
-                ? _columnHeaders[i].Width.ToString() + "}"
-                : "-" + _columnHeaders[i].Width.ToString() + "}";
-            
-            _terminal.Write(string.Format(formatString, _columnHeaders[i].Text));
+
+            string formatStr = _columnHeaders[i].RightAligned 
+                ? "{0," + _columnHeaders[i].Width.ToString() + "}"
+                : "{0,-" + _columnHeaders[i].Width.ToString() + "}";
+                
+            _buf.Append(string.Format(formatStr, _columnHeaders[i].Text));
+
+            if ((i + 1) < ColumnHeaderCount) {
+                _buf.Append(' ');
+                c++;
+            }
             
             c+= _columnHeaders[i].Width;
         }
+        
+        _terminal.Write(_buf.ToString());
+        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - _buf.Length);
     }
 
     private void DrawItem()
