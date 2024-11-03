@@ -8,9 +8,9 @@ namespace Task.Manager.Gui.Controls;
 public class ListView
 {
     /* 
-     * The Collections acts as a proxy for updates to the underlying List<T>.
-     * This provides a clean api for interacting with an Collections on the ListView
-     * control, similar to the old Win32 ListView common control. 
+     * The Collections act as a proxy for updates to the underlying List<T>.
+     * This provides a clean api for interacting with Collections on the ListView
+     * control, similar to the Win32 ListView common control. 
      */
     private readonly ListViewColumnHeaderCollection _columnHeaderCollection;
     private readonly ListViewItemCollection _itemCollection;
@@ -107,12 +107,41 @@ public class ListView
         _terminal.WriteEmptyLineTo(_terminal.WindowWidth - _buf.Length);
     }
 
-    private void DrawItem()
+    private void DrawItem(
+        ListViewItem item,
+        int width,
+        bool highlight)
     {
+        //int nchars = 0;
+        
+        //for (int i = 0; i < )
     }
     
     private void DrawItems()
     {
+        _viewPort.Height = _terminal.WindowHeight - _viewPort.Bounds.Y - 1;
+        _viewPort.RowCount = _viewPort.Height - 2;
+
+        int n = 0;
+
+        for (int i = 0; i < _viewPort.RowCount; i++) {
+            int pid = i + _viewPort.CurrentIndex;
+
+            if (pid < ItemCount) {
+                var item = Items[pid];
+                
+                DrawItem(
+                    item,
+                    _viewPort.Bounds.Width,
+                    highlight: pid == _viewPort.SelectedIndex);
+
+                n++;
+            }
+        }
+
+        for (int i = n; i < _viewPort.Height - 1; i++) {
+            _terminal.WriteEmptyLine();
+        }
     }
     
     public ConsoleColor ForegroundColour { get; set; }

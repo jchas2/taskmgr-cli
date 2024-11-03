@@ -2,6 +2,14 @@
 
 public class ListViewItem
 {
+    /*
+     * The Collection acts as a proxy for updates to the underlying List<T>.
+     * This provides a clean api for interacting with Collections on the ListViewItem
+     * control, similar to the Win32 ListView common control.
+     */
+    private readonly ListViewSubItemCollection _subItemCollection;
+
+    /* The containers holding the List<T> for rendering. We don't expose them via a public api. */
     private List<ListViewSubItem> _subItems = [];
 
     public ListViewItem(string text)
@@ -9,6 +17,7 @@ public class ListViewItem
         ArgumentNullException.ThrowIfNull(text, nameof(text));
         
         _subItems.Add(new ListViewSubItem(this, text));
+        _subItemCollection = new ListViewSubItemCollection(this);
     }
 
     public ListViewItem(
@@ -29,6 +38,8 @@ public class ListViewItem
             ArgumentNullException.ThrowIfNull(items[i], nameof(items));
             _subItems.Add(new ListViewSubItem(this, items[i]));
         }
+        
+        _subItemCollection = new ListViewSubItemCollection(this);
     }
 
     public ListViewItem(
@@ -50,6 +61,8 @@ public class ListViewItem
             subItems[i].Owner = this;
             _subItems.Add(subItems[i]);
         }
+        
+        _subItemCollection = new ListViewSubItemCollection(this);
     }
 
     public ListViewItem(
@@ -68,11 +81,47 @@ public class ListViewItem
         set => _subItems[0].BackgroundColor = value;
     }
 
+    internal void ClearSubItems() => _subItems.Clear();
+
+    internal bool Contains(ListViewSubItem subItem)
+    {
+        ArgumentNullException.ThrowIfNull(subItem, nameof(subItem));
+        return _subItems.Contains(subItem);
+    }
+
     public ConsoleColor ForegroundColour
     {
         get => _subItems[0].ForegroundColor;
         set => _subItems[0].ForegroundColor = value;
     }
+
+    internal ListViewSubItem GetSubItemByIndex(int index)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _subItems.Count, nameof(index));
+        return _subItems[index];
+    }
+    
+    internal int IndexOfSubItem(ListViewSubItem subItem)
+    {
+        ArgumentNullException.ThrowIfNull(subItem, nameof(subItem));
+
+        for (int i = 0; i < _subItems.Count; i++) {
+            if (_subItems[i] == subItem) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    internal void InsertSubItems(ListViewSubItem[] subItems)
+    {
+        ArgumentNullException.ThrowIfNull(subItems, nameof(subItems));
+        _subItems.AddRange(subItems);
+    }
+    
+    internal int SubItemCount => _subItems.Count;
 
     public string Text
     {
