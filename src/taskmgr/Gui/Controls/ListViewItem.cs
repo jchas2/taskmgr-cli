@@ -122,6 +122,8 @@ public class ListViewItem
     }
     
     internal int SubItemCount => _subItems.Count;
+    
+    public ListViewSubItemCollection SubItems => _subItemCollection;
 
     public string Text
     {
