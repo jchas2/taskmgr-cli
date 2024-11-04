@@ -27,7 +27,8 @@ public class ListView
 
     /* Buffer for working with strings when writing out terminal content */
     private StringBuilder _buf = new(1024);
-    
+
+    private const int DefaultColumnWidth = 30;
     private const int DefaultHeaderWidth = 80;
 
     public ListView(ISystemTerminal terminal, Theme theme)
@@ -92,7 +93,8 @@ public class ListView
             string formatStr = _columnHeaders[i].RightAligned 
                 ? "{0," + _columnHeaders[i].Width.ToString() + "}"
                 : "{0,-" + _columnHeaders[i].Width.ToString() + "}";
-                
+
+            // TODO: Need to handle colours: see DrawItem notes.
             _buf.Append(string.Format(formatStr, _columnHeaders[i].Text));
 
             if ((i + 1) < ColumnHeaderCount) {
@@ -113,8 +115,31 @@ public class ListView
         bool highlight)
     {
         //int nchars = 0;
-        
-        //for (int i = 0; i < )
+
+        for (int i = 0; i < item.SubItemCount; i++) {
+            var subItem = item.SubItems[i];
+            
+            /* Apply column styling if a column is defined for the subitem. */
+            bool rightAligned = false;
+            int columnWidth = DefaultColumnWidth;
+
+            if (i < ColumnHeaderCount) {
+                rightAligned = _columnHeaders[i].RightAligned;
+                columnWidth = _columnHeaders[i].Width;
+            }
+            
+            string formatStr = rightAligned 
+                ? "{0," + columnWidth.ToString() + "}"
+                : "{0,-" + columnWidth.ToString() + "}";
+                
+            //(string.Format(formatStr, subItem.Text)
+            
+            // TODO: Need to handle colour application here and in the DrawHeader().
+            // Instead of _terminal.BackgroundColour = colour 
+            // consider a string extension such as text.SetAnsiBackgroundColour(colour) etc.
+            // This will enable building out a string using _buf and then one Write statement 
+            // via the terminal.
+        }
     }
     
     private void DrawItems()
