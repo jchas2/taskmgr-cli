@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Text;
+using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.System;
 
@@ -26,7 +27,7 @@ public class ListView
     private Theme _theme;
 
     /* Buffer for working with strings when writing out terminal content */
-    private StringBuilder _buf = new(1024);
+    private StringBuilder _buffer = new(1024);
 
     private const int DefaultColumnWidth = 30;
     private const int DefaultHeaderWidth = 80;
@@ -80,7 +81,7 @@ public class ListView
             return;
         }
 
-        _buf.Clear();
+        _buffer.Clear();
 
         /* TODO: Will look into span<T> + stackalloc char[] to fast build strings */
         int c = 0;
@@ -94,19 +95,19 @@ public class ListView
                 ? "{0," + _columnHeaders[i].Width.ToString() + "}"
                 : "{0,-" + _columnHeaders[i].Width.ToString() + "}";
 
-            // TODO: Need to handle colours: see DrawItem notes.
-            _buf.Append(string.Format(formatStr, _columnHeaders[i].Text));
+            _buffer.Append(string.Format(formatStr, _columnHeaders[i].Text)
+                .ToColour(_columnHeaders[i].ForegroundColour, _columnHeaders[i].BackgroundColour));
 
             if ((i + 1) < ColumnHeaderCount) {
-                _buf.Append(' ');
+                _buffer.Append(' ');
                 c++;
             }
             
             c+= _columnHeaders[i].Width;
         }
         
-        _terminal.Write(_buf.ToString());
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - _buf.Length);
+        _terminal.Write(_buffer.ToString());
+        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - _buffer.Length);
     }
 
     private void DrawItem(
@@ -114,9 +115,13 @@ public class ListView
         int width,
         bool highlight)
     {
-        //int nchars = 0;
+        _buffer.Clear();
 
+        //int c = 0;
+        
         for (int i = 0; i < item.SubItemCount; i++) {
+            // TODO: Handle item/column width bounds overflow for terminal width as per DrawHeader.
+            
             var subItem = item.SubItems[i];
             
             /* Apply column styling if a column is defined for the subitem. */
@@ -131,15 +136,18 @@ public class ListView
             string formatStr = rightAligned 
                 ? "{0," + columnWidth.ToString() + "}"
                 : "{0,-" + columnWidth.ToString() + "}";
-                
-            //(string.Format(formatStr, subItem.Text)
-            
-            // TODO: Need to handle colour application here and in the DrawHeader().
-            // Instead of _terminal.BackgroundColour = colour 
-            // consider a string extension such as text.SetAnsiBackgroundColour(colour) etc.
-            // This will enable building out a string using _buf and then one Write statement 
-            // via the terminal.
+
+            if (highlight) {
+                _buffer.Append(string.Format(formatStr, subItem.Text)
+                    .ToColour(_theme.ForegroundHighlight, _theme.BackgroundHighlight));
+            }
+            else {
+                _buffer.Append(string.Format(formatStr, subItem.Text)
+                    .ToColour(subItem.ForegroundColor, subItem.BackgroundColor));
+            }
         }
+        
+        // TODO: Write _buffer.                
     }
     
     private void DrawItems()
