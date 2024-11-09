@@ -1,6 +1,6 @@
 namespace Task.Manager.System;
 
-public class SystemStatistics
+public sealed class SystemStatistics
 {
     /* Memory */
     public ulong AvailablePhysical { get; set; }
