@@ -61,7 +61,7 @@ public class ListView
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         return _items.Contains(item);
     }
-
+    
     public void Draw(in Rectangle bounds)
     {
         _viewPort.Bounds = bounds;
@@ -117,11 +117,10 @@ public class ListView
     {
         _buffer.Clear();
 
-        //int c = 0;
+        /* TODO: Will look into span<T> + stackalloc char[] to fast build strings */
+        int c = 0;
         
         for (int i = 0; i < item.SubItemCount; i++) {
-            // TODO: Handle item/column width bounds overflow for terminal width as per DrawHeader.
-            
             var subItem = item.SubItems[i];
             
             /* Apply column styling if a column is defined for the subitem. */
@@ -132,22 +131,31 @@ public class ListView
                 rightAligned = _columnHeaders[i].RightAligned;
                 columnWidth = _columnHeaders[i].Width;
             }
+
+            if (c + columnWidth >= _terminal.WindowWidth) {
+                break;
+            }
             
             string formatStr = rightAligned 
                 ? "{0," + columnWidth.ToString() + "}"
                 : "{0,-" + columnWidth.ToString() + "}";
 
-            if (highlight) {
-                _buffer.Append(string.Format(formatStr, subItem.Text)
-                    .ToColour(_theme.ForegroundHighlight, _theme.BackgroundHighlight));
-            }
-            else {
-                _buffer.Append(string.Format(formatStr, subItem.Text)
-                    .ToColour(subItem.ForegroundColor, subItem.BackgroundColor));
-            }
+            ConsoleColor foregroundColour = highlight
+                ? _theme.ForegroundHighlight
+                : subItem.ForegroundColor;
+            
+            ConsoleColor backgroundColour = highlight
+                ? _theme.BackgroundHighlight
+                : subItem.BackgroundColor;
+                
+            _buffer.Append((string.Format(formatStr, subItem.Text) + ' ')
+                .ToColour(foregroundColour, backgroundColour));
+
+            c += columnWidth + 1;
         }
-        
-        // TODO: Write _buffer.                
+
+        _terminal.Write(_buffer.ToString());
+        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - _buffer.Length);
     }
     
     private void DrawItems()
