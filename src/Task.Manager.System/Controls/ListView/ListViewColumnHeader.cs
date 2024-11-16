@@ -1,4 +1,4 @@
-﻿namespace Task.Manager.Gui.Controls;
+﻿namespace Task.Manager.System.Controls.ListView;
 
 public class ListViewColumnHeader
 {

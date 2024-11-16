@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace Task.Manager.Gui.Controls;
+namespace Task.Manager.System.Controls.ListView;
 
 public class ListViewSubItemCollection : IEnumerable<ListViewSubItem>
 {

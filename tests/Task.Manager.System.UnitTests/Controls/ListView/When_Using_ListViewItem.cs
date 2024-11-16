@@ -1,7 +1,6 @@
 ﻿using Moq;
-using Task.Manager.Configuration;
-using Task.Manager.Gui.Controls;
 using Task.Manager.System;
+using Task.Manager.System.Controls.ListView;
 
 namespace Task.Manager.UnitTests.Gui.Controls;
 
@@ -18,7 +17,7 @@ public sealed class When_Using_ListViewItem
     public void Should_Add_All_Items()
     {
         var terminal = new Mock<ISystemTerminal>();
-        var listview = new ListView(terminal.Object, new Theme(ConfigBuilder.BuildDefault()));
+        var listview = new ListView(terminal.Object);
         listview.Items.AddRange(GetListViewItemData().ToArray());
         
         Assert.True(listview.Items.Count == 3);

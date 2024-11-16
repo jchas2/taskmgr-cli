@@ -36,7 +36,7 @@ public class Processes : IProcesses
             var previousTimes = new ProcessTimeInfo();
             MapProcessTimes(procs[i], ref previousTimes);
             
-            var procInfo = new ProcessInfo {
+            var procInfo = new ProcessInfo { 
                 Pid = procs[i].Id,
                 Handle = procs[i].SafeHandle,
                 ThreadCount = procs[i].Threads.Count,
@@ -90,7 +90,7 @@ public class Processes : IProcesses
         try {
             /*
              * On Windows (with elevated access) this call can still throw an
-             * an "Access denied" Exception. This is usually for the "system"
+             * "Access denied" Exception. This is usually for the "system"
              * process assigned to Pid 4.
              */
             return proc.SafeHandle;

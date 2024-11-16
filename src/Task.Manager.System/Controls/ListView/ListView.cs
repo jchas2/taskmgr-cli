@@ -1,12 +1,10 @@
 ﻿using System.Drawing;
 using System.Text;
 using Task.Manager.Cli.Utils;
-using Task.Manager.Configuration;
-using Task.Manager.System;
 
-namespace Task.Manager.Gui.Controls;
+namespace Task.Manager.System.Controls.ListView;
 
-public class ListView
+public class ListView : Control
 {
     /* 
      * The Collections act as a proxy for updates to the underlying List<T>.
@@ -24,23 +22,21 @@ public class ListView
     
     private ISystemTerminal _terminal;
     
-    private Theme _theme;
-
     /* Buffer for working with strings when writing out terminal content */
     private StringBuilder _buffer = new(1024);
 
     private const int DefaultColumnWidth = 30;
     private const int DefaultHeaderWidth = 80;
 
-    public ListView(ISystemTerminal terminal, Theme theme)
+    public ListView(ISystemTerminal terminal)
+        : base(terminal)
     {
         _terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
-        _theme = theme ?? throw new ArgumentNullException(nameof(theme));
         _itemCollection = new ListViewItemCollection(this);
         _columnHeaderCollection = new ListViewColumnHeaderCollection(this);
     }
     
-    public ConsoleColor BackgroundColour { get; set; }
+    public ConsoleColor BackgroundHighlightColour { get; set; } = ConsoleColor.White;
 
     internal void ClearColumnHeaders() => _columnHeaders.Clear();
     
@@ -73,8 +69,8 @@ public class ListView
     private void DrawHeader()
     {
         _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y - 1);
-        _terminal.BackgroundColor = _theme.HeaderBackground;
-        _terminal.ForegroundColor = _theme.HeaderForeground;
+        _terminal.BackgroundColor = HeaderBackgroundColour;
+        _terminal.ForegroundColor = HeaderForegroundColour;
 
         if (ColumnHeaderCount == 0) {
             _terminal.WriteEmptyLine();
@@ -141,11 +137,11 @@ public class ListView
                 : "{0,-" + columnWidth.ToString() + "}";
 
             ConsoleColor foregroundColour = highlight
-                ? _theme.ForegroundHighlight
+                ? ForegroundHighlightColour
                 : subItem.ForegroundColor;
             
             ConsoleColor backgroundColour = highlight
-                ? _theme.BackgroundHighlight
+                ? BackgroundHighlightColour
                 : subItem.BackgroundColor;
                 
             _buffer.Append((string.Format(formatStr, subItem.Text) + ' ')
@@ -184,8 +180,8 @@ public class ListView
             _terminal.WriteEmptyLine();
         }
     }
-    
-    public ConsoleColor ForegroundColour { get; set; }
+
+    public ConsoleColor ForegroundHighlightColour { get; set; } = ConsoleColor.Cyan;
 
     internal ListViewColumnHeader GetColumnHeaderByIndex(int index)
     {
@@ -201,6 +197,10 @@ public class ListView
         return _items[index];
     }
 
+    public ConsoleColor HeaderBackgroundColour { get; set; } = ConsoleColor.Black;
+    
+    public ConsoleColor HeaderForegroundColour { get; set; } = ConsoleColor.White;
+    
     internal int IndexOfColumnHeader(ListViewColumnHeader columnHeader)
     {
         ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
