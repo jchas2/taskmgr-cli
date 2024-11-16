@@ -25,4 +25,8 @@
       <ProjectReference Include="..\..\src\taskmgr\taskmgr.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Gui\Controls\" />
+    </ItemGroup>
+
 </Project>

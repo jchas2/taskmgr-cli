@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace Task.Manager.Gui.Controls;
+﻿namespace Task.Manager.System.Controls.ListView;
 
 public sealed class SubItemStyle()
 {
