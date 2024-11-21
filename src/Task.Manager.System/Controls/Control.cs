@@ -12,11 +12,23 @@ public class Control(ISystemTerminal terminal)
     
     protected virtual bool GetInput(int timeoutMilliseconds, ref ConsoleKeyInfo keyInfo)
     {
-        if (false == terminal.KeyAvailable) {
-            return false;
+        const int waitMilliseconds = 100;
+        DateTime start = DateTime.Now;
+
+        while (true) {
+            if (DateTime.Now.Subtract(start).TotalMilliseconds < timeoutMilliseconds) {
+                if (terminal.KeyAvailable) {
+                    keyInfo = terminal.ReadKey();
+                    return true;
+                }
+                if (timeoutMilliseconds > waitMilliseconds * 2) {
+                    Thread.Sleep(waitMilliseconds);
+                }
+                continue;
+            }
+            break;
         }
 
-        keyInfo = terminal.ReadKey();
-        return true;
+        return false;
     }
 }
