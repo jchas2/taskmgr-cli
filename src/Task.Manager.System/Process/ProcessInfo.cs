@@ -22,3 +22,4 @@ public class ProcessInfo
     public ProcessTimeInfo PreviousTimes { get; set; }
     public ProcessTimeInfo CurrentTimes { get; set; }
 }
+

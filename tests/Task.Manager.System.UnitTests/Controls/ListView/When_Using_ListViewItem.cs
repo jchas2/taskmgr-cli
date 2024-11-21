@@ -26,3 +26,4 @@ public sealed class When_Using_ListViewItem
         Assert.True(listview.Items[2].Text == "Item 3");
     }
 }
+
