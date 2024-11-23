@@ -4,7 +4,7 @@ using Task.Manager.System.Process;
 
 namespace Task.Manager;
 
-public class Processor
+public class Processor : IProcessor
 {
     private readonly IProcesses _processes;
     private readonly ISystemInfo _systemInfo;
@@ -14,32 +14,26 @@ public class Processor
         _processes = processes ?? throw new ArgumentNullException(nameof(processes));
         _systemInfo = systemInfo ?? throw new ArgumentNullException(nameof(systemInfo));
     }
-    
-    public IList<ProcessInfo> GetProcesses()
+
+    public ProcessInfo[] GetProcesses()
     {
         int updateTime = 1000;
-        
+
         GetSystemTimes(out SystemTimes prevSysTimes);
         var allProcs = _processes.GetAll();
+
         Thread.Sleep(updateTime);
         GetSystemTimes(out SystemTimes sysTimes);
 
-        var sysTimesDeltas = new SystemTimes();
-        sysTimesDeltas.Idle = sysTimes.Idle - prevSysTimes.Idle;
-        sysTimesDeltas.Kernel = sysTimes.Kernel - prevSysTimes.Kernel;
-        sysTimesDeltas.User = sysTimes.User - prevSysTimes.User;
+        var sysTimesDeltas = new SystemTimes {
+            Idle = sysTimes.Idle - prevSysTimes.Idle,
+            Kernel = sysTimes.Kernel - prevSysTimes.Kernel,
+            User = sysTimes.User - prevSysTimes.User
+        };
 
         long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User;
 
-        for (int i = 0; i < allProcs.Count; i++) {
-
-            if (allProcs[i].ExeName != null) {
-                string? s = allProcs[i].ExeName;
-                if (s != null && s.Contains("acrobat", StringComparison.CurrentCultureIgnoreCase)) {
-                    Console.WriteLine("acrobat");                    
-                }
-            }
-            
+        for (int i = 0; i < allProcs.Length; i++) {
             var currTimes = new ProcessTimeInfo();
             _processes.GetProcessTimes(allProcs[i].Pid, ref currTimes);
             allProcs[i].CurrentTimes = currTimes;

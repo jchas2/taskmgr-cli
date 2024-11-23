@@ -2,10 +2,10 @@
 
 namespace Task.Manager.System.Process;
 
-public class ProcessInfo
+public struct ProcessInfo
 {
     public int Pid { get; set; }
-    public SafeProcessHandle? Handle { get; set; }
+    public IntPtr? Handle { get; set; }
     public int ThreadCount { get; set; }
     public long BasePriority { get; set; }
     public int ParentPid { get; set; }

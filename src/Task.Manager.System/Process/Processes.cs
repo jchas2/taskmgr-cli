@@ -7,18 +7,18 @@ namespace Task.Manager.System.Process;
 public class Processes : IProcesses
 {
     private const int InitialBufSize = 512;
-    private readonly IList<ProcessInfo> _allProcesses;
+    private ProcessInfo[] _allProcesses;
     private bool _isWindows = false;
     
     public Processes()
     {
-        _allProcesses = new List<ProcessInfo>(capacity: InitialBufSize);
+        _allProcesses = new ProcessInfo[InitialBufSize];
         _isWindows = OperatingSystem.IsWindows();
     }
 
-    public IList<ProcessInfo> GetAll()
+    public ProcessInfo[] GetAll()
     {
-        _allProcesses.Clear();
+        Array.Clear(_allProcesses, 0, _allProcesses.Length);
         SysDiag::Process[] procs = SysDiag::Process.GetProcesses();
 
         for (int i = 0; i < procs.Length; i++) {
@@ -29,7 +29,7 @@ public class Processes : IProcesses
             }
 #endif
             /* Skip any process that generates an "Access Denied" Exception. */
-            if (null == TryGetSafeProcessHandle(procs[i])) {
+            if (null == TryGetProcessHandle(procs[i])) {
                 continue;
             }
             
@@ -38,7 +38,7 @@ public class Processes : IProcesses
             
             var procInfo = new ProcessInfo { 
                 Pid = procs[i].Id,
-                Handle = procs[i].SafeHandle,
+                Handle = procs[i].Handle,
                 ThreadCount = procs[i].Threads.Count,
                 BasePriority = procs[i].BasePriority,
                 ParentPid = 0,
@@ -54,8 +54,12 @@ public class Processes : IProcesses
                 // ProcessorUserTime = procs[i].UserProcessorTime,
                 // ProcessorKernelTime = procs[i].PrivilegedProcessorTime
             };
+
+            if (i == _allProcesses.Length) {
+                Array.Resize(ref _allProcesses, _allProcesses.Length * 2);
+            }
             
-            _allProcesses.Add(procInfo);
+            _allProcesses[i] =procInfo;
         }
         
         return _allProcesses;
@@ -85,7 +89,7 @@ public class Processes : IProcesses
         ptInfo.UserTime = proc.UserProcessorTime.Ticks;
     }
 
-    private SafeProcessHandle? TryGetSafeProcessHandle(SysDiag::Process proc)
+    private IntPtr? TryGetProcessHandle(SysDiag::Process proc)
     {
         try {
             /*
@@ -93,7 +97,7 @@ public class Processes : IProcesses
              * "Access denied" Exception. This is usually for the "system"
              * process assigned to Pid 4.
              */
-            return proc.SafeHandle;
+            return proc.Handle;
         }
         catch (Exception) {
             return null;
