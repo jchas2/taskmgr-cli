@@ -1,6 +1,6 @@
 ﻿using Task.Manager.System.Configuration;
 
-namespace Task.Manager.System.UnitTests;
+namespace Task.Manager.System.UnitTests.Configuration;
 
 public sealed class When_Using_ConfigParser
 {
