@@ -14,4 +14,8 @@
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Compile Remove="WinBase.cs" />
+    </ItemGroup>
+
 </Project>

@@ -167,6 +167,7 @@ public sealed class TaskMgrApp
         }
 
         Config? config = null;
+        
         if (TryGetConfigurationPath(out string? configPath) && false == string.IsNullOrEmpty(configPath)) {
             string configFile = Path.Combine(configPath, ConfigFile);
             if (_runContext.FileSystem.Exists(configFile)) {

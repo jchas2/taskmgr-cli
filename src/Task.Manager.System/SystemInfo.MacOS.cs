@@ -33,6 +33,11 @@ public partial class SystemInfo
         return true;
     }
 
+    private static bool GetSystemStatisticsInternal(ref SystemStatistics systemStatistics)
+    {
+        return false;
+    }
+
     private static bool IsRunningAsRootInternal() =>
         UniStd.geteuid() == 0;
 #endif
