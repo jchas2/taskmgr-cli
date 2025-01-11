@@ -20,6 +20,18 @@ public class ProcessControl : Control
         _processor = processor ?? throw new ArgumentNullException(nameof(processor));
     }
 
+    public ProcessInfo[] GetProcesses()
+    {
+        lock (_processLock) {
+            return _allProcesses;
+        }
+    }
+
+    private void RunIOLoop()
+    {
+        
+    }
+    
     private void RunProcessLoop()
     {
         while (true) {
