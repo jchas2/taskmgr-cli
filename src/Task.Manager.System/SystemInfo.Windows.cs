@@ -1,14 +1,63 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Security.Principal;
 using Task.Manager.Interop.Win32;
+
+#if __WIN32__
+using Microsoft.Win32;
+#endif
 
 namespace Task.Manager.System;
 
 public partial class SystemInfo
 {
 #if __WIN32__
+    private static bool GetCpuInfoInternal(ref SystemStatistics systemStatistics)
+    {
+        const string REG_PATH = @"HARDWARE\DESCRIPTION\System\CentralProcessor\0\";
+        
+        systemStatistics.CpuCores = (ulong)Environment.ProcessorCount;
+        systemStatistics.CpuFrequency = 0;
+        systemStatistics.CpuName = string.Empty;
+
+        if (false == RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+            return false;
+        }
+        
+        /* Compiler will still complain with a "CA1416: Validate platform compatibility" even with the above IsOSPlatform guard */
+#pragma warning disable CA1416 // Validate platform compatibility        
+        var key = Registry.LocalMachine.OpenSubKey(REG_PATH);
+#if DEBUG
+        Debug.Assert(null != key, $"Failed OpenSubKey {REG_PATH}");
+#endif
+        if (null == key) {
+            return false;
+        }
+        
+        /* REG_SZ */
+        var processorName = key.GetValue("ProcessorNameString");
+        if (null == processorName) {
+            return false;
+        }
+        
+        systemStatistics.CpuName = processorName.ToString() ?? string.Empty;    
+
+        /* Reg DWORD */
+        var frequency = key.GetValue("~Mhz");
+        if (null == frequency) {
+            return false;
+        }
+
+        if (false == Int32.TryParse(frequency.ToString() ?? "0", out int frequencyInt32)) {
+            return false;
+        }
+        
+        systemStatistics.CpuFrequency = frequencyInt32;
+
+#pragma warning disable CA1416 // Validate platform compatibility
+        return true;
+    }
+    
     private static bool GetCpuTimesInternal(ref SystemTimes systemTimes)
     {
         MinWinBase.FILETIME idleFileTime;
@@ -35,7 +84,14 @@ public partial class SystemInfo
 
     private static bool GetSystemStatisticsInternal(ref SystemStatistics systemStatistics)
     {
-        ProfileApi.QueryPerformanceFrequency(out long frequency); 
+        if (false == ProfileApi.QueryPerformanceFrequency(out long frequency)) {
+#if DEBUG
+            int error = Marshal.GetLastWin32Error();
+            Debug.Assert(error == 0, $"Failed GetSystemTimes(): {Marshal.GetPInvokeErrorMessage(error)}");
+#endif
+            return false;
+        } 
+        
         SysInfoApi.GetSystemInfo(out SysInfoApi.SYSTEM_INFO sysInfo); 
 
         SystemStatistics data = new(); 
@@ -54,11 +110,7 @@ public partial class SystemInfo
     
     private static bool IsRunningAsRootInternal()
     {
-        /*
-         * Even though we have a pre-processor directive for __WIN32__ set in the .csproj
-         * the compiler will still complain with a "CA1416: Validate platform compatibility"
-         * error unless the .IsOSPlatform guard is in place.
-         */
+        /* Compiler will still complain with a "CA1416: Validate platform compatibility" without guard */
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             using var identity = WindowsIdentity.GetCurrent();

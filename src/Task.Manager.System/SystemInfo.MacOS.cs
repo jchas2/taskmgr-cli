@@ -6,6 +6,11 @@ namespace Task.Manager.System;
 public partial class SystemInfo
 {
 #if __APPLE__
+    private static bool GetCpuInfoInternal(ref SystemStatistics systemStatistics)
+    {
+        return false;
+    }
+
     private static bool GetCpuTimesInternal(ref SystemTimes systemTimes)
     {
         IntPtr host = MachHost.host_self();

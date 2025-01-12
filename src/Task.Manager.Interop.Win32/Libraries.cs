@@ -3,4 +3,5 @@
 internal static class Libraries
 {
     internal const string Kernel32 = "kernel32.dll";
+    internal const string Msvcrt = "msvcrt.dll";
 }
