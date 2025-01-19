@@ -9,14 +9,6 @@ public sealed class When_Using_SystemInfo
     public When_Using_SystemInfo(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
     
     [Fact]
-    public void Should_Get_Cpu_Info()
-    {
-        SystemStatistics systemStatistics = new();
-        bool result = new SystemInfo().GetCpuInfo(ref systemStatistics);
-        Assert.True(result);
-    }
-    
-    [Fact]
     public void Should_Get_Cpu_Times()
     {
         SystemTimes systemTimes = new();
@@ -31,15 +23,6 @@ public sealed class When_Using_SystemInfo
         // verify if we are running under sudo in MacOS. Windows has a number of alternatives.
         var result = new SystemInfo().IsRunningAsRoot();
         Assert.True(true);
-    }
-
-    [Fact]
-    public void Should_Get_Preferred_Ip_Addresses()
-    {
-        /* Integration test expects host environment to have a network adapter */
-        var ip = new SystemInfo().GetPreferredIpAddress();
-        Assert.NotNull(ip);
-        _testOutputHelper.WriteLine(ip?.ToString());
     }
     
     [Fact]

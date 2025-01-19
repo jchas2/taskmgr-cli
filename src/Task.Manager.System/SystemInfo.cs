@@ -6,18 +6,17 @@ namespace Task.Manager.System;
 
 public partial class SystemInfo : ISystemInfo
 {
-    public bool GetCpuInfo(ref SystemStatistics systemStatistics) => GetCpuInfoInternal(ref systemStatistics);
     public bool GetCpuTimes(ref SystemTimes systemTimes) => GetCpuTimesInternal(ref systemTimes);
 
-    public IPAddress? GetPreferredIpAddress()
+    private IPAddress? GetPreferredIpAddress()
     {
-        List<IPAddress> ipAddresses = GetPreferredIpAddressesInternal(NetworkInterfaceType.Ethernet).ToList();
+        List<IPAddress> ipAddresses = GetIpAddresses(NetworkInterfaceType.Ethernet).ToList();
         
         if (ipAddresses.Any()) {
             return ipAddresses.First();
         }
 
-        ipAddresses = GetPreferredIpAddressesInternal(NetworkInterfaceType.Wireless80211).ToList();
+        ipAddresses = GetIpAddresses(NetworkInterfaceType.Wireless80211).ToList();
         
         if (ipAddresses.Any()) {
             return ipAddresses.First();
@@ -26,7 +25,7 @@ public partial class SystemInfo : ISystemInfo
         return null;
     }
 
-    private IEnumerable<IPAddress> GetPreferredIpAddressesInternal(NetworkInterfaceType networkInterfaceType)
+    private IEnumerable<IPAddress> GetIpAddresses(NetworkInterfaceType networkInterfaceType)
     {
         var activeNics = NetworkInterface
             .GetAllNetworkInterfaces()
@@ -41,8 +40,23 @@ public partial class SystemInfo : ISystemInfo
             }
         }
     }
-    
-    public bool GetSystemStatistics(ref SystemStatistics systemStatistics) => GetSystemStatisticsInternal(ref systemStatistics);
-    public bool IsRunningAsRoot() => IsRunningAsRootInternal();
 
+    public bool GetSystemStatistics(ref SystemStatistics stats)
+    {
+        stats.MachineName = Environment.MachineName;
+        
+        stats.CpuCores = (ulong)Environment.ProcessorCount;
+        GetCpuInfoInternal(ref stats);
+
+        var ip = GetPreferredIpAddress();
+        stats.PrivateIPv4Address = ip == null 
+            ? string.Empty 
+            : ip.ToString();
+        
+        stats.OsVersion = Environment.OSVersion.VersionString;
+        
+        return true;
+    }
+    
+    public bool IsRunningAsRoot() => IsRunningAsRootInternal();
 }
