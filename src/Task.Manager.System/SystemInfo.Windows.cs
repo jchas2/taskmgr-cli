@@ -83,32 +83,6 @@ public partial class SystemInfo
         
         return true;
 	}
-
-    private static bool GetSystemStatisticsInternal(ref SystemStatistics systemStatistics)
-    {
-        if (false == ProfileApi.QueryPerformanceFrequency(out long frequency)) {
-#if DEBUG
-            int error = Marshal.GetLastWin32Error();
-            Debug.Assert(error == 0, $"Failed GetSystemTimes(): {Marshal.GetPInvokeErrorMessage(error)}");
-#endif
-            return false;
-        } 
-        
-        SysInfoApi.GetSystemInfo(out SysInfoApi.SYSTEM_INFO sysInfo); 
-
-        SystemStatistics data = new(); 
-        data.CpuFrequency = (double)frequency / 1000000.0; 
-        data.CpuCores = (ulong)sysInfo.dwNumberOfProcessors;
-        data.CpuName = ""; // TODO.
-        data.MachineName = Environment.MachineName;
-        
-        var os = Environment.OSVersion; 
-        data.OsVersion = $"Windows {os.Version.Major}.{os.Version.Minor}.{os.Version.Build}"; 
-        
-        // TODO: data.PublicIPv4Address = "53.10.87.122";
-        // data.PrivateIPv4Address = "192.168.100.12";
-        return true;
-    }
     
     private static bool IsRunningAsRootInternal()
     {
