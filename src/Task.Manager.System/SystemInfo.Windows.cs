@@ -15,6 +15,8 @@ public partial class SystemInfo
     private static bool GetCpuInfoInternal(ref SystemStatistics systemStatistics)
     {
         const string REG_PATH = @"HARDWARE\DESCRIPTION\System\CentralProcessor\0\";
+        const string REG_KEY_PROCESSOR_NAME = "ProcessorNameString";
+        const string REG_KEY_FREQUENCY_MHZ = "~Mhz";
         
         systemStatistics.CpuCores = (ulong)Environment.ProcessorCount;
         systemStatistics.CpuFrequency = 0;
@@ -35,7 +37,7 @@ public partial class SystemInfo
         }
         
         /* REG_SZ */
-        var processorName = key.GetValue("ProcessorNameString");
+        var processorName = key.GetValue(REG_KEY_PROCESSOR_NAME);
         if (null == processorName) {
             return false;
         }
@@ -43,7 +45,7 @@ public partial class SystemInfo
         systemStatistics.CpuName = processorName.ToString() ?? string.Empty;    
 
         /* Reg DWORD */
-        var frequency = key.GetValue("~Mhz");
+        var frequency = key.GetValue(REG_KEY_FREQUENCY_MHZ);
         if (null == frequency) {
             return false;
         }
