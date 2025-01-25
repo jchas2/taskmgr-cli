@@ -18,6 +18,11 @@ public static class SysInfoApi
         public ulong ullTotalVirtual;
         public ulong ullAvailVirtual;
         public ulong ullAvailExtendedVirtual;
+        
+        public MEMORYSTATUSEX()
+        {
+            dwLength = (uint)Marshal.SizeOf(typeof(MEMORYSTATUSEX));
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]

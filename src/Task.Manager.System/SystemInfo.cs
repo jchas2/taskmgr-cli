@@ -41,19 +41,21 @@ public partial class SystemInfo : ISystemInfo
         }
     }
 
-    public bool GetSystemStatistics(ref SystemStatistics stats)
+    public bool GetSystemMemory(ref SystemStatistics systemStatistics) => GetSystemMemoryInternal(ref systemStatistics);
+
+    public bool GetSystemInfo(ref SystemStatistics systemStatistics)
     {
-        stats.MachineName = Environment.MachineName;
+        systemStatistics.MachineName = Environment.MachineName;
         
-        stats.CpuCores = (ulong)Environment.ProcessorCount;
-        GetCpuInfoInternal(ref stats);
+        systemStatistics.CpuCores = (ulong)Environment.ProcessorCount;
+        GetCpuInfoInternal(ref systemStatistics);
 
         var ip = GetPreferredIpAddress();
-        stats.PrivateIPv4Address = ip == null 
+        systemStatistics.PrivateIPv4Address = ip == null 
             ? string.Empty 
             : ip.ToString();
         
-        stats.OsVersion = Environment.OSVersion.VersionString;
+        systemStatistics.OsVersion = Environment.OSVersion.VersionString;
         
         return true;
     }
