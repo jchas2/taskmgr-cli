@@ -83,6 +83,28 @@ public partial class SystemInfo
         
         return true;
 	}
+
+    private static bool GetSystemMemoryInternal(ref SystemStatistics systemStatistics)
+    {
+        SysInfoApi.MEMORYSTATUSEX memoryStatus = new();
+
+        if (false == SysInfoApi.GlobalMemoryStatusEx(ref memoryStatus)) {
+#if DEBUG
+            int error = Marshal.GetLastWin32Error();
+            Debug.Assert(error == 0, $"Failed GlobalMemoryStatusEx(): {Marshal.GetPInvokeErrorMessage(error)}");
+#endif
+            return false;
+        }
+
+        systemStatistics.AvailablePageFile = memoryStatus.ullAvailPageFile;
+        systemStatistics.AvailablePhysical = memoryStatus.ullAvailPhys;
+        systemStatistics.AvailableVirtual = memoryStatus.ullAvailVirtual;
+        systemStatistics.TotalPageFile = memoryStatus.ullTotalPageFile;
+        systemStatistics.TotalPhysical = memoryStatus.ullTotalPhys;
+        systemStatistics.TotalVirtual = memoryStatus.ullTotalVirtual;
+
+        return true;
+    }
     
     private static bool IsRunningAsRootInternal()
     {

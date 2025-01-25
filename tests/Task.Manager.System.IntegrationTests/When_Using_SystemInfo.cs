@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using System.Globalization;
+using Xunit.Abstractions;
 
 namespace Task.Manager.System.IntegrationTests;
 
@@ -30,8 +31,28 @@ public sealed class When_Using_SystemInfo
     {
         SystemStatistics systemStatistics = new();
         SystemInfo systemInfo = new();
-        bool result = systemInfo.GetSystemStatistics(ref systemStatistics);
+        
+        bool result = systemInfo.GetSystemInfo(ref systemStatistics);
         Assert.True(result);
+
+        _testOutputHelper.WriteLine($"CPU    : {systemStatistics.CpuName}");
+        _testOutputHelper.WriteLine($"Mhz    : {systemStatistics.CpuFrequency.ToString(CultureInfo.CurrentCulture)}");
+        _testOutputHelper.WriteLine($"Cores  : {systemStatistics.CpuCores}");
+        _testOutputHelper.WriteLine($"OS     : {systemStatistics.OsVersion}");
+        _testOutputHelper.WriteLine($"Machine: {systemStatistics.MachineName}");
+
+        _testOutputHelper.WriteLine($"Priv IP: {systemStatistics.PrivateIPv4Address}");
+        _testOutputHelper.WriteLine($"Pub IP : {systemStatistics.PublicIPv4Address}");
+        
+        result = systemInfo.GetSystemMemory(ref systemStatistics);
+        Assert.True(result);
+        
+        _testOutputHelper.WriteLine($"Avail Phys: {systemStatistics.AvailablePhysical}");
+        _testOutputHelper.WriteLine($"Avail Virt: {systemStatistics.AvailableVirtual}");
+        _testOutputHelper.WriteLine($"Tot Phys  : {systemStatistics.TotalPhysical}");
+        _testOutputHelper.WriteLine($"Tot Virt  : {systemStatistics.TotalVirtual}");
+        _testOutputHelper.WriteLine($"Avail Page: {systemStatistics.AvailablePageFile}");
+        _testOutputHelper.WriteLine($"Tot Page  : {systemStatistics.TotalPageFile}");
     }
 }
 
