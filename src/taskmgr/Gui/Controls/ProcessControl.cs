@@ -11,6 +11,7 @@ public class ProcessControl : Control
     private readonly object _processLock = new();
     private readonly IProcessor _processor;
     private readonly ISystemInfo _systemInfo;
+    private CancellationTokenSource _threadToken = new();
     
     public ProcessControl( ISystemTerminal terminal, IProcessor processor, ISystemInfo systemInfo)
         : base(terminal)
@@ -36,9 +37,33 @@ public class ProcessControl : Control
         systemStatistics.CpuPercentIdleTime = 100.0 - (systemStatistics.CpuPercentUserTime + systemStatistics.CpuPercentKernelTime);
     }
 
-    private void RunIOLoop()
+    protected override void OnLoad()
+    {
+        base.OnLoad();
+
+        _threadToken = new CancellationTokenSource();
+        
+        var processThread = new Thread(() => RunProcessLoop(_threadToken.Token));
+        processThread.Start();
+        
+        var renderThread = new Thread(() => RunRenderLoop(_threadToken.Token));
+        renderThread.Start();
+        
+        processThread.Join();
+        renderThread.Join();
+    }
+
+    protected override void OnUnload()
+    {
+        base.OnUnload();
+        
+        _threadToken.Dispose();
+    }
+
+    private void RunRenderLoop(CancellationToken token)
     {
         SystemStatistics systemStatistics = new();
+        
         _systemInfo.GetSystemInfo(ref systemStatistics);
         _systemInfo.GetSystemMemory(ref systemStatistics);
 
@@ -50,9 +75,9 @@ public class ProcessControl : Control
         }
     }
     
-    private void RunProcessLoop()
+    private void RunProcessLoop(CancellationToken token)
     {
-        while (true) {
+        while (false == token.IsCancellationRequested) {
             /*
              * This function runs on a worker thread. The allProcesses array is cloned
              * into the member array _allProcesses for thread-safe access to the data.
