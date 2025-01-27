@@ -58,12 +58,10 @@ public class Processor : IProcessor
     {
         systemTimes = new SystemTimes();
 
-        if (_systemInfo.GetCpuTimes(ref systemTimes)) {
-            return;
+        if (false == _systemInfo.GetCpuTimes(ref systemTimes)) {
+            systemTimes.Idle = 0;
+            systemTimes.Kernel = 0;
+            systemTimes.User = 0;
         }
-
-        systemTimes.Idle = 0;
-        systemTimes.Kernel = 0;
-        systemTimes.User = 0;
     }
 }

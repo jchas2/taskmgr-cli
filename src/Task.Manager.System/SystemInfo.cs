@@ -45,19 +45,24 @@ public partial class SystemInfo : ISystemInfo
 
     public bool GetSystemInfo(ref SystemStatistics systemStatistics)
     {
-        systemStatistics.MachineName = Environment.MachineName;
+        ArgumentNullException.ThrowIfNull(systemStatistics);
         
+        systemStatistics.MachineName = Environment.MachineName;
         systemStatistics.CpuCores = (ulong)Environment.ProcessorCount;
-        GetCpuInfoInternal(ref systemStatistics);
+        
+        bool result = GetCpuInfoInternal(ref systemStatistics);
 
         var ip = GetPreferredIpAddress();
+        
         systemStatistics.PrivateIPv4Address = ip == null 
             ? string.Empty 
             : ip.ToString();
+
+        result = result && systemStatistics.PrivateIPv4Address != string.Empty;
         
         systemStatistics.OsVersion = Environment.OSVersion.VersionString;
         
-        return true;
+        return result;
     }
     
     public bool IsRunningAsRoot() => IsRunningAsRootInternal();

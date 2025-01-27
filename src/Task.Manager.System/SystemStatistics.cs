@@ -10,10 +10,15 @@ public sealed class SystemStatistics
     public ulong TotalPageFile { get; set; }
     public ulong TotalVirtual { get; set; }
     
-    /* Cpu */
+    /* Cpu Info */
     public double CpuFrequency { get; set; }
     public ulong CpuCores { get; set; }
     public string CpuName { get; set; } = string.Empty;
+    
+    /* Cpu % Times */
+    public double CpuPercentIdleTime { get; set; }
+    public double CpuPercentKernelTime { get; set; }
+    public double CpuPercentUserTime { get; set; }
     
     /* System */
     public string MachineName { get; set; } = string.Empty;
