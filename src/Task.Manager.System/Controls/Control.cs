@@ -8,7 +8,7 @@ public class Control(ISystemTerminal terminal)
     
     public ConsoleColor ForegroundColour { get; set; } = ConsoleColor.White;
    
-    protected bool IsActive { get; set; } = false;
+    private bool IsActive { get; set; } = false;
     
     protected virtual bool GetInput(int timeoutMilliseconds, ref ConsoleKeyInfo keyInfo)
     {
@@ -27,6 +27,10 @@ public class Control(ISystemTerminal terminal)
 
         return false;
     }
+
+    protected virtual void OnLoad() => IsActive = true;
+
+    protected virtual void OnUnload() => IsActive = false;
     
     protected ISystemTerminal Terminal { get => terminal; }
 }
