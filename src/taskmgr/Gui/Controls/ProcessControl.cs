@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Process;
@@ -11,7 +12,7 @@ public class ProcessControl : Control
     private readonly object _processLock = new();
     private readonly IProcessor _processor;
     private readonly ISystemInfo _systemInfo;
-    private CancellationTokenSource _threadToken = new();
+    private CancellationTokenSource? _cancellationTokenSource;
     
     public ProcessControl( ISystemTerminal terminal, IProcessor processor, ISystemInfo systemInfo)
         : base(terminal)
@@ -41,12 +42,14 @@ public class ProcessControl : Control
     {
         base.OnLoad();
 
-        _threadToken = new CancellationTokenSource();
+        SafelyDisposeCancellationTokenSource(_cancellationTokenSource);
         
-        var processThread = new Thread(() => RunProcessLoop(_threadToken.Token));
+        _cancellationTokenSource = new CancellationTokenSource();
+        
+        var processThread = new Thread(() => RunProcessLoop(_cancellationTokenSource.Token));
         processThread.Start();
         
-        var renderThread = new Thread(() => RunRenderLoop(_threadToken.Token));
+        var renderThread = new Thread(() => RunRenderLoop(_cancellationTokenSource.Token));
         renderThread.Start();
         
         processThread.Join();
@@ -57,7 +60,7 @@ public class ProcessControl : Control
     {
         base.OnUnload();
         
-        _threadToken.Dispose();
+        _cancellationTokenSource?.Cancel();
     }
 
     private void RunRenderLoop(CancellationToken token)
@@ -111,6 +114,20 @@ public class ProcessControl : Control
                     dstOffset: 0, 
                     count: bytes);
             }
+        }
+    }
+
+    private void SafelyDisposeCancellationTokenSource(CancellationTokenSource? cancellationTokenSource)
+    {
+        if (null == cancellationTokenSource) {
+            return;
+        }
+
+        try {
+            cancellationTokenSource.Dispose();
+        }
+        catch (Exception ex) {
+            Debug.WriteLine($"Failed SafelyDisposeCancellationTokenSource(): {ex}");            
         }
     }
 }
