@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Process;
@@ -12,24 +10,44 @@ public class ProcessControl : Control
     private ProcessInfo[] _allProcesses;
     private readonly object _processLock = new();
     private readonly IProcessor _processor;
+    private readonly ISystemInfo _systemInfo;
     
-    public ProcessControl(ISystemTerminal terminal, IProcessor processor)
+    public ProcessControl( ISystemTerminal terminal, IProcessor processor, ISystemInfo systemInfo)
         : base(terminal)
     {
         _allProcesses = [];
         _processor = processor ?? throw new ArgumentNullException(nameof(processor));
+        _systemInfo = systemInfo ?? throw new ArgumentNullException(nameof(systemInfo));
     }
 
-    public ProcessInfo[] GetProcesses()
+    private void GetTotalSystemTimes(ref SystemStatistics systemStatistics)
     {
+        systemStatistics.CpuPercentIdleTime = 0.0;
+        systemStatistics.CpuPercentUserTime = 0.0;
+        systemStatistics.CpuPercentKernelTime = 0.0;
+        
         lock (_processLock) {
-            return _allProcesses;
+            for (int i = 0; i < _allProcesses.Length; i++) {
+                systemStatistics.CpuPercentUserTime += _allProcesses[i].ProcessorUserTime;
+                systemStatistics.CpuPercentKernelTime += _allProcesses[i].ProcessorKernelTime;
+            }
         }
+        
+        systemStatistics.CpuPercentIdleTime = 100.0 - (systemStatistics.CpuPercentUserTime + systemStatistics.CpuPercentKernelTime);
     }
 
     private void RunIOLoop()
     {
-        
+        SystemStatistics systemStatistics = new();
+        _systemInfo.GetSystemInfo(ref systemStatistics);
+        _systemInfo.GetSystemMemory(ref systemStatistics);
+
+        while (true) {
+            GetTotalSystemTimes(ref systemStatistics);
+            // Draw();
+            
+            // Handle input.
+        }
     }
     
     private void RunProcessLoop()
