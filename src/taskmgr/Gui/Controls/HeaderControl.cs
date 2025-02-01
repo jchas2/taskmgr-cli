@@ -1,27 +1,12 @@
 using System.Drawing;
-using Task.Manager.Configuration;
 using Task.Manager.System;
-using Task.Manager.System.Configuration;
 using Task.Manager.System.Controls;
 
-namespace Task.Manager.Gui;
+namespace Task.Manager.Gui.Controls;
 
-public sealed class SystemHeaderView : Control
+public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 {
-    private readonly Config _config;
-    private readonly Theme _theme;
-
     private const int MetreWidth = 32;
-
-    public SystemHeaderView(
-        ISystemTerminal terminal, 
-        Config config,
-        Theme theme)
-    : base(terminal)
-    {
-        _config = config ?? throw new ArgumentNullException(nameof(config));
-        _theme = theme ?? throw new ArgumentNullException(nameof(theme));
-    }
 
     public void Draw(
         SystemStatistics systemStats,
@@ -31,8 +16,8 @@ public sealed class SystemHeaderView : Control
         int nlines = 0;
         
         Terminal.SetCursorPosition(left: 0, top: 0);
-        Terminal.BackgroundColor = _theme.Menubar;
-        Terminal.ForegroundColor = _theme.Foreground;
+        Terminal.BackgroundColor = MenubarColour;
+        Terminal.ForegroundColor = ForegroundColour;
 
         string menubar = "Task Manager CLI";
         int offsetX = Terminal.WindowWidth / 2 - menubar.Length / 2;
@@ -43,7 +28,7 @@ public sealed class SystemHeaderView : Control
         
         nlines += 2;
 
-        Terminal.BackgroundColor = _theme.Background;
+        Terminal.BackgroundColor = BackgroundColour;
 
         Terminal.Write(
             $"{systemStats.MachineName}  ({systemStats.OsVersion})  IP {systemStats.PrivateIPv4Address} Pub {systemStats.PublicIPv4Address}");
@@ -98,26 +83,22 @@ public sealed class SystemHeaderView : Control
             kernelColour,
             "u",
             (double)(systemTimes.User) / 100,
-            userColour,
-            _theme);
+            userColour);
         
         nchars += DrawColumnLabelValue(
             "  Cpu:     ",
             ((double)(systemTimes.Kernel + systemTimes.User) * 100 / 100).ToString("000.0%"),
-            userColour,
-            _theme);
+            userColour);
         
         nchars += DrawColumnLabelValue(
             "  Mem:     ",
             (memRatio * 100).ToString("000.0%"),
-            memColour,
-            _theme);
+            memColour);
         
         nchars += DrawColumnLabelValue(
             "  Virt:    ",
             (virRatio * 100).ToString("000.0%"),
-            virColour,
-            _theme);
+            virColour);
         
         Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars - 4);
         
@@ -128,24 +109,22 @@ public sealed class SystemHeaderView : Control
         nchars += DrawPercentageBar(
             "m",
             memRatio,
-            memColour,
-            _theme);
+            memColour);
 
         nchars += DrawColumnLabelValue(
             "  User:    ",
             systemTimes.User.ToString("000.0%"),
-            userColour,
-            _theme);
+            userColour);
 
         nchars += DrawColumnLabelValue(
             "  Total: ",
             ((double)(systemStats.TotalPhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            _theme);
+            ForegroundColour);
         
         nchars += DrawColumnLabelValue(
             "  Total: ",
             ((double)(systemStats.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            _theme);
+            ForegroundColour);
         
         Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars - 4);
 
@@ -156,24 +135,22 @@ public sealed class SystemHeaderView : Control
         nchars += DrawPercentageBar(
             "v",
             virRatio,
-            virColour,
-            _theme);
+            virColour);
 
         nchars += DrawColumnLabelValue(
             "  Kernel: ",
             ((double)(systemTimes.Kernel)).ToString("000.0%"),
-            kernelColour,
-            _theme);
+            kernelColour);
 
         nchars += DrawColumnLabelValue(
             "  Used:  ",
             ((double)(systemStats.TotalPhysical - systemStats.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            _theme);
+            ForegroundColour);
         
         nchars += DrawColumnLabelValue(
             "  Used:  ",
             ((double)(systemStats.TotalPageFile - systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            _theme);
+            ForegroundColour);
         
         Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars - 4);
 
@@ -187,17 +164,17 @@ public sealed class SystemHeaderView : Control
         nchars += DrawColumnLabelValue(
             "  Idle:   ",
             systemTimes.Idle.ToString("000.0%"),
-            _theme);
+            ForegroundColour);
 
         nchars += DrawColumnLabelValue(
             "  Free:  ",
             ((double)(systemStats.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            _theme);
+            ForegroundColour);
         
         nchars += DrawColumnLabelValue(
             "  Free:  ",
             ((double)(systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            _theme);
+            ForegroundColour);
         
         Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars);
         
@@ -205,26 +182,15 @@ public sealed class SystemHeaderView : Control
     }
 
     private int DrawColumnLabelValue(
-        string label, 
-        string value, 
-        Theme theme) =>
-            DrawColumnLabelValue(
-                label,
-                value,
-                theme.Foreground,
-                theme);
-
-    private int DrawColumnLabelValue(
         string label,
         string value,
-        ConsoleColor valueColour,
-        Theme theme)
+        ConsoleColor valueColour)
     {
-        Terminal.ForegroundColor = theme.Foreground;
+        Terminal.ForegroundColor = ForegroundColour;
         Terminal.Write(label);
         Terminal.ForegroundColor = valueColour;
         Terminal.Write(value);
-        Terminal.ForegroundColor = theme.Foreground;
+        Terminal.ForegroundColor = ForegroundColour;
 
         return label.Length + value.Length;
     }
@@ -235,13 +201,12 @@ public sealed class SystemHeaderView : Control
         ConsoleColor colourA,
         string labelB,
         double percentageB,
-        ConsoleColor colourB,
-        Theme theme)
+        ConsoleColor colourB)
     {
         int nchars = 0;
         
-        Terminal.BackgroundColor = theme.Background;
-        Terminal.ForegroundColor = theme.Foreground;
+        Terminal.BackgroundColor = BackgroundColour;
+        Terminal.ForegroundColor = ForegroundColour;
         Terminal.Write('[');
 
         nchars++;
@@ -268,13 +233,12 @@ public sealed class SystemHeaderView : Control
     private int DrawPercentageBar(
         string label,
         double percentage,
-        ConsoleColor colour,
-        Theme theme)
+        ConsoleColor colour)
     {
         int nchars = 0;
         
-        Terminal.BackgroundColor = theme.Background;
-        Terminal.ForegroundColor = theme.Foreground;
+        Terminal.BackgroundColor = BackgroundColour;
+        Terminal.ForegroundColor = ForegroundColour;
         Terminal.Write('[');
 
         nchars++;
@@ -339,4 +303,6 @@ public sealed class SystemHeaderView : Control
         
         return nchars;
     }
+    
+    public ConsoleColor MenubarColour { get; set; } = ConsoleColor.DarkGray;
 }

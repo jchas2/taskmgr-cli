@@ -5,14 +5,15 @@ namespace Task.Manager.System.Controls;
 public class Control
 {
     /*
-     * The Collections act as a proxy for updates to the underlying List<T>.
-     * This provides a clean api for interacting with Collections on the ListView
-     * control, similar to the Win32 ListView common control.
+     * The Collection acts as a proxy for updates to the underlying List<T>.
+     * This provides a clean api for interacting with the Collection on the
+     * control, similar to the WinForms Controls Collection.
      */
     private readonly ControlCollection _controlCollection;
 
-    /* The containers holding the List<T> for rendering. We don't expose them via a public api. */
+    /* The container holding the List<T> for rendering. We don't expose it via a public api. */
     private List<Control> _controls = [];
+    
     private readonly ISystemTerminal _terminal;
     
     public Control(ISystemTerminal terminal)
