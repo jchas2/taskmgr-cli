@@ -2,12 +2,12 @@ using System.Drawing;
 using Task.Manager.Configuration;
 using Task.Manager.System;
 using Task.Manager.System.Configuration;
+using Task.Manager.System.Controls;
 
 namespace Task.Manager.Gui;
 
-public sealed class SystemHeaderView
+public sealed class SystemHeaderView : Control
 {
-    private readonly ISystemTerminal _terminal;
     private readonly Config _config;
     private readonly Theme _theme;
 
@@ -17,8 +17,8 @@ public sealed class SystemHeaderView
         ISystemTerminal terminal, 
         Config config,
         Theme theme)
+    : base(terminal)
     {
-        _terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
     }
@@ -30,22 +30,22 @@ public sealed class SystemHeaderView
     {
         int nlines = 0;
         
-        _terminal.SetCursorPosition(left: 0, top: 0);
-        _terminal.BackgroundColor = _theme.Menubar;
-        _terminal.ForegroundColor = _theme.Foreground;
+        Terminal.SetCursorPosition(left: 0, top: 0);
+        Terminal.BackgroundColor = _theme.Menubar;
+        Terminal.ForegroundColor = _theme.Foreground;
 
         string menubar = "Task Manager CLI";
-        int offsetX = _terminal.WindowWidth / 2 - menubar.Length / 2;
+        int offsetX = Terminal.WindowWidth / 2 - menubar.Length / 2;
         
-        _terminal.WriteEmptyLineTo(offsetX);
-        _terminal.Write(menubar);
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - offsetX - menubar.Length);
+        Terminal.WriteEmptyLineTo(offsetX);
+        Terminal.Write(menubar);
+        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - offsetX - menubar.Length);
         
         nlines += 2;
 
-        _terminal.BackgroundColor = _theme.Background;
+        Terminal.BackgroundColor = _theme.Background;
 
-        _terminal.Write(
+        Terminal.Write(
             $"{systemStats.MachineName}  ({systemStats.OsVersion})  IP {systemStats.PrivateIPv4Address} Pub {systemStats.PublicIPv4Address}");
         
         int nchars =
@@ -54,19 +54,19 @@ public sealed class SystemHeaderView
             systemStats.PrivateIPv4Address.Length + 5 +
             systemStats.PublicIPv4Address.Length;
         
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars);
+        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars);
         
         nlines++;
         
-        _terminal.Write(
+        Terminal.Write(
             $"{systemStats.CpuName} (Cores {systemStats.CpuCores})");
 
         nchars =
             systemStats.CpuName.Length + 8 +
             systemStats.CpuCores.ToString().Length + 1;
 
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars);
-        _terminal.WriteEmptyLine();
+        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars);
+        Terminal.WriteEmptyLine();
         
         nlines += 2;
 
@@ -90,7 +90,7 @@ public sealed class SystemHeaderView
             : virRatio < 0.75 ? ConsoleColor.DarkYellow
             : ConsoleColor.Red;
 
-        _terminal.Write("Cpu ");
+        Terminal.Write("Cpu ");
 
         nchars += DrawStackedPercentageBar(
             "k",
@@ -119,11 +119,11 @@ public sealed class SystemHeaderView
             virColour,
             _theme);
         
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars - 4);
+        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars - 4);
         
         nlines++;
         
-        _terminal.Write("Mem ");
+        Terminal.Write("Mem ");
 
         nchars += DrawPercentageBar(
             "m",
@@ -147,11 +147,11 @@ public sealed class SystemHeaderView
             ((double)(systemStats.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             _theme);
         
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars - 4);
+        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars - 4);
 
         nlines++;
         
-        _terminal.Write("Vir ");
+        Terminal.Write("Vir ");
 
         nchars += DrawPercentageBar(
             "v",
@@ -175,12 +175,12 @@ public sealed class SystemHeaderView
             ((double)(systemStats.TotalPageFile - systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             _theme);
         
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars - 4);
+        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars - 4);
 
         nlines++;
         nchars = 4 + 1 + MetreWidth + 1;
 
-        _terminal.WriteEmptyLineTo(nchars);
+        Terminal.WriteEmptyLineTo(nchars);
         
         nlines++;
         
@@ -199,7 +199,7 @@ public sealed class SystemHeaderView
             ((double)(systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             _theme);
         
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - nchars);
+        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars);
         
         bounds.Y = nlines;
     }
@@ -220,11 +220,11 @@ public sealed class SystemHeaderView
         ConsoleColor valueColour,
         Theme theme)
     {
-        _terminal.ForegroundColor = theme.Foreground;
-        _terminal.Write(label);
-        _terminal.ForegroundColor = valueColour;
-        _terminal.Write(value);
-        _terminal.ForegroundColor = theme.Foreground;
+        Terminal.ForegroundColor = theme.Foreground;
+        Terminal.Write(label);
+        Terminal.ForegroundColor = valueColour;
+        Terminal.Write(value);
+        Terminal.ForegroundColor = theme.Foreground;
 
         return label.Length + value.Length;
     }
@@ -240,9 +240,9 @@ public sealed class SystemHeaderView
     {
         int nchars = 0;
         
-        _terminal.BackgroundColor = theme.Background;
-        _terminal.ForegroundColor = theme.Foreground;
-        _terminal.Write('[');
+        Terminal.BackgroundColor = theme.Background;
+        Terminal.ForegroundColor = theme.Foreground;
+        Terminal.Write('[');
 
         nchars++;
 
@@ -260,7 +260,7 @@ public sealed class SystemHeaderView
             offsetX: nchars - 1,
             drawVoid: true);
         
-        _terminal.Write(']');
+        Terminal.Write(']');
 
         return ++nchars;
     }
@@ -273,9 +273,9 @@ public sealed class SystemHeaderView
     {
         int nchars = 0;
         
-        _terminal.BackgroundColor = theme.Background;
-        _terminal.ForegroundColor = theme.Foreground;
-        _terminal.Write('[');
+        Terminal.BackgroundColor = theme.Background;
+        Terminal.ForegroundColor = theme.Foreground;
+        Terminal.Write('[');
 
         nchars++;
 
@@ -286,7 +286,7 @@ public sealed class SystemHeaderView
             offsetX: 0,
             drawVoid: true);
         
-        _terminal.Write(']');
+        Terminal.Write(']');
 
         return ++nchars;
     }
@@ -305,37 +305,37 @@ public sealed class SystemHeaderView
             inverseBars = 1;
         }
 
-        var currBackgroundColour = _terminal.BackgroundColor;
-        var currForegroundColour = _terminal.ForegroundColor;
+        var currBackgroundColour = Terminal.BackgroundColor;
+        var currForegroundColour = Terminal.ForegroundColor;
         
-        _terminal.BackgroundColor = colour;
-        _terminal.ForegroundColor = colour;
+        Terminal.BackgroundColor = colour;
+        Terminal.ForegroundColor = colour;
 
         if (inverseBars >= label.Length) {
-            _terminal.Write(label);
+            Terminal.Write(label);
             nchars += label.Length;
         }
 
         for (int i = nchars; i < inverseBars; i++) {
-            _terminal.Write(' ');
+            Terminal.Write(' ');
             nchars++;
         }
 
         if (drawVoid)
         {
             /* TODO: Needs to be a theme colour for this. */
-            _terminal.BackgroundColor = ConsoleColor.DarkGray;
-            _terminal.ForegroundColor = ConsoleColor.DarkGray;
+            Terminal.BackgroundColor = ConsoleColor.DarkGray;
+            Terminal.ForegroundColor = ConsoleColor.DarkGray;
 
             for (int i = 0; i < MetreWidth - (inverseBars + offsetX); i++){
-                _terminal.Write(' ');
+                Terminal.Write(' ');
             }
             
             nchars += MetreWidth - (inverseBars + offsetX);
         }
         
-        _terminal.BackgroundColor = currBackgroundColour;
-        _terminal.ForegroundColor = currForegroundColour;
+        Terminal.BackgroundColor = currBackgroundColour;
+        Terminal.ForegroundColor = currForegroundColour;
         
         return nchars;
     }

@@ -51,9 +51,6 @@ public class ProcessControl : Control
         
         var renderThread = new Thread(() => RunRenderLoop(_cancellationTokenSource.Token));
         renderThread.Start();
-        
-        processThread.Join();
-        renderThread.Join();
     }
 
     protected override void OnUnload()
@@ -119,12 +116,8 @@ public class ProcessControl : Control
 
     private void SafelyDisposeCancellationTokenSource(CancellationTokenSource? cancellationTokenSource)
     {
-        if (null == cancellationTokenSource) {
-            return;
-        }
-
         try {
-            cancellationTokenSource.Dispose();
+            cancellationTokenSource?.Dispose();
         }
         catch (Exception ex) {
             Debug.WriteLine($"Failed SafelyDisposeCancellationTokenSource(): {ex}");            
