@@ -8,14 +8,11 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 {
     private const int MetreWidth = 32;
 
-    public void Draw(
-        SystemStatistics systemStats,
-        SystemTimes systemTimes,
-        ref Rectangle bounds)
+    public void Draw(SystemStatistics systemStats, ref Rectangle bounds)
     {
         int nlines = 0;
         
-        Terminal.SetCursorPosition(left: 0, top: 0);
+        Terminal.SetCursorPosition(left: bounds.X, top: bounds.Y);
         Terminal.BackgroundColor = MenubarColour;
         Terminal.ForegroundColor = ForegroundColour;
 
@@ -55,16 +52,16 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         
         nlines += 2;
 
-        long totalCpu = systemTimes.Kernel + systemTimes.User;
+        double totalCpu = systemStats.CpuPercentKernelTime + systemStats.CpuPercentUserTime;
         double memRatio = 1.0 - ((double)(systemStats.AvailablePhysical) / (double)(systemStats.TotalPhysical));
         double virRatio = 1.0 - ((double)(systemStats.AvailablePageFile) / (double)(systemStats.TotalPageFile));
         
-        var userColour = totalCpu < 50 ? ConsoleColor.DarkGreen
-            : totalCpu < 75 ? ConsoleColor.DarkYellow
+        var userColour = totalCpu < 50.0 ? ConsoleColor.DarkGreen
+            : totalCpu < 75.0 ? ConsoleColor.DarkYellow
             : ConsoleColor.Red;
 
-        var kernelColour = totalCpu < 50 ? ConsoleColor.Green
-            : totalCpu < 75 ? ConsoleColor.Yellow
+        var kernelColour = totalCpu < 50.0 ? ConsoleColor.Green
+            : totalCpu < 75.0 ? ConsoleColor.Yellow
             : ConsoleColor.DarkRed;
 
         var memColour = memRatio < 0.5 ? ConsoleColor.DarkGreen
@@ -79,15 +76,15 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 
         nchars += DrawStackedPercentageBar(
             "k",
-            (double)(systemTimes.Kernel) / 100,
+            (double)(systemStats.CpuPercentKernelTime) / 100,
             kernelColour,
             "u",
-            (double)(systemTimes.User) / 100,
+            (double)(systemStats.CpuPercentUserTime) / 100,
             userColour);
         
         nchars += DrawColumnLabelValue(
             "  Cpu:     ",
-            ((double)(systemTimes.Kernel + systemTimes.User) * 100 / 100).ToString("000.0%"),
+            ((double)(systemStats.CpuPercentKernelTime + systemStats.CpuPercentUserTime) * 100 / 100).ToString("000.0%"),
             userColour);
         
         nchars += DrawColumnLabelValue(
@@ -113,7 +110,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 
         nchars += DrawColumnLabelValue(
             "  User:    ",
-            systemTimes.User.ToString("000.0%"),
+            systemStats.CpuPercentUserTime.ToString("000.0%"),
             userColour);
 
         nchars += DrawColumnLabelValue(
@@ -139,7 +136,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 
         nchars += DrawColumnLabelValue(
             "  Kernel: ",
-            ((double)(systemTimes.Kernel)).ToString("000.0%"),
+            ((double)(systemStats.CpuPercentKernelTime)).ToString("000.0%"),
             kernelColour);
 
         nchars += DrawColumnLabelValue(
@@ -163,7 +160,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         
         nchars += DrawColumnLabelValue(
             "  Idle:   ",
-            systemTimes.Idle.ToString("000.0%"),
+            systemStats.CpuPercentIdleTime.ToString("000.0%"),
             ForegroundColour);
 
         nchars += DrawColumnLabelValue(
@@ -179,6 +176,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars);
         
         bounds.Y = nlines;
+        bounds.X = 0;
     }
 
     private int DrawColumnLabelValue(

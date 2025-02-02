@@ -3,7 +3,7 @@ namespace Task.Manager.System;
 public interface ISystemInfo
 {
     bool GetCpuTimes(ref SystemTimes systemTimes);
-    bool GetSystemInfo(ref SystemStatistics systemStatistics);
-    bool GetSystemMemory(ref SystemStatistics systemStatistics);
+    bool GetSystemInfo(SystemStatistics systemStatistics);
+    bool GetSystemMemory(SystemStatistics systemStatistics);
     bool IsRunningAsRoot();
 }

@@ -1,33 +1,41 @@
 ﻿using Task.Manager.Configuration;
 using Task.Manager.Gui.Controls;
 using Task.Manager.System;
+using Task.Manager.System.Configuration;
 using Task.Manager.System.Controls;
-using Task.Manager.System.Process;
 
 namespace Task.Manager.Gui;
 
 public sealed class MainWindow : Control
 {
-    private readonly HeaderControl _headerControl;
-    private readonly IProcesses _processes;
+    private readonly IProcessor _processor;
+    private readonly RunContext _runContext;
     private readonly Theme _theme;
 
+    private readonly ProcessControl _processControl;
+    
     public MainWindow(
-        IProcesses processes,
+        RunContext runContext,
         ISystemTerminal terminal,
-        Theme theme)
+        Theme theme,
+        Config config)
     : base(terminal)
     {
-        _processes = processes;
+        _runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
+
+        _processor = new Processor(_runContext.Processes, _runContext.SystemInfo);
         
-        _headerControl = new HeaderControl(Terminal);
-        Controls.Add(_headerControl);
+        _processControl = new ProcessControl(terminal, _processor, _runContext.SystemInfo);
+        
+        Controls.Add(_processControl);
     }
 
     protected override void OnLoad()
     {
         base.OnLoad();
+
+        _processControl.Show();
     }
 
     protected override void OnUnload()

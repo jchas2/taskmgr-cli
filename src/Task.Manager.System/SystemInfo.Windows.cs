@@ -12,7 +12,7 @@ namespace Task.Manager.System;
 public partial class SystemInfo
 {
 #if __WIN32__
-    private static bool GetCpuInfoInternal(ref SystemStatistics systemStatistics)
+    private static bool GetCpuInfoInternal(SystemStatistics systemStatistics)
     {
         const string REG_PATH = @"HARDWARE\DESCRIPTION\System\CentralProcessor\0\";
         const string REG_KEY_PROCESSOR_NAME = "ProcessorNameString";
@@ -84,7 +84,7 @@ public partial class SystemInfo
         return true;
 	}
 
-    private static bool GetSystemMemoryInternal(ref SystemStatistics systemStatistics)
+    private static bool GetSystemMemoryInternal(SystemStatistics systemStatistics)
     {
         SysInfoApi.MEMORYSTATUSEX memoryStatus = new();
 
