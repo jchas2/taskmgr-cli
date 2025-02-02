@@ -3,6 +3,8 @@ using System.Data;
 using System.Reflection;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
+using Task.Manager.Gui;
+using Task.Manager.System;
 using Task.Manager.System.Configuration;
 
 namespace Task.Manager;
@@ -145,10 +147,18 @@ public sealed class TaskMgrApp
     }
 
     private static int RunCommand(
-        RunContext context, 
+        RunContext runContext, 
         Config config, 
         Theme theme)
     {
+        var window = new MainWindow(
+            runContext, 
+            new SystemTerminal(), 
+            theme, 
+            config);
+        
+        window.Show();
+        
         return 0;
     }
     

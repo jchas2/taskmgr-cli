@@ -111,6 +111,8 @@ public class Control
             RemoveControlAt(index);
         }
     }
+
+    public void Show() => OnLoad();
     
     protected ISystemTerminal Terminal => _terminal;
 }

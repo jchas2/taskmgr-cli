@@ -4,6 +4,7 @@ using System.Text;
 using Task.Manager.System;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Internal.Abstractions;
+using Task.Manager.System.Process;
 
 namespace Task.Manager;
 
@@ -48,6 +49,7 @@ class Program
             var runContext = new RunContext(
                 new FileSystem(),
                 new SystemInfo(),
+                new Processes(),
                 outputWriter: null);
 
             var app = new TaskMgrApp(runContext);

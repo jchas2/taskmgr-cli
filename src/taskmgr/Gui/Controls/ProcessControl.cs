@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
@@ -6,23 +7,39 @@ using Task.Manager.System.Process;
 
 namespace Task.Manager.Gui.Controls;
 
-public class ProcessControl : Control
+public sealed class ProcessControl : Control
 {
     private ProcessInfo[] _allProcesses;
     private readonly object _processLock = new();
     private readonly IProcessor _processor;
     private readonly ISystemInfo _systemInfo;
     private CancellationTokenSource? _cancellationTokenSource;
+
+    private readonly HeaderControl _headerControl;
     
-    public ProcessControl( ISystemTerminal terminal, IProcessor processor, ISystemInfo systemInfo)
+    public ProcessControl(ISystemTerminal terminal, IProcessor processor, ISystemInfo systemInfo)
         : base(terminal)
     {
         _allProcesses = [];
         _processor = processor ?? throw new ArgumentNullException(nameof(processor));
         _systemInfo = systemInfo ?? throw new ArgumentNullException(nameof(systemInfo));
+        
+        _headerControl = new HeaderControl(Terminal);
+        Controls.Add(_headerControl);
     }
 
-    private void GetTotalSystemTimes(ref SystemStatistics systemStatistics)
+    private void Draw(SystemStatistics statistics)
+    {
+        var bounds = new Rectangle(
+            x: 0, 
+            y: 0, 
+            Terminal.WindowWidth, 
+            Terminal.WindowHeight);
+        
+        _headerControl.Draw(statistics, ref bounds);
+    }
+    
+    private void GetTotalSystemTimes(SystemStatistics systemStatistics)
     {
         systemStatistics.CpuPercentIdleTime = 0.0;
         systemStatistics.CpuPercentUserTime = 0.0;
@@ -64,14 +81,23 @@ public class ProcessControl : Control
     {
         SystemStatistics systemStatistics = new();
         
-        _systemInfo.GetSystemInfo(ref systemStatistics);
-        _systemInfo.GetSystemMemory(ref systemStatistics);
+        _systemInfo.GetSystemInfo(systemStatistics);
+        _systemInfo.GetSystemMemory(systemStatistics);
 
-        while (true) {
-            GetTotalSystemTimes(ref systemStatistics);
-            // Draw();
-            
-            // Handle input.
+        while (false == token.IsCancellationRequested) {
+            GetTotalSystemTimes(systemStatistics);
+            Draw(systemStatistics);
+
+            var startTime = DateTime.Now;
+
+            while (true) {
+                // TODO: Handle input (up + down arrows etc. Simulate it here with a thread sleep.
+                Thread.Sleep(500);
+                var duration = DateTime.Now - startTime;
+                if (duration.TotalMilliseconds >= 1000) {
+                    break;
+                }
+            }
         }
     }
     
