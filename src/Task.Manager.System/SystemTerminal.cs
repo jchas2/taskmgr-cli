@@ -53,7 +53,7 @@ public class SystemTerminal : ISystemTerminal
     public void WriteEmptyLineTo(int x)
     {
         for (int i = 0; i < x; i++) {
-            Write(' ');
+            Write('*');
         }
     }
     

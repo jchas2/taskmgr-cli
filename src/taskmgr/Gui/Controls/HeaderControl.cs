@@ -271,7 +271,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         var currForegroundColour = Terminal.ForegroundColor;
         
         Terminal.BackgroundColor = colour;
-        Terminal.ForegroundColor = colour;
+        Terminal.ForegroundColor = currForegroundColour;
 
         if (inverseBars >= label.Length) {
             Terminal.Write(label);
@@ -289,7 +289,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
             Terminal.BackgroundColor = ConsoleColor.DarkGray;
             Terminal.ForegroundColor = ConsoleColor.DarkGray;
 
-            for (int i = 0; i < MetreWidth - (inverseBars + offsetX); i++){
+            for (int i = 0; i < MetreWidth - (inverseBars + offsetX); i++) {
                 Terminal.Write(' ');
             }
             
