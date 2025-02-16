@@ -6,13 +6,18 @@ namespace Task.Manager.System.Process;
 
 public class Processes : IProcesses
 {
-    private const int InitialBufSize = 512;
+    private readonly ISystemInfo _systemInfo;
+
+    private const int INIT_BUFF_SIZE = 512;
+    private const int UPDATE_TIME_MS = 1000;
+    
     private ProcessInfo[] _allProcesses;
-    private bool _isWindows = false;
+    private readonly bool _isWindows = false;
     
     public Processes()
     {
-        _allProcesses = new ProcessInfo[InitialBufSize];
+        _systemInfo = new SystemInfo();
+        _allProcesses = new ProcessInfo[INIT_BUFF_SIZE];
         _isWindows = OperatingSystem.IsWindows();
     }
 
@@ -38,7 +43,6 @@ public class Processes : IProcesses
             
             var procInfo = new ProcessInfo { 
                 Pid = procs[i].Id,
-                Handle = procs[i].Handle,
                 ThreadCount = procs[i].Threads.Count,
                 BasePriority = procs[i].BasePriority,
                 ParentPid = 0,
@@ -47,19 +51,54 @@ public class Processes : IProcesses
                 UserName = string.Empty,
                 CmdLine = string.Empty,
                 UsedMemory = procs[i].VirtualMemorySize64,
+                DiskOperations = 0,
                 DiskUsage = 0,
-                PreviousTimes = previousTimes,
-                // DiskOperations = 0,
-                // ProcessorTime = procs[i].TotalProcessorTime,
-                // ProcessorUserTime = procs[i].UserProcessorTime,
-                // ProcessorKernelTime = procs[i].PrivilegedProcessorTime
+                CpuTimePercent = 0.0,
+                CpuUserTimePercent = 0.0,
+                CpuKernelTimePercent = 0.0,
+                PrevCpuKernelTime = previousTimes.KernelTime,
+                PrevCpuUserTime = previousTimes.UserTime,
+                CurrCpuKernelTime = 0,
+                CurrCpuUserTime = 0
             };
 
             if (i == _allProcesses.Length) {
                 Array.Resize(ref _allProcesses, _allProcesses.Length * 2);
             }
             
-            _allProcesses[i] =procInfo;
+            _allProcesses[i] = procInfo;
+        }
+        
+        GetSystemTimes(out SystemTimes prevSysTimes);
+        Thread.Sleep(UPDATE_TIME_MS);
+        GetSystemTimes(out SystemTimes currSysTimes);
+        
+        var sysTimesDeltas = new SystemTimes {
+            Idle = currSysTimes.Idle - prevSysTimes.Idle,
+            Kernel = currSysTimes.Kernel - prevSysTimes.Kernel,
+            User = currSysTimes.User - prevSysTimes.User
+        };
+
+        long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User;
+        
+        for (int i = 0; i < procs.Length; i++) {
+            var currTimes = new ProcessTimeInfo();
+            GetProcessTimes(_allProcesses[i].Pid, ref currTimes);
+
+            _allProcesses[i].CurrCpuKernelTime = currTimes.KernelTime;
+            _allProcesses[i].CurrCpuUserTime = currTimes.UserTime;
+            
+            long procKernelDiff = _allProcesses[i].CurrCpuKernelTime - _allProcesses[i].PrevCpuKernelTime;
+            long procUserDiff = _allProcesses[i].CurrCpuUserTime - _allProcesses[i].PrevCpuUserTime;
+            long totalProc = procKernelDiff + procUserDiff;
+
+            if (totalSysTime == 0) {
+                continue;
+            }
+
+            _allProcesses[i].CpuTimePercent = (double)((100.0 * (double)totalProc) / (double)totalSysTime);
+            _allProcesses[i].CpuKernelTimePercent = (double)((100.0 * (double)procKernelDiff) / (double)totalSysTime);
+            _allProcesses[i].CpuUserTimePercent = (double)((100.0 * (double)procUserDiff) / (double)totalSysTime);
         }
         
         return _allProcesses;
@@ -78,6 +117,17 @@ public class Processes : IProcesses
         // TODO: Catch all here for a graceful exit of the process.
         catch (Exception) {
             return false;
+        }
+    }
+    
+    private void GetSystemTimes(out SystemTimes systemTimes)
+    {
+        systemTimes = new SystemTimes();
+
+        if (false == _systemInfo.GetCpuTimes(ref systemTimes)) {
+            systemTimes.Idle = 0;
+            systemTimes.Kernel = 0;
+            systemTimes.User = 0;
         }
     }
 

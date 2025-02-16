@@ -11,17 +11,17 @@ public sealed class ProcessControl : Control
 {
     private ProcessInfo[] _allProcesses;
     private readonly object _processLock = new();
-    private readonly IProcessor _processor;
+    private readonly IProcesses _processes;
     private readonly ISystemInfo _systemInfo;
     private CancellationTokenSource? _cancellationTokenSource;
 
     private readonly HeaderControl _headerControl;
     
-    public ProcessControl(ISystemTerminal terminal, IProcessor processor, ISystemInfo systemInfo)
+    public ProcessControl(ISystemTerminal terminal, IProcesses processes, ISystemInfo systemInfo)
         : base(terminal)
     {
         _allProcesses = [];
-        _processor = processor ?? throw new ArgumentNullException(nameof(processor));
+        _processes = processes ?? throw new ArgumentNullException(nameof(processes));
         _systemInfo = systemInfo ?? throw new ArgumentNullException(nameof(systemInfo));
         
         _headerControl = new HeaderControl(Terminal);
@@ -47,8 +47,8 @@ public sealed class ProcessControl : Control
         
         lock (_processLock) {
             for (int i = 0; i < _allProcesses.Length; i++) {
-                systemStatistics.CpuPercentUserTime += _allProcesses[i].ProcessorUserTime;
-                systemStatistics.CpuPercentKernelTime += _allProcesses[i].ProcessorKernelTime;
+                systemStatistics.CpuPercentUserTime += _allProcesses[i].CpuUserTimePercent;
+                systemStatistics.CpuPercentKernelTime += _allProcesses[i].CpuKernelTimePercent;
             }
         }
         
@@ -108,7 +108,7 @@ public sealed class ProcessControl : Control
              * This function runs on a worker thread. The allProcesses array is cloned
              * into the member array _allProcesses for thread-safe access to the data.
              */
-            var allProcesses = _processor.GetProcesses();
+            var allProcesses = _processes.GetAll();
 
             if (allProcesses.Length == 0) {
                 continue;
@@ -122,24 +122,17 @@ public sealed class ProcessControl : Control
                     length: _allProcesses.Length);
                 
                 Array.Resize(ref _allProcesses, allProcesses.Length);
-                
-                /*
-                 *  It's important ProcessInfo is defined as a value-type for the following
-                 *  BlockCopy to deep copy.
-                 */
-                
-                int bytes = allProcesses.Length * Marshal.SizeOf<ProcessInfo>();
-                
-                Buffer.BlockCopy(
-                    src: allProcesses, 
-                    srcOffset: 0, 
-                    dst: _allProcesses, 
-                    dstOffset: 0, 
-                    count: bytes);
+
+                Array.Copy(
+                    sourceArray: allProcesses, 
+                    sourceIndex: 0, 
+                    destinationArray: _allProcesses, 
+                    destinationIndex: 0, 
+                    length: _allProcesses.Length);
             }
         }
     }
-
+    
     private void SafelyDisposeCancellationTokenSource(CancellationTokenSource? cancellationTokenSource)
     {
         try {
