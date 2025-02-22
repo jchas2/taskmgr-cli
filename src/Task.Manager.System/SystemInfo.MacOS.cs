@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Task.Manager.Interop.Mach;
 
 namespace Task.Manager.System;
@@ -6,9 +7,20 @@ namespace Task.Manager.System;
 public partial class SystemInfo
 {
 #if __APPLE__
-    private static bool GetCpuInfoInternal(ref SystemStatistics systemStatistics)
+    private static unsafe bool GetCpuInfoInternal(ref SystemStatistics systemStatistics)
     {
-        return false;
+        systemStatistics.CpuCores = (ulong)Environment.ProcessorCount;
+        systemStatistics.CpuFrequency = 0;
+        systemStatistics.CpuName = string.Empty;
+
+        ReadOnlySpan<int> sysctlName = [6, 24];
+
+        byte* pBuffer = null;
+        int bytesLength = 0;
+
+        Sys.Sysctl(sysctlName, ref pBuffer, ref bytesLength);
+        
+        return true;
     }
 
     private static bool GetCpuTimesInternal(ref SystemTimes systemTimes)
@@ -40,6 +52,8 @@ public partial class SystemInfo
 
     private static bool GetSystemMemoryInternal(ref SystemStatistics systemStatistics)
     {
+        
+        
         return false;        
     }
 
