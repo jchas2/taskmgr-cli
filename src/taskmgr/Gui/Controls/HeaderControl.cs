@@ -74,7 +74,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 
         Terminal.Write("Cpu ");
 
-        nchars += DrawStackedPercentageBar(
+        nchars = DrawStackedPercentageBar(
             "k",
             (double)(systemStats.CpuPercentKernelTime) / 100,
             kernelColour,
@@ -103,7 +103,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         
         Terminal.Write("Mem ");
 
-        nchars += DrawPercentageBar(
+        nchars = DrawPercentageBar(
             "m",
             memRatio,
             memColour);
@@ -129,7 +129,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         
         Terminal.Write("Vir ");
 
-        nchars += DrawPercentageBar(
+        nchars = DrawPercentageBar(
             "v",
             virRatio,
             virColour);
@@ -158,7 +158,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         
         nlines++;
         
-        nchars += DrawColumnLabelValue(
+        nchars = DrawColumnLabelValue(
             "  Idle:   ",
             systemStats.CpuPercentIdleTime.ToString("000.0%"),
             ForegroundColour);
@@ -291,9 +291,8 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 
             for (int i = 0; i < MetreWidth - (inverseBars + offsetX); i++) {
                 Terminal.Write(' ');
+                nchars++;
             }
-            
-            nchars += MetreWidth - (inverseBars + offsetX);
         }
         
         Terminal.BackgroundColor = currBackgroundColour;

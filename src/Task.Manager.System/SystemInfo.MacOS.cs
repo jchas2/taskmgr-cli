@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.Unicode;
 using Task.Manager.Interop.Mach;
 
 namespace Task.Manager.System;
@@ -13,12 +15,21 @@ public partial class SystemInfo
         systemStatistics.CpuFrequency = 0;
         systemStatistics.CpuName = string.Empty;
 
-        ReadOnlySpan<int> sysctlName = [6, 24];
+        ReadOnlySpan<int> sysctlName = [(int)Sys.Selectors.CTL_HW, (int)Sys.Hardware.HW_MODEL];
 
-        byte* pBuffer = null;
+        byte* buffer = null;
         int bytesLength = 0;
 
-        Sys.Sysctl(sysctlName, ref pBuffer, ref bytesLength);
+        if (false == Sys.Sysctl(sysctlName, ref buffer, ref bytesLength)) {
+            return false;
+        }
+
+        /* Byte array returned contains a null terminator byte. */
+        var chars = new byte[bytesLength - 1];
+        Marshal.Copy((IntPtr)buffer, chars, 0, bytesLength - 1);
+        systemStatistics.CpuName = Encoding.UTF8.GetString(chars);
+
+        /* Sysctl does not work for Frequency on Apple M silicon chips, need alternative. */        
         
         return true;
     }
@@ -40,21 +51,41 @@ public partial class SystemInfo
         }
 
         var info = Marshal.PtrToStructure<MachHost.HostCpuLoadInfo>(cpuInfoPtr);
-        
+ 
         // TODO: Look at Process.OSX.MapTimes. These ticks could be in nanoseconds, which could
         // be throwing off the calculations later on.
         systemTimes.Idle = (long)info.cpu_ticks[MachHost.CPU_STATE_IDLE];
         systemTimes.Kernel = (long)info.cpu_ticks[MachHost.CPU_STATE_SYSTEM];
         systemTimes.User = (long)info.cpu_ticks[MachHost.CPU_STATE_USER];
 
+        Marshal.FreeHGlobal(cpuInfoPtr);
+        
         return true;
     }
 
-    private static bool GetSystemMemoryInternal(ref SystemStatistics systemStatistics)
+    private static unsafe bool GetSystemMemoryInternal(ref SystemStatistics systemStatistics)
     {
+        systemStatistics.AvailablePageFile = 0;
+        systemStatistics.AvailablePhysical = 0;
+        systemStatistics.AvailableVirtual = 0;
+        systemStatistics.TotalPageFile = 0;
+        systemStatistics.TotalPhysical = 0;
+        systemStatistics.TotalVirtual = 0;
         
+        ReadOnlySpan<int> sysctlName = [(int)Sys.Selectors.CTL_HW, (int)Sys.Hardware.HW_MEMSIZE];
+
+        byte* buffer = null;
+        int bytesLength = 0;
+
+        if (false == Sys.Sysctl(sysctlName, ref buffer, ref bytesLength)) {
+            return false;
+        }
+
+        if (bytesLength == 8) {
+            systemStatistics.TotalPhysical = *(ulong*)buffer;
+        }
         
-        return false;        
+        return true;
     }
 
     private static bool IsRunningAsRootInternal() =>

@@ -16,12 +16,14 @@ class Program
     private static void HandleException(UnhandledExceptionEventArgs ev)
     {
         if (ev.IsTerminating) {
-            OutputWriter.Error.WriteLine("Runtime has encountered a fatal unhandled Exception.".ToRed());
+            OutputWriter.Error.WriteLine(
+                Environment.NewLine + "Runtime has encountered a fatal unhandled Exception.".ToRed());
         }
         
         if (ev.ExceptionObject is Exception e) {
+            OutputWriter.Error.WriteLine(e.GetType().ToString().ToRed());
             OutputWriter.Error.WriteLine(e.Message.ToRed());
-            OutputWriter.Error.WriteLine(e.StackTrace ?? e.ToString());
+            OutputWriter.Error.WriteLine(e.StackTrace?? e.ToString().ToYellow());
             return;
         }
         
