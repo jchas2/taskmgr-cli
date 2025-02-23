@@ -7,9 +7,21 @@ using size_t = System.IntPtr;
 
 public static unsafe class Sys
 {
+    public enum Selectors
+    {
+        CTL_HW = 0x06,              /* Hardware */
+    }
+
+    public enum Hardware
+    {
+        HW_MODEL = 0x02,            /* Cpu model */
+        HW_CPU_FREQ = 0x08,         /* Cpu frequency in Hz, does not work on Apple Silicon Mn chips */
+        HW_MEMSIZE = 0x18,          /* Memory size in bytes */
+    }
+    
     private enum Error
     {
-        ENOMEM = 0x10031,           // Not enough space.
+        ENOMEM = 0x10031,           /* Not enough space */
     }
     
     [DllImport(Libraries.LibSystemNative, EntryPoint = "SystemNative_Sysctl", SetLastError = true)]
@@ -33,36 +45,33 @@ public static unsafe class Sys
         ref int len)
     {
         nint bytesLength = len;
-        int ret = -1;
+        int result = -1;
         bool autoSize = (value == null && len == 0);
 
         if (autoSize) {
-            ret = Sysctl(
+            result = Sysctl(
                 name, 
                 name_len, 
                 value, 
                 &bytesLength);
 
 #if DEBUG
-            Debug.Assert(ret == 0, $"Failed Sysctl with error {ret}");
+            Debug.Assert(result == 0, $"Failed Sysctl with error {result}");
 #endif            
-            if (ret != 0) {
+            if (result != 0) {
                 return false;
             }
 
             value = (byte*)Marshal.AllocHGlobal((int)bytesLength);
         }
 
-        ret = Sysctl(
+        result = Sysctl(
             name, 
             name_len, 
             value, 
             &bytesLength);
         
-        while (autoSize && ret != 0) { //&& GetLastErrorInfo().Error == Error.ENOMEM) {
-            // Do not use ReAllocHGlobal() here: we don't care about
-            // previous contents, and proper checking of value returned
-            // will make code more complex.
+        while (autoSize && result != 0) { //&& GetLastErrorInfo().Error == Error.ENOMEM) {
             Marshal.FreeHGlobal((IntPtr)value);
             
             if ((int)bytesLength == int.MaxValue) {
@@ -78,14 +87,14 @@ public static unsafe class Sys
 
             value = (byte*)Marshal.AllocHGlobal(bytesLength);
             
-            ret = Sysctl(
+            result = Sysctl(
                 name, 
                 name_len, 
                 value, 
                 &bytesLength);
         }
 
-        if (ret != 0) {
+        if (result != 0) {
             if (autoSize) {
                 Marshal.FreeHGlobal((IntPtr)value);
             }

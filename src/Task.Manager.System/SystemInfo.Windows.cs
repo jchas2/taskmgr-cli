@@ -86,6 +86,13 @@ public partial class SystemInfo
 
     private static bool GetSystemMemoryInternal(SystemStatistics systemStatistics)
     {
+        systemStatistics.AvailablePageFile = 0;
+        systemStatistics.AvailablePhysical = 0;
+        systemStatistics.AvailableVirtual = 0;
+        systemStatistics.TotalPageFile = 0;
+        systemStatistics.TotalPhysical = 0;
+        systemStatistics.TotalVirtual = 0;
+
         SysInfoApi.MEMORYSTATUSEX memoryStatus = new();
 
         if (false == SysInfoApi.GlobalMemoryStatusEx(ref memoryStatus)) {
