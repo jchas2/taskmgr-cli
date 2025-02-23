@@ -76,25 +76,25 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 
         nchars = DrawStackedPercentageBar(
             "k",
-            (double)(systemStats.CpuPercentKernelTime) / 100,
+            systemStats.CpuPercentKernelTime / 100,
             kernelColour,
             "u",
-            (double)(systemStats.CpuPercentUserTime) / 100,
+            systemStats.CpuPercentUserTime / 100,
             userColour);
         
         nchars += DrawColumnLabelValue(
             "  Cpu:     ",
-            ((double)(systemStats.CpuPercentKernelTime + systemStats.CpuPercentUserTime) * 100 / 100).ToString("000.0%"),
+            ((systemStats.CpuPercentKernelTime + systemStats.CpuPercentUserTime) / 100).ToString("000.0%"),
             userColour);
         
         nchars += DrawColumnLabelValue(
             "  Mem:     ",
-            (memRatio * 100).ToString("000.0%"),
+            memRatio.ToString("000.0%"),
             memColour);
         
         nchars += DrawColumnLabelValue(
             "  Virt:    ",
-            (virRatio * 100).ToString("000.0%"),
+            virRatio.ToString("000.0%"),
             virColour);
         
         Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars - 4);
@@ -110,7 +110,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 
         nchars += DrawColumnLabelValue(
             "  User:    ",
-            systemStats.CpuPercentUserTime.ToString("000.0%"),
+            (systemStats.CpuPercentUserTime / 100).ToString("000.0%"),
             userColour);
 
         nchars += DrawColumnLabelValue(
@@ -135,8 +135,8 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
             virColour);
 
         nchars += DrawColumnLabelValue(
-            "  Kernel: ",
-            ((double)(systemStats.CpuPercentKernelTime)).ToString("000.0%"),
+            "  Kernel:  ",
+            (systemStats.CpuPercentKernelTime / 100).ToString("000.0%"),
             kernelColour);
 
         nchars += DrawColumnLabelValue(
@@ -159,8 +159,8 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         nlines++;
         
         nchars = DrawColumnLabelValue(
-            "  Idle:   ",
-            systemStats.CpuPercentIdleTime.ToString("000.0%"),
+            "  Idle:    ",
+            (systemStats.CpuPercentIdleTime / 100).ToString("000.0%"),
             ForegroundColour);
 
         nchars += DrawColumnLabelValue(
