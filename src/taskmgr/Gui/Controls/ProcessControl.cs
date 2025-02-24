@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
+using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
 
 namespace Task.Manager.Gui.Controls;
@@ -14,8 +15,10 @@ public sealed class ProcessControl : Control
     private readonly IProcesses _processes;
     private readonly ISystemInfo _systemInfo;
     private CancellationTokenSource? _cancellationTokenSource;
+    private readonly SystemStatistics _systemStatistics;
 
     private readonly HeaderControl _headerControl;
+    private readonly ListView _listView;
     
     public ProcessControl(ISystemTerminal terminal, IProcesses processes, ISystemInfo systemInfo)
         : base(terminal)
@@ -23,12 +26,16 @@ public sealed class ProcessControl : Control
         _allProcesses = [];
         _processes = processes ?? throw new ArgumentNullException(nameof(processes));
         _systemInfo = systemInfo ?? throw new ArgumentNullException(nameof(systemInfo));
+        _systemStatistics = new SystemStatistics();
         
         _headerControl = new HeaderControl(Terminal);
+        _listView = new ListView(Terminal);
+        
         Controls.Add(_headerControl);
+        Controls.Add(_listView);
     }
 
-    private void Draw(SystemStatistics statistics)
+    private void Draw()
     {
         var bounds = new Rectangle(
             x: 0, 
@@ -36,23 +43,25 @@ public sealed class ProcessControl : Control
             Terminal.WindowWidth, 
             Terminal.WindowHeight);
         
-        _headerControl.Draw(statistics, ref bounds);
+        _headerControl.Draw(_systemStatistics, ref bounds);
+
+        _listView.Draw(bounds);
     }
     
-    private void GetTotalSystemTimes(SystemStatistics systemStatistics)
+    private void GetTotalSystemTimes()
     {
-        systemStatistics.CpuPercentIdleTime = 0.0;
-        systemStatistics.CpuPercentUserTime = 0.0;
-        systemStatistics.CpuPercentKernelTime = 0.0;
+        _systemStatistics.CpuPercentIdleTime = 0.0;
+        _systemStatistics.CpuPercentUserTime = 0.0;
+        _systemStatistics.CpuPercentKernelTime = 0.0;
         
         lock (_processLock) {
             for (int i = 0; i < _allProcesses.Length; i++) {
-                systemStatistics.CpuPercentUserTime += _allProcesses[i].CpuUserTimePercent;
-                systemStatistics.CpuPercentKernelTime += _allProcesses[i].CpuKernelTimePercent;
+                _systemStatistics.CpuPercentUserTime += _allProcesses[i].CpuUserTimePercent;
+                _systemStatistics.CpuPercentKernelTime += _allProcesses[i].CpuKernelTimePercent;
             }
         }
         
-        systemStatistics.CpuPercentIdleTime = 100.0 - (systemStatistics.CpuPercentUserTime + systemStatistics.CpuPercentKernelTime);
+        _systemStatistics.CpuPercentIdleTime = 100.0 - (_systemStatistics.CpuPercentUserTime + _systemStatistics.CpuPercentKernelTime);
     }
 
     protected override void OnLoad()
@@ -79,14 +88,13 @@ public sealed class ProcessControl : Control
 
     private void RunRenderLoop(CancellationToken token)
     {
-        SystemStatistics systemStatistics = new();
-        
-        _systemInfo.GetSystemInfo(systemStatistics);
-        _systemInfo.GetSystemMemory(systemStatistics);
+        _systemInfo.GetSystemInfo(_systemStatistics);
+        _systemInfo.GetSystemMemory(_systemStatistics);
 
         while (false == token.IsCancellationRequested) {
-            GetTotalSystemTimes(systemStatistics);
-            Draw(systemStatistics);
+            GetTotalSystemTimes();
+            UpdateListItems();
+            Draw();
 
             var startTime = DateTime.Now;
 
@@ -140,6 +148,20 @@ public sealed class ProcessControl : Control
         }
         catch (Exception ex) {
             Debug.WriteLine($"Failed SafelyDisposeCancellationTokenSource(): {ex}");            
+        }
+    }
+
+    private void UpdateListItems()
+    {
+        lock (_processLock) {
+            if (_listView.Items.Count == 0) {
+                for (int i = 0; i < _allProcesses.Length; i++) {
+                    var item = new ListViewItem(_allProcesses[i].ExeName ?? string.Empty);
+                    _listView.Items.Add(item);
+                }
+            }
+            
+            
         }
     }
 }
