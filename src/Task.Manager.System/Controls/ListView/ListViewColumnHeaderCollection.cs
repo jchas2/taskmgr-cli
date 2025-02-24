@@ -58,7 +58,7 @@ public class ListViewColumnHeaderCollection : IEnumerable<ListViewColumnHeader>
     {
         get {
             ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-            return this[index];
+            return _owner.GetColumnHeaderByIndex(index);
         }
         set {
             throw new InvalidOperationException();

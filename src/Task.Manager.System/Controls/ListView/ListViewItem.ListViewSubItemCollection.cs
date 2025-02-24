@@ -58,7 +58,7 @@ public class ListViewSubItemCollection : IEnumerable<ListViewSubItem>
     {
         get {
             ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-            return this[index];
+            return _owner.GetSubItemByIndex(index);
         }
         set {
             throw new InvalidOperationException();
