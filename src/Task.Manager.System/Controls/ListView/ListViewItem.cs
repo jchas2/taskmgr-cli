@@ -75,7 +75,7 @@ public class ListViewItem
         ForegroundColour = foregroundColor;
     }
 
-    public ConsoleColor BackgroundColour { get; set; }
+    public ConsoleColor BackgroundColour { get; set; } = ConsoleColor.Black;
 
     internal void ClearSubItems() => _subItems.Clear();
 
@@ -85,7 +85,7 @@ public class ListViewItem
         return _subItems.Contains(subItem);
     }
 
-    public ConsoleColor ForegroundColour { get; set; }
+    public ConsoleColor ForegroundColour { get; set; } = ConsoleColor.White;
 
     internal ListViewSubItem GetSubItemByIndex(int index)
     {

@@ -25,32 +25,35 @@ public class Processes : IProcesses
     {
         Array.Clear(_allProcesses, 0, _allProcesses.Length);
         SysDiag::Process[] procs = SysDiag::Process.GetProcesses();
+        int delta = 0;
 
-        for (int i = 0; i < procs.Length; i++) {
+        for (int index = 0; index < procs.Length; index++) {
 #if __WIN32__
             /* On Windows, ignore the system "idle" process auto assigned to Pid 0. */
-            if (_isWindows && procs[i].Id == 0) {
+            if (_isWindows && procs[index].Id == 0) {
+                delta++;
                 continue;
             }
 #endif
             /* Skip any process that generates an "Access Denied" Exception. */
-            if (null == TryGetProcessHandle(procs[i])) {
+            if (null == TryGetProcessHandle(procs[index])) {
+                delta++;
                 continue;
             }
             
             var previousTimes = new ProcessTimeInfo();
-            MapProcessTimes(procs[i], ref previousTimes);
+            MapProcessTimes(procs[index], ref previousTimes);
             
             var procInfo = new ProcessInfo { 
-                Pid = procs[i].Id,
-                ThreadCount = procs[i].Threads.Count,
-                BasePriority = procs[i].BasePriority,
+                Pid = procs[index].Id,
+                ThreadCount = procs[index].Threads.Count,
+                BasePriority = procs[index].BasePriority,
                 ParentPid = 0,
-                ExeName = procs[i].ProcessName,
+                ExeName = procs[index].ProcessName,
                 FileDescription = string.Empty,
                 UserName = string.Empty,
                 CmdLine = string.Empty,
-                UsedMemory = procs[i].VirtualMemorySize64,
+                UsedMemory = procs[index].VirtualMemorySize64,
                 DiskOperations = 0,
                 DiskUsage = 0,
                 CpuTimePercent = 0.0,
@@ -62,11 +65,11 @@ public class Processes : IProcesses
                 CurrCpuUserTime = 0
             };
 
-            if (i == _allProcesses.Length) {
+            if (index == _allProcesses.Length) {
                 Array.Resize(ref _allProcesses, _allProcesses.Length * 2);
             }
             
-            _allProcesses[i] = procInfo;
+            _allProcesses[index - delta] = procInfo;
         }
         
         GetSystemTimes(out SystemTimes prevSysTimes);

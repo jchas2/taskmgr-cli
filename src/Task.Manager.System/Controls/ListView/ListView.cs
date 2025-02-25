@@ -151,7 +151,7 @@ public class ListView : Control
         }
 
         _terminal.Write(_buffer.ToString());
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - _buffer.Length);
+        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - c);
     }
     
     private void DrawItems()

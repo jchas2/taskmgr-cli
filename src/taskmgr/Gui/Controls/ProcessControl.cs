@@ -29,7 +29,12 @@ public sealed class ProcessControl : Control
         _systemStatistics = new SystemStatistics();
         
         _headerControl = new HeaderControl(Terminal);
+        
         _listView = new ListView(Terminal);
+        _listView.BackgroundHighlightColour = ConsoleColor.Cyan;
+        _listView.ForegroundHighlightColour = ConsoleColor.Black;
+        _listView.BackgroundColour = ConsoleColor.Black;
+        _listView.ForegroundColour = ConsoleColor.White;
         
         Controls.Add(_headerControl);
         Controls.Add(_listView);
