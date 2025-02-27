@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
@@ -10,6 +11,39 @@ namespace Task.Manager.Gui.Controls;
 
 public sealed class ProcessControl : Control
 {
+    private class ProcessListViewItem : ListViewItem
+    {
+        private ProcessInfo _processInfo;
+
+        public ProcessListViewItem(
+            ProcessInfo processInfo,
+            ConsoleColor backgroundColor,
+            ConsoleColor foregroundColor)
+            : base(processInfo.ExeName ?? string.Empty, backgroundColor, foregroundColor)
+        {
+            var userSubItem = new ListViewSubItem(this, processInfo.UserName ?? string.Empty);
+            var priSubItem = new ListViewSubItem(this, processInfo.BasePriority.ToString());
+            var cpuSubItem = new ListViewSubItem(this, (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture));
+        
+            SubItems.Add(userSubItem);
+            SubItems.Add(priSubItem);
+            SubItems.Add(cpuSubItem);
+            
+            _processInfo = processInfo;
+        }
+
+        public ProcessInfo ProcessInfo
+        {
+            get => _processInfo;
+            set {
+                _processInfo = value;
+                SubItems[0].Text = _processInfo.ExeName ?? string.Empty;
+                SubItems[1].Text = _processInfo.BasePriority.ToString();
+                SubItems[2].Text = (_processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
+            } 
+        }
+    }
+    
     private ProcessInfo[] _allProcesses;
     private readonly object _processLock = new();
     private readonly IProcesses _processes;
@@ -98,7 +132,7 @@ public sealed class ProcessControl : Control
 
         while (false == token.IsCancellationRequested) {
             GetTotalSystemTimes();
-            UpdateListItems();
+            UpdateListViewItems();
             Draw();
 
             var startTime = DateTime.Now;
@@ -156,17 +190,41 @@ public sealed class ProcessControl : Control
         }
     }
 
-    private void UpdateListItems()
+    private void UpdateListViewItems()
     {
         lock (_processLock) {
             if (_listView.Items.Count == 0) {
+                
                 for (int i = 0; i < _allProcesses.Length; i++) {
-                    var item = new ListViewItem(_allProcesses[i].ExeName ?? string.Empty);
+                    var item = new ProcessListViewItem(_allProcesses[i], BackgroundColour, ForegroundColour);
+                    _listView.Items.Add(item);
+                }
+                
+                return;
+            }
+
+            for (int i = 0; i < _allProcesses.Length; i++) {
+                bool found = false;
+                
+                for (int j = 0; j < _listView.Items.Count; j++) {
+                    var item = _listView.Items[j] as ProcessListViewItem;
+                    
+                    if (item == null) {
+                        continue;
+                    }
+                    
+                    if (_allProcesses[i].Pid == item.ProcessInfo.Pid) {
+                        item.ProcessInfo = _allProcesses[i];
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (false == found) {
+                    var item = new ProcessListViewItem(_allProcesses[i], BackgroundColour, ForegroundColour);
                     _listView.Items.Add(item);
                 }
             }
-            
-            
         }
     }
 }
