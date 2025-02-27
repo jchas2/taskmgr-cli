@@ -112,7 +112,7 @@ public class ListViewItem
         ArgumentNullException.ThrowIfNull(subItems, nameof(subItems));
         _subItems.AddRange(subItems);
     }
-    
+
     internal int SubItemCount => _subItems.Count;
     
     public ListViewSubItemCollection SubItems => _subItemCollection;
