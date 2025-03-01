@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
-using System.Runtime.InteropServices;
+using Task.Manager.Configuration;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.ListView;
@@ -9,41 +9,8 @@ using Task.Manager.System.Process;
 
 namespace Task.Manager.Gui.Controls;
 
-public sealed class ProcessControl : Control
+public sealed partial class ProcessControl : Control
 {
-    private class ProcessListViewItem : ListViewItem
-    {
-        private ProcessInfo _processInfo;
-
-        public ProcessListViewItem(
-            ProcessInfo processInfo,
-            ConsoleColor backgroundColor,
-            ConsoleColor foregroundColor)
-            : base(processInfo.ExeName ?? string.Empty, backgroundColor, foregroundColor)
-        {
-            var userSubItem = new ListViewSubItem(this, processInfo.UserName ?? string.Empty);
-            var priSubItem = new ListViewSubItem(this, processInfo.BasePriority.ToString());
-            var cpuSubItem = new ListViewSubItem(this, (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture));
-        
-            SubItems.Add(userSubItem);
-            SubItems.Add(priSubItem);
-            SubItems.Add(cpuSubItem);
-            
-            _processInfo = processInfo;
-        }
-
-        public ProcessInfo ProcessInfo
-        {
-            get => _processInfo;
-            set {
-                _processInfo = value;
-                SubItems[0].Text = _processInfo.ExeName ?? string.Empty;
-                SubItems[1].Text = _processInfo.BasePriority.ToString();
-                SubItems[2].Text = (_processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
-            } 
-        }
-    }
-    
     private ProcessInfo[] _allProcesses;
     private readonly object _processLock = new();
     private readonly IProcesses _processes;
@@ -54,7 +21,11 @@ public sealed class ProcessControl : Control
     private readonly HeaderControl _headerControl;
     private readonly ListView _listView;
     
-    public ProcessControl(ISystemTerminal terminal, IProcesses processes, ISystemInfo systemInfo)
+    public ProcessControl(
+        ISystemTerminal terminal, 
+        IProcesses processes, 
+        ISystemInfo systemInfo,
+        Theme theme)
         : base(terminal)
     {
         _allProcesses = [];
@@ -63,15 +34,26 @@ public sealed class ProcessControl : Control
         _systemStatistics = new SystemStatistics();
         
         _headerControl = new HeaderControl(Terminal);
+        _headerControl.BackgroundColour = theme.Background;
+        _headerControl.ForegroundColour = theme.Foreground;
+        _headerControl.MenubarColour = theme.Menubar;
         
         _listView = new ListView(Terminal);
-        _listView.BackgroundHighlightColour = ConsoleColor.Cyan;
-        _listView.ForegroundHighlightColour = ConsoleColor.Black;
-        _listView.BackgroundColour = ConsoleColor.Black;
-        _listView.ForegroundColour = ConsoleColor.White;
+        _listView.BackgroundHighlightColour = theme.BackgroundHighlight;
+        _listView.ForegroundHighlightColour = theme.ForegroundHighlight;
+        _listView.BackgroundColour = theme.Background;
+        _listView.ForegroundColour = theme.Foreground;
+        _listView.HeaderBackgroundColour = theme.HeaderBackground;
+        _listView.HeaderForegroundColour = theme.HeaderForeground;
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Process"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("User"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Pri"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Cpu%"));
         
         Controls.Add(_headerControl);
         Controls.Add(_listView);
+        
+        Theme = theme;
     }
 
     private void Draw()
@@ -132,6 +114,7 @@ public sealed class ProcessControl : Control
 
         while (false == token.IsCancellationRequested) {
             GetTotalSystemTimes();
+            UpdateColumnHeaders();
             UpdateListViewItems();
             Draw();
 
@@ -190,20 +173,41 @@ public sealed class ProcessControl : Control
         }
     }
 
+    private Theme Theme { get; }
+
+    private void UpdateColumnHeaders()
+    {
+        // TODO: Sizing metrics on terminal width.
+        _listView.ColumnHeaders[(int)Columns.Process].Width = 32;
+        _listView.ColumnHeaders[(int)Columns.User].Width = 16;
+        _listView.ColumnHeaders[(int)Columns.Priority].Width = 4;
+        _listView.ColumnHeaders[(int)Columns.Cpu].Width = 7;
+
+        for (int i = 0; i < (int)Columns.Count; i++) {
+            _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
+            _listView.ColumnHeaders[i].ForegroundColour = Theme.HeaderForeground;
+        }
+    }
+    
     private void UpdateListViewItems()
     {
         lock (_processLock) {
+
+            var sortedProcesses = _allProcesses
+                .OrderByDescending(p => p.CpuUserTimePercent)
+                .ToArray();
+            
             if (_listView.Items.Count == 0) {
                 
-                for (int i = 0; i < _allProcesses.Length; i++) {
-                    var item = new ProcessListViewItem(_allProcesses[i], BackgroundColour, ForegroundColour);
+                for (int i = 0; i < sortedProcesses.Count(); i++) {
+                    var item = new ProcessListViewItem(ref sortedProcesses[i], Theme);
                     _listView.Items.Add(item);
                 }
                 
                 return;
             }
 
-            for (int i = 0; i < _allProcesses.Length; i++) {
+            for (int i = 0; i < sortedProcesses.Length; i++) {
                 bool found = false;
                 
                 for (int j = 0; j < _listView.Items.Count; j++) {
@@ -213,16 +217,20 @@ public sealed class ProcessControl : Control
                         continue;
                     }
                     
-                    if (_allProcesses[i].Pid == item.ProcessInfo.Pid) {
-                        item.ProcessInfo = _allProcesses[i];
+                    if (sortedProcesses[i].Pid == item.Pid) {
+                        item.UpdateItem(ref sortedProcesses[i]);
+                        
+                        _listView.Items.Remove(item);
+                        _listView.Items.InsertAt(i, item);
+                        
                         found = true;
                         break;
                     }
                 }
 
                 if (false == found) {
-                    var item = new ProcessListViewItem(_allProcesses[i], BackgroundColour, ForegroundColour);
-                    _listView.Items.Add(item);
+                    var item = new ProcessListViewItem(ref sortedProcesses[i], Theme);
+                    _listView.Items.InsertAt(i, item);
                 }
             }
         }

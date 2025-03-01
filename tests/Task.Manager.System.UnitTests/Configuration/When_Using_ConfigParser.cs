@@ -64,9 +64,12 @@ error=red
 foreground=darkgray
 foreground-highlight=white
 menubar=gray
-range-high=red
-range-low=green
-range-mid=yellow
+range-high-background=red
+range-low-background=green
+range-mid-background=yellow
+range-high-foreground=white
+range-low-foreground=black
+range-mid-foreground=black
 process-header=cyan
 
 [theme-mono]
@@ -76,9 +79,12 @@ error=gray
 foreground=darkgray
 foreground-highlight=white
 menubar=gray
-range-high=gray
-range-low=white
-range-mid=darkgray
+range-high-background=gray
+range-low-background=white
+range-mid-background=darkgray
+range-high-foreground=white
+range-low-foreground=black
+range-mid-foreground=black
 process-header=darkgray
 ";
     

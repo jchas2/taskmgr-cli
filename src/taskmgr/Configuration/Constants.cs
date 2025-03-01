@@ -37,8 +37,11 @@ public sealed class Constants
         public const string HeaderForeground = "header-foreground";
         public const string HeaderBackground = "header-background";
         public const string Menubar = "menubar";
-        public const string RangeHigh = "range-high";
-        public const string RangeLow = "range-low";
-        public const string RangeMid = "range-mid";
+        public const string RangeHighBackground = "range-high-background";
+        public const string RangeLowBackground = "range-low-background";
+        public const string RangeMidBackground = "range-mid-background";
+        public const string RangeHighForeground = "range-high-foreground";
+        public const string RangeLowForeground = "range-low-foreground";
+        public const string RangeMidForeground = "range-mid-foreground";
     }
 }
