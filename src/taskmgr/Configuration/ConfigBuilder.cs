@@ -49,27 +49,33 @@ public static class ConfigBuilder
             case Constants.Sections.ThemeColour:
                 return new ConfigSection(Constants.Sections.ThemeColour)
                     .Add(Constants.Keys.Background, "black")
-                    .Add(Constants.Keys.BackgroundHighlight, "black")
+                    .Add(Constants.Keys.BackgroundHighlight, "cyan")
                     .Add(Constants.Keys.Error, "red")
                     .Add(Constants.Keys.Foreground, "darkgray")
-                    .Add(Constants.Keys.ForegroundHighlight, "white")
+                    .Add(Constants.Keys.ForegroundHighlight, "black")
                     .Add(Constants.Keys.Menubar, "gray")
-                    .Add(Constants.Keys.RangeHigh, "red")
-                    .Add(Constants.Keys.RangeLow, "darkgreen")
-                    .Add(Constants.Keys.RangeMid, "darkyellow")
-                    .Add(Constants.Keys.HeaderBackground, "cyan")
-                    .Add(Constants.Keys.HeaderForeground, "white");
+                    .Add(Constants.Keys.RangeHighBackground, "red")
+                    .Add(Constants.Keys.RangeLowBackground, "darkgreen")
+                    .Add(Constants.Keys.RangeMidBackground, "darkyellow")
+                    .Add(Constants.Keys.RangeHighForeground, "white")
+                    .Add(Constants.Keys.RangeLowForeground, "black")
+                    .Add(Constants.Keys.RangeMidForeground, "black")
+                    .Add(Constants.Keys.HeaderBackground, "darkgreen")
+                    .Add(Constants.Keys.HeaderForeground, "black");
             case Constants.Sections.ThemeMono:
                 return new ConfigSection(Constants.Sections.ThemeMono)
                     .Add(Constants.Keys.Background, "black")
-                    .Add(Constants.Keys.BackgroundHighlight, "black")
+                    .Add(Constants.Keys.BackgroundHighlight, "white")
                     .Add(Constants.Keys.Error, "gray")
                     .Add(Constants.Keys.Foreground, "darkgray")
-                    .Add(Constants.Keys.ForegroundHighlight, "white")
+                    .Add(Constants.Keys.ForegroundHighlight, "black")
                     .Add(Constants.Keys.Menubar, "gray")
-                    .Add(Constants.Keys.RangeHigh, "gray")
-                    .Add(Constants.Keys.RangeLow, "white")
-                    .Add(Constants.Keys.RangeMid, "darkgray")
+                    .Add(Constants.Keys.RangeHighBackground, "gray")
+                    .Add(Constants.Keys.RangeLowBackground, "white")
+                    .Add(Constants.Keys.RangeMidBackground, "darkgray")
+                    .Add(Constants.Keys.RangeHighForeground, "white")
+                    .Add(Constants.Keys.RangeLowForeground, "white")
+                    .Add(Constants.Keys.RangeMidForeground, "black")
                     .Add(Constants.Keys.HeaderBackground, "darkgray")
                     .Add(Constants.Keys.HeaderForeground, "white");
             default:
@@ -120,9 +126,9 @@ public static class ConfigBuilder
             { Constants.Keys.Foreground, "darkgray" },
             { Constants.Keys.ForegroundHighlight, "white" },
             { Constants.Keys.Menubar, "gray" },
-            { Constants.Keys.RangeHigh, "red" },
-            { Constants.Keys.RangeLow, "darkgreen" },
-            { Constants.Keys.RangeMid, "darkyellow" },
+            { Constants.Keys.RangeHighBackground, "red" },
+            { Constants.Keys.RangeLowBackground, "darkgreen" },
+            { Constants.Keys.RangeMidBackground, "darkyellow" },
             { Constants.Keys.HeaderBackground, "cyan" },
             { Constants.Keys.HeaderForeground, "white" }
         };
@@ -134,9 +140,9 @@ public static class ConfigBuilder
             { Constants.Keys.Foreground, "darkgray" },
             { Constants.Keys.ForegroundHighlight, "white" },
             { Constants.Keys.Menubar, "gray" },
-            { Constants.Keys.RangeHigh, "gray" },
-            { Constants.Keys.RangeLow, "white" },
-            { Constants.Keys.RangeMid, "darkgray" },
+            { Constants.Keys.RangeHighBackground, "gray" },
+            { Constants.Keys.RangeLowBackground, "white" },
+            { Constants.Keys.RangeMidBackground, "darkgray" },
             { Constants.Keys.HeaderBackground, "darkgray" },
             { Constants.Keys.HeaderForeground, "white" }
         };

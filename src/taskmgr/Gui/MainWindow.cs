@@ -27,7 +27,11 @@ public sealed class MainWindow : Control
 
         _processor = new Processes();
         
-        _processControl = new ProcessControl(terminal, _processor, _runContext.SystemInfo);
+        _processControl = new ProcessControl(
+            terminal, 
+            _processor, 
+            _runContext.SystemInfo,
+            _theme);
         
         Controls.Add(_processControl);
     }

@@ -56,6 +56,14 @@ public sealed class ListViewItemCollection : IEnumerable<ListViewItem>
         return _owner.IndexOfItem(item);
     }
 
+    public void InsertAt(int index, ListViewItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, _owner.Items.Count, nameof(index));
+        _owner.InsertItem(index, item);
+    }
+    
     public void Remove(ListViewItem item)
     {
         ArgumentNullException.ThrowIfNull(item, nameof(item));

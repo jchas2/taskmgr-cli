@@ -69,8 +69,6 @@ public class ListView : Control
     private void DrawHeader()
     {
         _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y - 1);
-        _terminal.BackgroundColor = HeaderBackgroundColour;
-        _terminal.ForegroundColor = HeaderForegroundColour;
 
         if (ColumnHeaderCount == 0) {
             _terminal.WriteEmptyLine();
@@ -95,7 +93,7 @@ public class ListView : Control
                 .ToColour(_columnHeaders[i].ForegroundColour, _columnHeaders[i].BackgroundColour));
 
             if ((i + 1) < ColumnHeaderCount) {
-                _buffer.Append(' ');
+                _buffer.Append(" ".ToColour(_columnHeaders[i].ForegroundColour, _columnHeaders[i].BackgroundColour));
                 c++;
             }
             
@@ -103,7 +101,7 @@ public class ListView : Control
         }
         
         _terminal.Write(_buffer.ToString());
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - _buffer.Length);
+        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - c);
     }
 
     private void DrawItem(
@@ -186,7 +184,7 @@ public class ListView : Control
     internal ListViewColumnHeader GetColumnHeaderByIndex(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _columnHeaders.Count, nameof(index));
         return _columnHeaders[index];
     }
     
