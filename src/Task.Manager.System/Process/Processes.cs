@@ -4,7 +4,7 @@ using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
 
-public class Processes : IProcesses
+public partial class Processes : IProcesses
 {
     private readonly ISystemInfo _systemInfo;
 
@@ -51,7 +51,7 @@ public class Processes : IProcesses
                 ParentPid = 0,
                 ExeName = procs[index].ProcessName,
                 FileDescription = string.Empty,
-                UserName = string.Empty,
+                UserName = GetProcessUserName(procs[index]),
                 CmdLine = string.Empty,
                 UsedMemory = procs[index].VirtualMemorySize64,
                 DiskOperations = 0,

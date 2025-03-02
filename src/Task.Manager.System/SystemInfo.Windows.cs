@@ -9,6 +9,8 @@ using Microsoft.Win32;
 
 namespace Task.Manager.System;
 
+#pragma warning disable CA1416 // Validate platform compatibility        
+
 public partial class SystemInfo
 {
 #if __WIN32__
@@ -22,12 +24,6 @@ public partial class SystemInfo
         systemStatistics.CpuFrequency = 0;
         systemStatistics.CpuName = string.Empty;
 
-        if (false == RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-            return false;
-        }
-        
-        /* Compiler will still complain with a "CA1416: Validate platform compatibility" even with the above IsOSPlatform guard */
-#pragma warning disable CA1416 // Validate platform compatibility        
         var key = Registry.LocalMachine.OpenSubKey(REG_PATH);
 #if DEBUG
         Debug.Assert(null != key, $"Failed OpenSubKey {REG_PATH}");
@@ -55,8 +51,6 @@ public partial class SystemInfo
         }
         
         systemStatistics.CpuFrequency = frequencyInt32;
-
-#pragma warning disable CA1416 // Validate platform compatibility
         return true;
     }
     
@@ -127,3 +121,5 @@ public partial class SystemInfo
     }
 #endif
 }
+
+#pragma warning restore CA1416 // Validate platform compatibility
