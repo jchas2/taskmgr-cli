@@ -89,15 +89,10 @@ public class ListView : Control
                 ? "{0," + _columnHeaders[i].Width.ToString() + "}"
                 : "{0,-" + _columnHeaders[i].Width.ToString() + "}";
 
-            _buffer.Append(string.Format(formatStr, _columnHeaders[i].Text)
+            _buffer.Append((string.Format(formatStr, _columnHeaders[i].Text) + ' ')
                 .ToColour(_columnHeaders[i].ForegroundColour, _columnHeaders[i].BackgroundColour));
-
-            if ((i + 1) < ColumnHeaderCount) {
-                _buffer.Append(" ".ToColour(_columnHeaders[i].ForegroundColour, _columnHeaders[i].BackgroundColour));
-                c++;
-            }
             
-            c+= _columnHeaders[i].Width;
+            c+= _columnHeaders[i].Width + 1;
         }
         
         _terminal.Write(_buffer.ToString());
@@ -117,7 +112,6 @@ public class ListView : Control
         for (int i = 0; i < item.SubItemCount; i++) {
             var subItem = item.SubItems[i];
             
-            /* Apply column styling if a column is defined for the subitem. */
             bool rightAligned = false;
             int columnWidth = DefaultColumnWidth;
 
@@ -141,10 +135,16 @@ public class ListView : Control
             ConsoleColor backgroundColour = highlight
                 ? BackgroundHighlightColour
                 : subItem.BackgroundColor;
-                
-            _buffer.Append((string.Format(formatStr, subItem.Text) + ' ')
-                .ToColour(foregroundColour, backgroundColour));
 
+            if (subItem.Text.Length > columnWidth) {
+                _buffer.Append((string.Format(formatStr, subItem.Text.Substring(0, columnWidth)) + ' ')
+                    .ToColour(foregroundColour, backgroundColour));
+            }
+            else {
+                _buffer.Append((string.Format(formatStr, subItem.Text) + ' ')
+                    .ToColour(foregroundColour, backgroundColour));
+            }
+            
             c += columnWidth + 1;
         }
 

@@ -179,9 +179,11 @@ public sealed partial class ProcessControl : Control
     {
         // TODO: Sizing metrics on terminal width.
         _listView.ColumnHeaders[(int)Columns.Process].Width = 32;
-        _listView.ColumnHeaders[(int)Columns.User].Width = 32;
+        _listView.ColumnHeaders[(int)Columns.User].Width = 16;
         _listView.ColumnHeaders[(int)Columns.Priority].Width = 4;
+        _listView.ColumnHeaders[(int)Columns.Priority].RightAligned = true;
         _listView.ColumnHeaders[(int)Columns.Cpu].Width = 7;
+        _listView.ColumnHeaders[(int)Columns.Cpu].RightAligned = true;
 
         for (int i = 0; i < (int)Columns.Count; i++) {
             _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
