@@ -178,7 +178,12 @@ public sealed partial class ProcessControl : Control
     private void UpdateColumnHeaders()
     {
         // TODO: Sizing metrics on terminal width.
+#if __APPLE__
+        /* Bug on MacOS where ProcessName returns truncated 15 char value. */
+        _listView.ColumnHeaders[(int)Columns.Process].Width = 16;
+#elif __WIN32__ 
         _listView.ColumnHeaders[(int)Columns.Process].Width = 32;
+#endif
         _listView.ColumnHeaders[(int)Columns.User].Width = 16;
         _listView.ColumnHeaders[(int)Columns.Priority].Width = 4;
         _listView.ColumnHeaders[(int)Columns.Priority].RightAligned = true;

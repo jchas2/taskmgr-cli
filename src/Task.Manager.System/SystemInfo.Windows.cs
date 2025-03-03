@@ -26,7 +26,7 @@ public partial class SystemInfo
 
         var key = Registry.LocalMachine.OpenSubKey(REG_PATH);
 #if DEBUG
-        Debug.Assert(null != key, $"Failed OpenSubKey {REG_PATH}");
+        Debug.Assert(null != key, $"Failed OpenSubKey() {REG_PATH}");
 #endif
         if (null == key) {
             return false;
