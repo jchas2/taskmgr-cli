@@ -138,8 +138,19 @@ public partial class Processes : IProcesses
     private void MapProcessTimes(SysDiag::Process proc, ref ProcessTimeInfo ptInfo)
     {
         ptInfo.DiskOperations = 0;
-        ptInfo.KernelTime = proc.PrivilegedProcessorTime.Ticks;
-        ptInfo.UserTime = proc.UserProcessorTime.Ticks;
+
+        try {
+            /*
+             * On MacOS, these properties can throw an Exception even when running as root.
+             */
+            ptInfo.KernelTime = proc.PrivilegedProcessorTime.Ticks;
+            ptInfo.UserTime = proc.UserProcessorTime.Ticks;
+        }
+        catch (Exception e) {
+#if DEBUG
+            SysDiag.Debug.WriteLine($"Failed PrivilegedProcessorTime() {proc.ProcessName} {proc.Id} with {e.Message}");
+#endif
+        }
     }
 
     private IntPtr? TryGetProcessHandle(SysDiag::Process proc)
@@ -152,7 +163,10 @@ public partial class Processes : IProcesses
              */
             return proc.Handle;
         }
-        catch (Exception) {
+        catch (Exception e) {
+#if DEBUG
+            SysDiag.Debug.WriteLine($"Failed Handle() {proc.ProcessName} {proc.Id} with {e.Message}");
+#endif
             return null;
         }
     }
