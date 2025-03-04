@@ -1,11 +1,11 @@
-﻿using Task.Manager.Interop.Mach;
+﻿using System.Runtime.InteropServices;
+using Task.Manager.Interop.Mach;
 
 namespace Task.Manager.System.Process;
 
 public partial class Processes : IProcesses
 {
 #if __APPLE__    
-    
     private static unsafe ProcInfo.proc_taskallinfo? GetProcessInfoById(int pid)
     {
         int size = sizeof(ProcInfo.proc_taskallinfo);
@@ -21,11 +21,32 @@ public partial class Processes : IProcesses
         return (result == size ? new ProcInfo.proc_taskallinfo?(info) : null);
     }
     
-    private string GetProcessUserName(global::System.Diagnostics.Process process)
+    private unsafe string GetProcessUserName(global::System.Diagnostics.Process process)
     {
         ProcInfo.proc_taskallinfo? info = GetProcessInfoById(process.Id);
 
-        return "";
+        if (null == info) {
+            return string.Empty;
+        }
+
+        uint uid = info.Value.pbsd.pbi_uid;
+        const int bufferSize = Pwd.Passwd.InitialBufferSize;
+        byte* buf = stackalloc byte[bufferSize];
+
+        Pwd.Passwd passwd;
+        
+        int error = Pwd.GetPwUidR(
+            uid, 
+            out passwd, 
+            buf, 
+            bufferSize);
+        
+        if (0 == error && null != passwd.Name) {
+            string userName = Marshal.PtrToStringUTF8((IntPtr)passwd.Name) ?? string.Empty;
+            return userName;
+        }
+        
+        return string.Empty;
     }
 #endif
 }

@@ -12,58 +12,58 @@ public class ProcInfo
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct proc_bsdinfo
     {
-        internal uint       pbi_flags;
-        internal uint       pbi_status;
-        internal uint       pbi_xstatus;
-        internal uint       pbi_pid;
-        internal uint       pbi_ppid;
-        internal uint       pbi_uid;
-        internal uint       pbi_gid;
-        internal uint       pbi_ruid;
-        internal uint       pbi_rgid;
-        internal uint       pbi_svuid;
-        internal uint       pbi_svgid;
-        internal uint       reserved;
-        internal fixed byte pbi_comm[MAXCOMLEN];
-        internal fixed byte pbi_name[MAXCOMLEN * 2];
-        internal uint       pbi_nfiles;
-        internal uint       pbi_pgid;
-        internal uint       pbi_pjobc;
-        internal uint       e_tdev;
-        internal uint       e_tpgid;
-        internal int        pbi_nice;
-        internal ulong      pbi_start_tvsec;
-        internal ulong      pbi_start_tvusec;
+        public uint       pbi_flags;
+        public uint       pbi_status;
+        public uint       pbi_xstatus;
+        public uint       pbi_pid;
+        public uint       pbi_ppid;
+        public uint       pbi_uid;
+        public uint       pbi_gid;
+        public uint       pbi_ruid;
+        public uint       pbi_rgid;
+        public uint       pbi_svuid;
+        public uint       pbi_svgid;
+        public uint       reserved;
+        public fixed byte pbi_comm[MAXCOMLEN];
+        public fixed byte pbi_name[MAXCOMLEN * 2];
+        public uint       pbi_nfiles;
+        public uint       pbi_pgid;
+        public uint       pbi_pjobc;
+        public uint       e_tdev;
+        public uint       e_tpgid;
+        public int        pbi_nice;
+        public ulong      pbi_start_tvsec;
+        public ulong      pbi_start_tvusec;
     }
     
     [StructLayout(LayoutKind.Sequential)]
     public struct proc_taskinfo
     {
-        internal ulong   pti_virtual_size;
-        internal ulong   pti_resident_size;
-        internal ulong   pti_total_user;
-        internal ulong   pti_total_system;
-        internal ulong   pti_threads_user;
-        internal ulong   pti_threads_system;
-        internal int     pti_policy;
-        internal int     pti_faults;
-        internal int     pti_pageins;
-        internal int     pti_cow_faults;
-        internal int     pti_messages_sent;
-        internal int     pti_messages_received;
-        internal int     pti_syscalls_mach;
-        internal int     pti_syscalls_unix;
-        internal int     pti_csw;
-        internal int     pti_threadnum;
-        internal int     pti_numrunning;
-        internal int     pti_priority;
+        public ulong   pti_virtual_size;
+        public ulong   pti_resident_size;
+        public ulong   pti_total_user;
+        public ulong   pti_total_system;
+        public ulong   pti_threads_user;
+        public ulong   pti_threads_system;
+        public int     pti_policy;
+        public int     pti_faults;
+        public int     pti_pageins;
+        public int     pti_cow_faults;
+        public int     pti_messages_sent;
+        public int     pti_messages_received;
+        public int     pti_syscalls_mach;
+        public int     pti_syscalls_unix;
+        public int     pti_csw;
+        public int     pti_threadnum;
+        public int     pti_numrunning;
+        public int     pti_priority;
     }
     
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct proc_taskallinfo
     {
-        internal proc_bsdinfo    pbsd;
-        internal proc_taskinfo   ptinfo;
+        public proc_bsdinfo    pbsd;
+        public proc_taskinfo   ptinfo;
     }
 
     [DllImport(Libraries.LibProc, SetLastError = true)]
