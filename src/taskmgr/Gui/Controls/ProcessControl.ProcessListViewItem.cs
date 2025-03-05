@@ -16,9 +16,11 @@ public partial class ProcessControl
             Pid = processInfo.Pid;
 
             SubItems.AddRange(
+                new ListViewSubItem(this, processInfo.Pid.ToString()),
                 new ListViewSubItem(this, processInfo.UserName ?? string.Empty),
                 new ListViewSubItem(this, processInfo.BasePriority.ToString()),
-                new ListViewSubItem(this, processInfo.CpuTimePercent.ToString(CultureInfo.InvariantCulture)));
+                new ListViewSubItem(this, processInfo.CpuTimePercent.ToString(CultureInfo.InvariantCulture)),
+                new ListViewSubItem(this, processInfo.ThreadCount.ToString()));
 
             UpdateItem(ref processInfo);
         }
@@ -53,9 +55,11 @@ public partial class ProcessControl
             }
             
             SubItems[0].Text = processInfo.ExeName ?? string.Empty;
-            SubItems[1].Text = processInfo.UserName ?? string.Empty;
-            SubItems[2].Text = processInfo.BasePriority.ToString();
-            SubItems[3].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
+            SubItems[1].Text = processInfo.Pid.ToString();
+            SubItems[2].Text = processInfo.UserName ?? string.Empty;
+            SubItems[3].Text = processInfo.BasePriority.ToString();
+            SubItems[4].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
+            SubItems[5].Text = processInfo.ThreadCount.ToString();
         }
     }
 }
