@@ -9,6 +9,15 @@ namespace Task.Manager.System;
 public partial class SystemInfo
 {
 #if __APPLE__
+    private const int NanosecondsTo100NanosecondsFactor = 100;
+    
+    private static TimeSpan CalculateSystemTime(ulong systemTime)
+    {
+        return new TimeSpan(
+            Convert.ToInt64(systemTime / NanosecondsTo100NanosecondsFactor * 1 / 1));
+    }
+    
+    
     private static unsafe bool GetCpuInfoInternal(SystemStatistics systemStatistics)
     {
         systemStatistics.CpuCores = (ulong)Environment.ProcessorCount;
@@ -54,9 +63,14 @@ public partial class SystemInfo
  
         // TODO: Look at Process.OSX.MapTimes. These ticks could be in nanoseconds, which could
         // be throwing off the calculations later on.
-        systemTimes.Idle = (long)info.cpu_ticks[MachHost.CPU_STATE_IDLE];
-        systemTimes.Kernel = (long)info.cpu_ticks[MachHost.CPU_STATE_SYSTEM];
-        systemTimes.User = (long)info.cpu_ticks[MachHost.CPU_STATE_USER];
+
+        long cpuTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_IDLE]).Ticks;
+        long kernelTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_SYSTEM]).Ticks;
+        long userTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_USER]).Ticks;
+        
+        systemTimes.Idle = (long)cpuTicks;
+        systemTimes.Kernel = (long)kernelTicks;
+        systemTimes.User = (long)userTicks;
 
         Marshal.FreeHGlobal(cpuInfoPtr);
         
