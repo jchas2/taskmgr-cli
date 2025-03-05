@@ -46,9 +46,11 @@ public sealed partial class ProcessControl : Control
         _listView.HeaderBackgroundColour = theme.HeaderBackground;
         _listView.HeaderForegroundColour = theme.HeaderForeground;
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("Process"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Pid"));
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("User"));
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("Pri"));
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("Cpu%"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Thrds"));
         
         Controls.Add(_headerControl);
         Controls.Add(_listView);
@@ -184,11 +186,14 @@ public sealed partial class ProcessControl : Control
 #elif __WIN32__ 
         _listView.ColumnHeaders[(int)Columns.Process].Width = 32;
 #endif
+        _listView.ColumnHeaders[(int)Columns.Pid].Width = 7;
         _listView.ColumnHeaders[(int)Columns.User].Width = 16;
         _listView.ColumnHeaders[(int)Columns.Priority].Width = 4;
         _listView.ColumnHeaders[(int)Columns.Priority].RightAligned = true;
         _listView.ColumnHeaders[(int)Columns.Cpu].Width = 7;
         _listView.ColumnHeaders[(int)Columns.Cpu].RightAligned = true;
+        _listView.ColumnHeaders[(int)Columns.Threads].Width = 7;
+        _listView.ColumnHeaders[(int)Columns.Threads].RightAligned = true;
 
         for (int i = 0; i < (int)Columns.Count; i++) {
             _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
