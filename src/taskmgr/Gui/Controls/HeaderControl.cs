@@ -84,7 +84,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         
         nchars += DrawColumnLabelValue(
             "  Cpu:     ",
-            ((systemStats.CpuPercentKernelTime + systemStats.CpuPercentUserTime) / 100).ToString("000.0%"),
+            (totalCpu / 100).ToString("000.0%"),
             userColour);
         
         nchars += DrawColumnLabelValue(
