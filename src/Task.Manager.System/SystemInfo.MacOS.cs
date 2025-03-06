@@ -14,7 +14,7 @@ public partial class SystemInfo
     private static TimeSpan CalculateSystemTime(ulong systemTime)
     {
         return new TimeSpan(
-            Convert.ToInt64(systemTime / NanosecondsTo100NanosecondsFactor * 1 / 1));
+            (Convert.ToInt64(systemTime / NanosecondsTo100NanosecondsFactor)) / 100);
     }
     
     

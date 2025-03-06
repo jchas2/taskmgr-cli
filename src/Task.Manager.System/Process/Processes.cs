@@ -43,8 +43,8 @@ public partial class Processes : IProcesses
             
             var previousTimes = new ProcessTimeInfo();
             MapProcessTimes(procs[index], ref previousTimes);
-            
-            var procInfo = new ProcessInfo { 
+
+           var procInfo = new ProcessInfo { 
                 Pid = procs[index].Id,
                 ThreadCount = procs[index].Threads.Count,
                 BasePriority = procs[index].BasePriority,
@@ -65,6 +65,10 @@ public partial class Processes : IProcesses
                 CurrCpuUserTime = 0
             };
 
+            if (false == procs[index].ProcessName.Equals(procInfo.ExeName, StringComparison.InvariantCultureIgnoreCase)) {
+                procInfo.ExeName = procs[index].ProcessName;                
+            }
+            
             if (index == _allProcesses.Length) {
                 Array.Resize(ref _allProcesses, _allProcesses.Length * 2);
             }
@@ -83,9 +87,10 @@ public partial class Processes : IProcesses
         };
 
         long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User;
+        var currTimes = new ProcessTimeInfo();
         
         for (int i = 0; i < procs.Length; i++) {
-            var currTimes = new ProcessTimeInfo();
+            currTimes.Clear();
             GetProcessTimes(_allProcesses[i].Pid, ref currTimes);
 
             _allProcesses[i].CurrCpuKernelTime = currTimes.KernelTime;
@@ -146,11 +151,13 @@ public partial class Processes : IProcesses
             ptInfo.KernelTime = proc.PrivilegedProcessorTime.Ticks;
             ptInfo.UserTime = proc.UserProcessorTime.Ticks;
         }
+#pragma warning disable CS0168 // The variable is declared but never used
         catch (Exception e) {
 #if DEBUG
             SysDiag.Debug.WriteLine($"Failed PrivilegedProcessorTime() {proc.ProcessName} {proc.Id} with {e.Message}");
 #endif
         }
+#pragma warning restore CS0168 // The variable is declared but never used
     }
 
     private IntPtr? TryGetProcessHandle(SysDiag::Process proc)
@@ -163,11 +170,13 @@ public partial class Processes : IProcesses
              */
             return proc.Handle;
         }
+#pragma warning disable CS0168 // The variable is declared but never used
         catch (Exception e) {
 #if DEBUG
             SysDiag.Debug.WriteLine($"Failed Handle() {proc.ProcessName} {proc.Id} with {e.Message}");
 #endif
             return null;
         }
+#pragma warning restore CS0168 // The variable is declared but never used
     }
 }

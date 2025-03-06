@@ -164,11 +164,12 @@ public sealed class TaskMgrApp
     
     public int Run(string[] args)
     {
+#if !DEBUG
         if (false == _runContext.SystemInfo.IsRunningAsRoot()) {
             OutputWriter.Error.WriteLine("Application must be run as root user.".ToRed());
             return -1;
         }
-        
+#endif
         using var mutex = new Mutex(initiallyOwned: false, name: MutexId);
         
         if (false == mutex.WaitOne(timeout: TimeSpan.Zero, exitContext: false)) {
@@ -216,7 +217,7 @@ public sealed class TaskMgrApp
         configPath = string.Empty;
         
         try {
-            configPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            configPath = AppContext.BaseDirectory;
             return true;
         }
         catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is IOException) {
