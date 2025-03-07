@@ -9,10 +9,13 @@ public partial class Processes : IProcesses
     private readonly ISystemInfo _systemInfo;
 
     private const int INIT_BUFF_SIZE = 512;
-    private const int UPDATE_TIME_MS = 1000;
+    public const int UPDATE_TIME_MS = 2000;
     
     private ProcessInfo[] _allProcesses;
     private readonly bool _isWindows = false;
+    private int _processCount = 0;
+    private int _ghostProcessCount = 0;
+    private int _threadCount = 0;
     
     public Processes()
     {
@@ -26,7 +29,10 @@ public partial class Processes : IProcesses
         Array.Clear(_allProcesses, 0, _allProcesses.Length);
         SysDiag::Process[] procs = SysDiag::Process.GetProcesses();
         int delta = 0;
-
+        
+        _processCount = 0;
+        _threadCount = 0;
+        
         for (int index = 0; index < procs.Length; index++) {
 #if __WIN32__
             /* On Windows, ignore the system "idle" process auto assigned to Pid 0. */
@@ -74,6 +80,8 @@ public partial class Processes : IProcesses
             }
             
             _allProcesses[index - delta] = procInfo;
+            _processCount++;
+            _threadCount += procs[index].Threads.Count;
         }
         
         GetSystemTimes(out SystemTimes prevSysTimes);
@@ -108,6 +116,8 @@ public partial class Processes : IProcesses
             _allProcesses[i].CpuKernelTimePercent = (double)((100.0 * (double)procKernelDiff) / (double)totalSysTime);
             _allProcesses[i].CpuUserTimePercent = (double)((100.0 * (double)procUserDiff) / (double)totalSysTime);
         }
+
+        _ghostProcessCount = delta;
         
         return _allProcesses;
     }
@@ -160,6 +170,10 @@ public partial class Processes : IProcesses
 #pragma warning restore CS0168 // The variable is declared but never used
     }
 
+    public int GhostProcessCount => _ghostProcessCount;
+    public int ProcessCount => _processCount;
+    public int ThreadCount => _threadCount;
+    
     private IntPtr? TryGetProcessHandle(SysDiag::Process proc)
     {
         try {

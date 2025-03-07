@@ -124,9 +124,9 @@ public sealed partial class ProcessControl : Control
 
             while (true) {
                 // TODO: Handle input (up + down arrows etc. Simulate it here with a thread sleep.
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
                 var duration = DateTime.Now - startTime;
-                if (duration.TotalMilliseconds >= 1000) {
+                if (duration.TotalMilliseconds >= Processes.UPDATE_TIME_MS) {
                     break;
                 }
             }
@@ -141,6 +141,10 @@ public sealed partial class ProcessControl : Control
              * into the member array _allProcesses for thread-safe access to the data.
              */
             var allProcesses = _processes.GetAll();
+
+            _systemStatistics.ProcessCount = _processes.ProcessCount;
+            _systemStatistics.ThreadCount = _processes.ThreadCount;
+            _systemStatistics.GhostProcessCount = _processes.GhostProcessCount;
 
             if (allProcesses.Length == 0) {
                 continue;

@@ -14,7 +14,7 @@ public partial class SystemInfo
     private static TimeSpan CalculateSystemTime(ulong systemTime)
     {
         return new TimeSpan(
-            (Convert.ToInt64(systemTime / NanosecondsTo100NanosecondsFactor)) / 100);
+            (Convert.ToInt64(systemTime / NanosecondsTo100NanosecondsFactor) / 100));
     }
     
     
@@ -64,11 +64,11 @@ public partial class SystemInfo
         // TODO: Look at Process.OSX.MapTimes. These ticks could be in nanoseconds, which could
         // be throwing off the calculations later on.
 
-        long cpuTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_IDLE]).Ticks;
+        long idleTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_IDLE]).Ticks;
         long kernelTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_SYSTEM]).Ticks;
         long userTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_USER]).Ticks;
         
-        systemTimes.Idle = (long)cpuTicks;
+        systemTimes.Idle = (long)idleTicks;
         systemTimes.Kernel = (long)kernelTicks;
         systemTimes.User = (long)userTicks;
 
