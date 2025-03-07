@@ -155,7 +155,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         nchars = 4 + 1 + MetreWidth + 1;
 
         Terminal.WriteEmptyLineTo(nchars);
-        
+
         nlines++;
         
         nchars = DrawColumnLabelValue(
@@ -171,6 +171,25 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         nchars += DrawColumnLabelValue(
             "  Free:  ",
             ((double)(systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            ForegroundColour);
+        
+        Terminal.WriteEmptyLineTo(nchars);
+        
+        nlines++;
+        
+        nchars = DrawColumnLabelValue(
+            "Processes: ",
+            systemStats.ProcessCount.ToString(),
+            ForegroundColour);
+#if DEBUG        
+        nchars += DrawColumnLabelValue(
+            ", Ghosts: ",
+            systemStats.GhostProcessCount.ToString(),
+            ForegroundColour);
+#endif
+        nchars += DrawColumnLabelValue(
+            ", Threads: ",
+            systemStats.ThreadCount.ToString(),
             ForegroundColour);
         
         Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars);

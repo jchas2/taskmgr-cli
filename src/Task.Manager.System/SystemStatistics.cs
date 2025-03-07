@@ -27,4 +27,9 @@ public sealed class SystemStatistics
     /* Network */
     public string PublicIPv4Address { get; set; } = string.Empty;
     public string PrivateIPv4Address { get; set; } = string.Empty;
+    
+    /* Processes */
+    public int ProcessCount { get; set; }
+    public int GhostProcessCount { get; set; }
+    public int ThreadCount { get; set; }
 }
