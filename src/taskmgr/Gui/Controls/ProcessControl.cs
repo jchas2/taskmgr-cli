@@ -237,7 +237,10 @@ public sealed partial class ProcessControl : Control
                         item.UpdateItem(ref sortedProcesses[i]);
                         
                         _listView.Items.Remove(item);
-                        _listView.Items.InsertAt(i, item);
+                        
+                        int insertAt = i > _listView.Items.Count - 1 ? _listView.Items.Count - 1 : i;
+                        
+                        _listView.Items.InsertAt(insertAt, item);
                         
                         found = true;
                         break;
