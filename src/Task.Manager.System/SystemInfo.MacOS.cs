@@ -11,12 +11,22 @@ public partial class SystemInfo
 #if __APPLE__
     private const int NanosecondsTo100NanosecondsFactor = 100;
     
-    private static TimeSpan CalculateSystemTime(ulong systemTime)
+    private static unsafe TimeSpan CalculateSystemTime(ulong systemTime)
     {
+        MachTime.mach_timebase_info_data_t timeBase = default;
+        int result = MachTime.mach_timebase_info(&timeBase);
+        
+        Debug.Assert(result == 0, $"Failed mach_timebase_info(): {result}");
+        Debug.WriteLine($"timeBase error = {result}, numer = {timeBase.numer} denom = {timeBase.denom}");
+        
+        if (result != 0) {
+            timeBase.denom = 1;
+            timeBase.numer = 1;
+        }
+        
         return new TimeSpan(
-            (Convert.ToInt64(systemTime / NanosecondsTo100NanosecondsFactor) / 100));
+            (Convert.ToInt64(systemTime / NanosecondsTo100NanosecondsFactor * timeBase.numer / timeBase.denom)));
     }
-    
     
     private static unsafe bool GetCpuInfoInternal(SystemStatistics systemStatistics)
     {
@@ -61,17 +71,17 @@ public partial class SystemInfo
 
         var info = Marshal.PtrToStructure<MachHost.HostCpuLoadInfo>(cpuInfoPtr);
  
-        // TODO: Look at Process.OSX.MapTimes. These ticks could be in nanoseconds, which could
-        // be throwing off the calculations later on.
-
         long idleTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_IDLE]).Ticks;
         long kernelTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_SYSTEM]).Ticks;
         long userTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_USER]).Ticks;
+        long niceTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_NICE]).Ticks;
         
         systemTimes.Idle = (long)idleTicks;
         systemTimes.Kernel = (long)kernelTicks;
-        systemTimes.User = (long)userTicks;
+        systemTimes.User = (long)userTicks + (long)niceTicks;
 
+        Debug.WriteLine($"idleTicks = {idleTicks}, kernelTicks = {kernelTicks}, userTicks = {userTicks}, niceTicks = {niceTicks}");
+        
         Marshal.FreeHGlobal(cpuInfoPtr);
         
         return true;

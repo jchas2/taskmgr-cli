@@ -70,11 +70,7 @@ public partial class Processes : IProcesses
                 CurrCpuKernelTime = 0,
                 CurrCpuUserTime = 0
             };
-
-            if (false == procs[index].ProcessName.Equals(procInfo.ExeName, StringComparison.InvariantCultureIgnoreCase)) {
-                procInfo.ExeName = procs[index].ProcessName;                
-            }
-            
+           
             if (index == _allProcesses.Length) {
                 Array.Resize(ref _allProcesses, _allProcesses.Length * 2);
             }
@@ -112,9 +108,17 @@ public partial class Processes : IProcesses
                 continue;
             }
 
-            _allProcesses[i].CpuTimePercent = (double)((100.0 * (double)totalProc) / (double)totalSysTime);
-            _allProcesses[i].CpuKernelTimePercent = (double)((100.0 * (double)procKernelDiff) / (double)totalSysTime);
-            _allProcesses[i].CpuUserTimePercent = (double)((100.0 * (double)procUserDiff) / (double)totalSysTime);
+            _allProcesses[i].CpuTimePercent = (double)totalProc / totalSysTime;
+            _allProcesses[i].CpuKernelTimePercent = (double)procKernelDiff / totalSysTime;
+            _allProcesses[i].CpuUserTimePercent = (double)procUserDiff / totalSysTime;
+
+            // _allProcesses[i].CpuTimePercent = ((1000000.0 * totalProc) / totalSysTime);
+            // _allProcesses[i].CpuKernelTimePercent = ((1000000.0 * procKernelDiff) / totalSysTime);
+            // _allProcesses[i].CpuUserTimePercent = ((1000000.0 * procUserDiff) / totalSysTime);
+
+            // _allProcesses[i].CpuTimePercent = (totalProc / (totalSysTime / (double)Environment.ProcessorCount));
+            // _allProcesses[i].CpuKernelTimePercent = (procKernelDiff / (totalSysTime / (double)Environment.ProcessorCount));
+            // _allProcesses[i].CpuUserTimePercent = (procUserDiff / (totalSysTime / (double)Environment.ProcessorCount));
         }
 
         _ghostProcessCount = delta;
@@ -164,7 +168,7 @@ public partial class Processes : IProcesses
 #pragma warning disable CS0168 // The variable is declared but never used
         catch (Exception e) {
 #if DEBUG
-            SysDiag.Debug.WriteLine($"Failed PrivilegedProcessorTime() {proc.ProcessName} {proc.Id} with {e.Message}");
+            SysDiag::Debug.WriteLine($"Failed PrivilegedProcessorTime() {proc.ProcessName} {proc.Id} with {e.Message}");
 #endif
         }
 #pragma warning restore CS0168 // The variable is declared but never used
@@ -187,7 +191,7 @@ public partial class Processes : IProcesses
 #pragma warning disable CS0168 // The variable is declared but never used
         catch (Exception e) {
 #if DEBUG
-            SysDiag.Debug.WriteLine($"Failed Handle() {proc.ProcessName} {proc.Id} with {e.Message}");
+            SysDiag::Debug.WriteLine($"Failed Handle() {proc.ProcessName} {proc.Id} with {e.Message}");
 #endif
             return null;
         }

@@ -1,4 +1,8 @@
-﻿using System.Diagnostics;
+﻿#if DEBUG
+    //#define DEBUG_TRACE_LISTENER 
+#endif
+
+using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Text;
 using Task.Manager.System;
@@ -46,6 +50,12 @@ class Program
             }
             Debugger.Break();
         }
+        
+#if DEBUG_TRACE_LISTENER
+        var traceListener = new TextWriterTraceListener("debug.txt");
+        Trace.Listeners.Add(traceListener);
+        Trace.AutoFlush = true;
+#endif
         
         try {
             var runContext = new RunContext(
