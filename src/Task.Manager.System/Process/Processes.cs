@@ -47,8 +47,8 @@ public partial class Processes : IProcesses
                 continue;
             }
             
-            var previousTimes = new ProcessTimeInfo();
-            MapProcessTimes(procs[index], ref previousTimes);
+            var prevProcTimes = new ProcessTimeInfo();
+            MapProcessTimes(procs[index], ref prevProcTimes);
 
            var procInfo = new ProcessInfo { 
                 Pid = procs[index].Id,
@@ -65,8 +65,8 @@ public partial class Processes : IProcesses
                 CpuTimePercent = 0.0,
                 CpuUserTimePercent = 0.0,
                 CpuKernelTimePercent = 0.0,
-                PrevCpuKernelTime = previousTimes.KernelTime,
-                PrevCpuUserTime = previousTimes.UserTime,
+                PrevCpuKernelTime = prevProcTimes.KernelTime,
+                PrevCpuUserTime = prevProcTimes.UserTime,
                 CurrCpuKernelTime = 0,
                 CurrCpuUserTime = 0
             };
@@ -91,14 +91,14 @@ public partial class Processes : IProcesses
         };
 
         long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User;
-        var currTimes = new ProcessTimeInfo();
+        var currProcTimes = new ProcessTimeInfo();
         
         for (int i = 0; i < procs.Length; i++) {
-            currTimes.Clear();
-            GetProcessTimes(_allProcesses[i].Pid, ref currTimes);
+            currProcTimes.Clear();
+            GetProcessTimes(_allProcesses[i].Pid, ref currProcTimes);
 
-            _allProcesses[i].CurrCpuKernelTime = currTimes.KernelTime;
-            _allProcesses[i].CurrCpuUserTime = currTimes.UserTime;
+            _allProcesses[i].CurrCpuKernelTime = currProcTimes.KernelTime;
+            _allProcesses[i].CurrCpuUserTime = currProcTimes.UserTime;
             
             long procKernelDiff = _allProcesses[i].CurrCpuKernelTime - _allProcesses[i].PrevCpuKernelTime;
             long procUserDiff = _allProcesses[i].CurrCpuUserTime - _allProcesses[i].PrevCpuUserTime;
@@ -108,9 +108,9 @@ public partial class Processes : IProcesses
                 continue;
             }
 
-            _allProcesses[i].CpuTimePercent = (double)totalProc / totalSysTime;
-            _allProcesses[i].CpuKernelTimePercent = (double)procKernelDiff / totalSysTime;
-            _allProcesses[i].CpuUserTimePercent = (double)procUserDiff / totalSysTime;
+            _allProcesses[i].CpuTimePercent = 100 * (double)totalProc / totalSysTime;
+            _allProcesses[i].CpuKernelTimePercent = 100 * (double)procKernelDiff / totalSysTime;
+            _allProcesses[i].CpuUserTimePercent = 100 * (double)procUserDiff / totalSysTime;
 
             // _allProcesses[i].CpuTimePercent = ((1000000.0 * totalProc) / totalSysTime);
             // _allProcesses[i].CpuKernelTimePercent = ((1000000.0 * procKernelDiff) / totalSysTime);

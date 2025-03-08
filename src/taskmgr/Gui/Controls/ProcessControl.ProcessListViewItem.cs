@@ -58,8 +58,7 @@ public partial class ProcessControl
             SubItems[1].Text = processInfo.Pid.ToString();
             SubItems[2].Text = processInfo.UserName ?? string.Empty;
             SubItems[3].Text = processInfo.BasePriority.ToString();
-            //SubItems[4].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
-            SubItems[4].Text = processInfo.CpuTimePercent.ToString(CultureInfo.InvariantCulture);
+            SubItems[4].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
             SubItems[5].Text = processInfo.ThreadCount.ToString();
         }
     }
