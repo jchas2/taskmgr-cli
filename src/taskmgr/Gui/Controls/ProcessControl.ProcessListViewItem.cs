@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
@@ -20,7 +21,8 @@ public partial class ProcessControl
                 new ListViewSubItem(this, processInfo.UserName ?? string.Empty),
                 new ListViewSubItem(this, processInfo.BasePriority.ToString()),
                 new ListViewSubItem(this, processInfo.CpuTimePercent.ToString(CultureInfo.InvariantCulture)),
-                new ListViewSubItem(this, processInfo.ThreadCount.ToString()));
+                new ListViewSubItem(this, processInfo.ThreadCount.ToString()),
+                new ListViewSubItem(this, processInfo.UsedMemory.ToString()));
 
             UpdateItem(ref processInfo);
         }
@@ -60,6 +62,7 @@ public partial class ProcessControl
             SubItems[3].Text = processInfo.BasePriority.ToString();
             SubItems[4].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
             SubItems[5].Text = processInfo.ThreadCount.ToString();
+            SubItems[6].Text = processInfo.UsedMemory.ToFormattedByteSize();
         }
     }
 }

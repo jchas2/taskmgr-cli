@@ -17,7 +17,6 @@ public partial class SystemInfo
         int result = MachTime.mach_timebase_info(&timeBase);
         
         Debug.Assert(result == 0, $"Failed mach_timebase_info(): {result}");
-        Debug.WriteLine($"timeBase error = {result}, numer = {timeBase.numer} denom = {timeBase.denom}");
         
         if (result != 0) {
             timeBase.denom = 1;
@@ -61,11 +60,12 @@ public partial class SystemInfo
         IntPtr cpuInfoPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(MachHost.HostCpuLoadInfo)));
         
         if (0 != MachHost.host_statistics64(
-                host,
-                MachHost.HOST_CPU_LOAD_INFO,
-                cpuInfoPtr,
-                ref count)) {
+            host,
+            MachHost.HOST_CPU_LOAD_INFO,
+            cpuInfoPtr,
+            ref count)) {
             
+            Marshal.FreeHGlobal(cpuInfoPtr);
             return false;
         }
 
@@ -83,27 +83,27 @@ public partial class SystemInfo
         Debug.WriteLine($"idleTicks = {idleTicks}, kernelTicks = {kernelTicks}, userTicks = {userTicks}, niceTicks = {niceTicks}");
         
         Marshal.FreeHGlobal(cpuInfoPtr);
-        
         return true;
     }
 
-#pragma warning disable CS8500
-    // public static unsafe bool GetCpuTimesExternal2(SystemTimes systemTimes)
-    // {
-    //     IntPtr host = MachHost.host_self();
-    //     MachHost.processor_cpu_load_info_data_t* info = null;
-    //     MachHost.mach_msg_type_number_t count = new MachHost.mach_msg_type_number_t();
-    //     uint numCPUsU = 0;
-    //     
-    //     int result = MachHost.host_processor_info(
-    //         host,
-    //         )
-    //     
-    //     
-    //     
-    //     return true;
-    // }
-#pragma warning restore CS8500
+    private static unsafe int GetPageSize()
+    {
+        int pageSize = 0;
+        ReadOnlySpan<int> sysctlName = [(int)Sys.Selectors.CTL_HW, (int)Sys.Hardware.HW_PAGESIZE];
+
+        byte* buffer = null;
+        int bytesLength = 0;
+
+        if (false == Sys.Sysctl(sysctlName, ref buffer, ref bytesLength)) {
+            return 0;
+        }
+
+        if (bytesLength == sizeof(int)) {
+            pageSize = *(int*)buffer;
+        }
+
+        return pageSize;
+    }
     
     private static unsafe bool GetSystemMemoryInternal(SystemStatistics systemStatistics)
     {
@@ -126,6 +126,27 @@ public partial class SystemInfo
         if (bytesLength == 8) {
             systemStatistics.TotalPhysical = *(ulong*)buffer;
         }
+        
+        IntPtr host = MachHost.host_self();
+        int count = (int)(Marshal.SizeOf(typeof(MachHost.VmStatistics64)) / sizeof(int));
+        
+        IntPtr vmStatisticsPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(MachHost.VmStatistics64)));
+        
+        if (0 != MachHost.host_statistics64(
+            host,
+            MachHost.HOST_VM_INFO64,
+            vmStatisticsPtr,
+            ref count)) {
+            
+            Marshal.FreeHGlobal(vmStatisticsPtr);
+            return false;
+        }
+
+        var info = Marshal.PtrToStructure<MachHost.VmStatistics64>(vmStatisticsPtr);
+        int pageSize = GetPageSize();
+        systemStatistics.AvailableVirtual = info.free_count * (uint)pageSize;        
+        
+        Marshal.FreeHGlobal(vmStatisticsPtr);
         
         return true;
     }

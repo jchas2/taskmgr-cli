@@ -10,6 +10,7 @@ public partial class ProcessControl
         Priority,
         Cpu,
         Threads,
+        Memory,
         Count
     }
 }

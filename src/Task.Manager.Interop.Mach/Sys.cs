@@ -15,6 +15,7 @@ public static unsafe class Sys
     public enum Hardware
     {
         HW_MODEL = 0x02,            /* Cpu model */
+        HW_PAGESIZE = 0x07,         /* Mem Page Size */
         HW_CPU_FREQ = 0x08,         /* Cpu frequency in Hz, does not work on Apple Silicon Mn chips */
         HW_MEMSIZE = 0x18,          /* Memory size in bytes */
     }
