@@ -70,7 +70,7 @@ public partial class SystemInfo
         }
 
         var info = Marshal.PtrToStructure<MachHost.HostCpuLoadInfo>(cpuInfoPtr);
- 
+
         long idleTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_IDLE]).Ticks;
         long kernelTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_SYSTEM]).Ticks;
         long userTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_USER]).Ticks;
@@ -87,6 +87,24 @@ public partial class SystemInfo
         return true;
     }
 
+#pragma warning disable CS8500
+    // public static unsafe bool GetCpuTimesExternal2(SystemTimes systemTimes)
+    // {
+    //     IntPtr host = MachHost.host_self();
+    //     MachHost.processor_cpu_load_info_data_t* info = null;
+    //     MachHost.mach_msg_type_number_t count = new MachHost.mach_msg_type_number_t();
+    //     uint numCPUsU = 0;
+    //     
+    //     int result = MachHost.host_processor_info(
+    //         host,
+    //         )
+    //     
+    //     
+    //     
+    //     return true;
+    // }
+#pragma warning restore CS8500
+    
     private static unsafe bool GetSystemMemoryInternal(SystemStatistics systemStatistics)
     {
         systemStatistics.AvailablePageFile = 0;
