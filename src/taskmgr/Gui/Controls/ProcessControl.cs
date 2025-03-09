@@ -51,6 +51,7 @@ public sealed partial class ProcessControl : Control
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("Pri"));
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("Cpu%"));
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("Thrds"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Mem"));
         
         Controls.Add(_headerControl);
         Controls.Add(_listView);
@@ -198,6 +199,8 @@ public sealed partial class ProcessControl : Control
         _listView.ColumnHeaders[(int)Columns.Cpu].RightAligned = true;
         _listView.ColumnHeaders[(int)Columns.Threads].Width = 7;
         _listView.ColumnHeaders[(int)Columns.Threads].RightAligned = true;
+        _listView.ColumnHeaders[(int)Columns.Memory].Width = 10;
+        _listView.ColumnHeaders[(int)Columns.Memory].RightAligned = true;
 
         for (int i = 0; i < (int)Columns.Count; i++) {
             _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;

@@ -59,7 +59,7 @@ public partial class Processes : IProcesses
                 FileDescription = string.Empty,
                 UserName = GetProcessUserName(procs[index]),
                 CmdLine = string.Empty,
-                UsedMemory = procs[index].VirtualMemorySize64,
+                UsedMemory = procs[index].WorkingSet64,
                 DiskOperations = 0,
                 DiskUsage = 0,
                 CpuTimePercent = 0.0,
@@ -108,16 +108,9 @@ public partial class Processes : IProcesses
                 continue;
             }
 
-#if __WIN32__            
             _allProcesses[i].CpuTimePercent = 100 * (double)totalProc / totalSysTime;
             _allProcesses[i].CpuKernelTimePercent = 100 * (double)procKernelDiff / totalSysTime;
             _allProcesses[i].CpuUserTimePercent = 100 * (double)procUserDiff / totalSysTime;
-#endif
-#if __APPLE__
-            _allProcesses[i].CpuTimePercent = 100 * (((double)totalProc / totalSysTime) * 1000);
-            _allProcesses[i].CpuKernelTimePercent = 100 * (((double)procKernelDiff / totalSysTime) * 1000);
-            _allProcesses[i].CpuUserTimePercent = 100 * (((double)procUserDiff / totalSysTime) * 1000);
-#endif            
         }
 
         _ghostProcessCount = delta;
@@ -157,12 +150,22 @@ public partial class Processes : IProcesses
     {
         ptInfo.DiskOperations = 0;
 
+        /*
+         * On MacOS, these properties can still throw an Exception when running as root.
+         */
         try {
-            /*
-             * On MacOS, these properties can throw an Exception even when running as root.
-             */
+#if __WIN32__             
             ptInfo.KernelTime = proc.PrivilegedProcessorTime.Ticks;
             ptInfo.UserTime = proc.UserProcessorTime.Ticks;
+#endif
+#if __APPLE__
+            /*
+             NOTE: The calls to host_statistics64() for System CPU don't align
+             with the framework calls below. To align the tick results * 1000. 
+            */
+            ptInfo.KernelTime = proc.PrivilegedProcessorTime.Ticks * 1000;
+            ptInfo.UserTime = proc.UserProcessorTime.Ticks * 1000;
+#endif            
         }
 #pragma warning disable CS0168 // The variable is declared but never used
         catch (Exception e) {
