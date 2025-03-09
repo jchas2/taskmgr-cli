@@ -9,7 +9,7 @@ public partial class Processes : IProcesses
     private readonly ISystemInfo _systemInfo;
 
     private const int INIT_BUFF_SIZE = 512;
-    public const int UPDATE_TIME_MS = 2000;
+    public const int UPDATE_TIME_MS = 3000;
     
     private ProcessInfo[] _allProcesses;
     private readonly bool _isWindows = false;
@@ -108,17 +108,16 @@ public partial class Processes : IProcesses
                 continue;
             }
 
+#if __WIN32__            
             _allProcesses[i].CpuTimePercent = 100 * (double)totalProc / totalSysTime;
             _allProcesses[i].CpuKernelTimePercent = 100 * (double)procKernelDiff / totalSysTime;
             _allProcesses[i].CpuUserTimePercent = 100 * (double)procUserDiff / totalSysTime;
-
-            // _allProcesses[i].CpuTimePercent = ((1000000.0 * totalProc) / totalSysTime);
-            // _allProcesses[i].CpuKernelTimePercent = ((1000000.0 * procKernelDiff) / totalSysTime);
-            // _allProcesses[i].CpuUserTimePercent = ((1000000.0 * procUserDiff) / totalSysTime);
-
-            // _allProcesses[i].CpuTimePercent = (totalProc / (totalSysTime / (double)Environment.ProcessorCount));
-            // _allProcesses[i].CpuKernelTimePercent = (procKernelDiff / (totalSysTime / (double)Environment.ProcessorCount));
-            // _allProcesses[i].CpuUserTimePercent = (procUserDiff / (totalSysTime / (double)Environment.ProcessorCount));
+#endif
+#if __APPLE__
+            _allProcesses[i].CpuTimePercent = 100 * (((double)totalProc / totalSysTime) * 1000);
+            _allProcesses[i].CpuKernelTimePercent = 100 * (((double)procKernelDiff / totalSysTime) * 1000);
+            _allProcesses[i].CpuUserTimePercent = 100 * (((double)procUserDiff / totalSysTime) * 1000);
+#endif            
         }
 
         _ghostProcessCount = delta;

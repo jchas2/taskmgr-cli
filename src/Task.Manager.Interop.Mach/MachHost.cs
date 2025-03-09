@@ -12,8 +12,9 @@ public class MachHost
     // Consts used to index into HostCpuLoadInfo::cpu_ticks.
     public const int CPU_STATE_USER = 0;
     public const int CPU_STATE_SYSTEM = 1;
-    public const int CPU_STATE_IDLE = 2;
-    public const int CPU_STATE_NICE = 3;
+    public const int CPU_STATE_NICE = 2;
+    public const int CPU_STATE_IDLE = 3;
+    public const int CPU_STATE_MAX = 4;
 
     [DllImport(Libraries.LibSystemDyLib, SetLastError = true)]
     public static extern IntPtr host_self();
@@ -30,5 +31,5 @@ public class MachHost
         IntPtr host, 
         int flavor, 
         IntPtr hostInfo, 
-        ref int hostInfoCount);    
+        ref int hostInfoCount);
 }
