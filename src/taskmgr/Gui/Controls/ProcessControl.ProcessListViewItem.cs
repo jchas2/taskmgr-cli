@@ -11,7 +11,7 @@ public partial class ProcessControl
     private class ProcessListViewItem : ListViewItem
     {
         public ProcessListViewItem(ref ProcessInfo processInfo, Theme theme)
-            : base(processInfo.ExeName ?? string.Empty)
+            : base(processInfo.FileDescription ?? string.Empty)
         {
             Theme = theme;
             Pid = processInfo.Pid;
@@ -56,7 +56,7 @@ public partial class ProcessControl
                 }
             }
             
-            SubItems[0].Text = processInfo.ExeName ?? string.Empty;
+            SubItems[0].Text = processInfo.FileDescription ?? string.Empty;
             SubItems[1].Text = processInfo.Pid.ToString();
             SubItems[2].Text = processInfo.UserName ?? string.Empty;
             SubItems[3].Text = processInfo.BasePriority.ToString();

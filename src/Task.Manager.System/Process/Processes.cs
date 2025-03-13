@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System.Runtime.CompilerServices;
+using Task.Manager.Interop.Mach;
 using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
@@ -12,6 +13,7 @@ public partial class Processes : IProcesses
     public const int UPDATE_TIME_MS = 3000;
     
     private ProcessInfo[] _allProcesses;
+    private Dictionary<int, ProcessInfo> _processMap;
     private readonly bool _isWindows = false;
     private int _processCount = 0;
     private int _ghostProcessCount = 0;
@@ -21,19 +23,33 @@ public partial class Processes : IProcesses
     {
         _systemInfo = new SystemInfo();
         _allProcesses = new ProcessInfo[INIT_BUFF_SIZE];
+        _processMap = new Dictionary<int, ProcessInfo>();
         _isWindows = OperatingSystem.IsWindows();
     }
 
-    public ProcessInfo[] GetAll()
-    {
-        Array.Clear(_allProcesses, 0, _allProcesses.Length);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ProcessInfo CreateProcInfo(SysDiag::Process process) =>
+        new ProcessInfo { 
+            Pid = process.Id,
+            ParentPid = 0,
+            ExeName = process.ProcessName,
+            FileDescription = GetProcessProductName(process),
+            UserName = GetProcessUserName(process),
+            CmdLine = string.Empty
+        };
+    
+     public ProcessInfo[] GetAll()
+     {
         SysDiag::Process[] procs = SysDiag::Process.GetProcesses();
+        Array.Clear(_allProcesses);
+
         int delta = 0;
+        int index = 0;
         
         _processCount = 0;
         _threadCount = 0;
         
-        for (int index = 0; index < procs.Length; index++) {
+        for (index = 0; index < procs.Length; index++) {
 #if __WIN32__
             /* On Windows, ignore the system "idle" process auto assigned to Pid 0. */
             if (_isWindows && procs[index].Id == 0) {
@@ -50,35 +66,41 @@ public partial class Processes : IProcesses
             var prevProcTimes = new ProcessTimeInfo();
             MapProcessTimes(procs[index], ref prevProcTimes);
 
-           var procInfo = new ProcessInfo { 
-                Pid = procs[index].Id,
-                ThreadCount = procs[index].Threads.Count,
-                BasePriority = procs[index].BasePriority,
-                ParentPid = 0,
-                ExeName = procs[index].ProcessName,
-                FileDescription = string.Empty,
-                UserName = GetProcessUserName(procs[index]),
-                CmdLine = string.Empty,
-                UsedMemory = procs[index].WorkingSet64,
-                DiskOperations = 0,
-                DiskUsage = 0,
-                CpuTimePercent = 0.0,
-                CpuUserTimePercent = 0.0,
-                CpuKernelTimePercent = 0.0,
-                PrevCpuKernelTime = prevProcTimes.KernelTime,
-                PrevCpuUserTime = prevProcTimes.UserTime,
-                CurrCpuKernelTime = 0,
-                CurrCpuUserTime = 0
-            };
+            if (false == _processMap.TryGetValue(procs[index].Id, out ProcessInfo procInfo)) {
+                procInfo = CreateProcInfo(procs[index]);
+                _processMap.Add(procInfo.Pid, procInfo);
+            }
+
+            /* Pid has been reallocated to new process. */
+            if (false == procInfo.ExeName.Equals(procs[index].ProcessName, StringComparison.CurrentCultureIgnoreCase)) {
+                UpdateProcInfo(ref procInfo, procs[index]);
+                _processMap[procInfo.Pid] = procInfo;
+            }
+
+            procInfo.ThreadCount = procs[index].Threads.Count;
+            procInfo.BasePriority = procs[index].BasePriority;
+            procInfo.ParentPid = 0;
+            procInfo.UsedMemory = procs[index].WorkingSet64;
+            procInfo.DiskOperations = 0;
+            procInfo.DiskUsage = 0;
+            procInfo.CpuTimePercent = 0.0;
+            procInfo.CpuUserTimePercent = 0.0; 
+            procInfo.CpuKernelTimePercent = 0.0;
+            procInfo.PrevCpuKernelTime = prevProcTimes.KernelTime;
+            procInfo.PrevCpuUserTime = prevProcTimes.UserTime;
+            procInfo.CurrCpuKernelTime = 0;
+            procInfo.CurrCpuUserTime = 0;
            
             if (index == _allProcesses.Length) {
                 Array.Resize(ref _allProcesses, _allProcesses.Length * 2);
             }
-            
+           
             _allProcesses[index - delta] = procInfo;
             _processCount++;
             _threadCount += procs[index].Threads.Count;
         }
+        
+        Array.Resize(ref _allProcesses, index - delta);
         
         GetSystemTimes(out SystemTimes prevSysTimes);
         Thread.Sleep(UPDATE_TIME_MS);
@@ -93,7 +115,7 @@ public partial class Processes : IProcesses
         long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User;
         var currProcTimes = new ProcessTimeInfo();
         
-        for (int i = 0; i < procs.Length; i++) {
+        for (int i = 0; i < _allProcesses.Length; i++) {
             currProcTimes.Clear();
             GetProcessTimes(_allProcesses[i].Pid, ref currProcTimes);
 
@@ -198,5 +220,14 @@ public partial class Processes : IProcesses
             return null;
         }
 #pragma warning restore CS0168 // The variable is declared but never used
+    }
+
+    private void UpdateProcInfo(ref ProcessInfo procInfo, SysDiag::Process process)
+    {
+        procInfo.ParentPid = 0;
+        procInfo.ExeName = process.ProcessName;
+        procInfo.FileDescription = GetProcessProductName(process);
+        procInfo.UserName = GetProcessUserName(process);
+        procInfo.CmdLine = string.Empty;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Task.Manager.Interop.Mach;
+using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
 
@@ -21,6 +22,11 @@ public partial class Processes : IProcesses
         return (result == size ? new ProcInfo.proc_taskallinfo?(info) : null);
     }
     
+    private string GetProcessProductName(SysDiag::Process process)
+    {
+        return process.ProcessName;
+    }
+
     private unsafe string GetProcessUserName(global::System.Diagnostics.Process process)
     {
         ProcInfo.proc_taskallinfo? info = GetProcessInfoById(process.Id);

@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Management;
 using Microsoft.Win32.SafeHandles;
 using Task.Manager.Interop.Win32;
+using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
 
@@ -12,8 +14,31 @@ public partial class Processes : IProcesses
 {
 #if __WIN32__    
     private const string DEFAULT_USER = "SYSTEM";
+    private const string MO_WIN32_SERVICE = "Select * From Win32_Service where ProcessId = {0}";
+    private const string SERVICE_HOST = "svchost.exe";
     private static Dictionary<string, string> _userMap = new();
 
+    private string GetProcessProductName(SysDiag::Process process)
+    {
+        try {
+            string? processPath = process.MainModule?.FileName;
+            
+            if (string.IsNullOrWhiteSpace(processPath)) {
+                return process.ProcessName;
+            }
+
+            if (processPath.EndsWith(SERVICE_HOST, StringComparison.CurrentCultureIgnoreCase)) {
+                return GetProcessWin32ServiceName(process);
+            }
+            
+            var versionInfo = FileVersionInfo.GetVersionInfo(processPath);
+            return versionInfo.FileDescription ?? process.ProcessName;
+        }
+        catch {
+            return process.ProcessName;            
+        }
+    }
+    
     private bool GetProcessTokenSid(SafeProcessHandle processHandle, out SecurityIdentifier sid)
     {
         bool result = false;
@@ -90,6 +115,45 @@ public partial class Processes : IProcesses
         }
         
         return DEFAULT_USER;
+    }
+
+    private string GetProcessWin32ServiceName(SysDiag::Process process)
+    {
+        /* TODO: Below code times out. Also, the thread continues to run on the
+           timeout. Overlapped IO/IO Completion Ports would be good here.
+         */
+        
+        /*
+        string? serviceName = process.ProcessName;
+
+        try {
+            var task = global::System.Threading.Tasks.Task.Run(() => {
+                var searcher = new ManagementObjectSearcher(
+                    string.Format(MO_WIN32_SERVICE, process.Id));
+
+                foreach (var obj in searcher.Get()) {
+                    var name = obj["Name"]?.ToString();
+                    if (false == string.IsNullOrWhiteSpace(serviceName)) {
+                        serviceName = name;
+                        break;
+                    }
+                    else {
+                        break;
+                    }
+                }
+            });
+
+            task.Wait(20);
+        }
+        catch {
+            
+        }
+        
+        return false == string.IsNullOrWhiteSpace(serviceName) 
+            ? $"Service Host: {serviceName}" 
+            : process.ProcessName;
+        */
+        return process.ProcessName;
     }
 #endif
 }
