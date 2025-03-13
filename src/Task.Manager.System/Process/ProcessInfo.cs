@@ -12,12 +12,12 @@ public struct ProcessInfo
     public long BasePriority { get; set; }
     public int ParentPid { get; set; }
 
-    public string? ExeName { get; set; }
+    public string ExeName { get; set; } = string.Empty;
     public string? FileDescription { get; set; }
     public string? UserName { get; set; }
     public string? CmdLine { get; set; }
     
-    public long DiskUsage { get; set; }
+     public long DiskUsage { get; set; }
     public long DiskOperations { get; set; }
 
     public long UsedMemory { get; set; }

@@ -27,5 +27,8 @@
       <ProjectReference Include="..\Task.Manager.Interop.Mach\Task.Manager.Interop.Mach.csproj" />
       <ProjectReference Include="..\Task.Manager.Interop.Win32\Task.Manager.Interop.Win32.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="System.Management" Version="10.0.0-preview.1.25080.5" />
+    </ItemGroup>
     
 </Project>

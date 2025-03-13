@@ -16,7 +16,7 @@ public sealed class Theme
         Background = themeSection.GetColour(Constants.Keys.Background, ConsoleColor.Black);
         BackgroundHighlight = themeSection.GetColour(Constants.Keys.BackgroundHighlight, ConsoleColor.Cyan);
         Error = themeSection.GetColour(Constants.Keys.Error, ConsoleColor.Red);
-        Foreground = themeSection.GetColour(Constants.Keys.Foreground, ConsoleColor.DarkGray);
+        Foreground = themeSection.GetColour(Constants.Keys.Foreground, ConsoleColor.White);
         ForegroundHighlight = themeSection.GetColour(Constants.Keys.ForegroundHighlight, ConsoleColor.Black);
         HeaderBackground = themeSection.GetColour(Constants.Keys.HeaderBackground, ConsoleColor.DarkGreen);
         HeaderForeground = themeSection.GetColour(Constants.Keys.HeaderForeground, ConsoleColor.Black);
