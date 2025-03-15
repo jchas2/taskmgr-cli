@@ -11,6 +11,7 @@ public struct ProcessInfo
     public int ThreadCount { get; set; }
     public long BasePriority { get; set; }
     public int ParentPid { get; set; }
+    public DateTime StartTime { get; set; }
 
     public string ExeName { get; set; } = string.Empty;
     public string? FileDescription { get; set; }

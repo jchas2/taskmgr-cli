@@ -22,7 +22,8 @@ public partial class ProcessControl
                 new ListViewSubItem(this, processInfo.BasePriority.ToString()),
                 new ListViewSubItem(this, processInfo.CpuTimePercent.ToString(CultureInfo.InvariantCulture)),
                 new ListViewSubItem(this, processInfo.ThreadCount.ToString()),
-                new ListViewSubItem(this, processInfo.UsedMemory.ToString()));
+                new ListViewSubItem(this, processInfo.UsedMemory.ToString()),
+                new ListViewSubItem(this, processInfo.CmdLine ?? string.Empty));
 
             UpdateItem(ref processInfo);
         }
@@ -56,13 +57,14 @@ public partial class ProcessControl
                 }
             }
             
-            SubItems[0].Text = processInfo.FileDescription ?? string.Empty;
-            SubItems[1].Text = processInfo.Pid.ToString();
-            SubItems[2].Text = processInfo.UserName ?? string.Empty;
-            SubItems[3].Text = processInfo.BasePriority.ToString();
-            SubItems[4].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
-            SubItems[5].Text = processInfo.ThreadCount.ToString();
-            SubItems[6].Text = processInfo.UsedMemory.ToFormattedByteSize();
+            SubItems[(int)Columns.Process].Text = processInfo.FileDescription ?? string.Empty;
+            SubItems[(int)Columns.Pid].Text = processInfo.Pid.ToString();
+            SubItems[(int)Columns.User].Text = processInfo.UserName ?? string.Empty;
+            SubItems[(int)Columns.Priority].Text = processInfo.BasePriority.ToString();
+            SubItems[(int)Columns.Cpu].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
+            SubItems[(int)Columns.Threads].Text = processInfo.ThreadCount.ToString();
+            SubItems[(int)Columns.Memory].Text = processInfo.UsedMemory.ToFormattedByteSize();
+            SubItems[(int)Columns.CommandLine].Text = processInfo.CmdLine ?? string.Empty;
         }
     }
 }

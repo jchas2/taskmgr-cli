@@ -69,6 +69,13 @@ public sealed class ListViewItemCollection : IEnumerable<ListViewItem>
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         _owner.RemoveItem(item);
     }
+
+    public void RemoveAt(int index)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, _owner.Items.Count - 1, nameof(index));
+        _owner.RemoveAt(index);
+    }
     
     public ListViewItem this[int index]
     {

@@ -20,6 +20,8 @@ public sealed partial class ProcessControl : Control
 
     private readonly HeaderControl _headerControl;
     private readonly ListView _listView;
+
+    private int _cachedTerminalWidth = 0;
     
     public ProcessControl(
         ISystemTerminal terminal, 
@@ -45,13 +47,14 @@ public sealed partial class ProcessControl : Control
         _listView.ForegroundColour = theme.Foreground;
         _listView.HeaderBackgroundColour = theme.HeaderBackground;
         _listView.HeaderForegroundColour = theme.HeaderForeground;
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Process"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Pid"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("User"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Pri"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Cpu%"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Thrds"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("Mem"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PROCESS"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PID"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("USER"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PRI"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("CPU%"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("THRDS"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("MEM"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PATH"));
         
         Controls.Add(_headerControl);
         Controls.Add(_listView);
@@ -184,28 +187,48 @@ public sealed partial class ProcessControl : Control
 
     private void UpdateColumnHeaders()
     {
-        // TODO: Sizing metrics on terminal width.
+        if (_cachedTerminalWidth == Terminal.WindowWidth) {
+            return;
+        }
 #if __APPLE__
         /* Bug on MacOS where ProcessName returns truncated 15 char value. */
         _listView.ColumnHeaders[(int)Columns.Process].Width = 16;
 #elif __WIN32__ 
-        _listView.ColumnHeaders[(int)Columns.Process].Width = 32;
+        _listView.ColumnHeaders[(int)Columns.Process].Width = COLUMN_PROCESS_WIDTH;
 #endif
-        _listView.ColumnHeaders[(int)Columns.Pid].Width = 7;
-        _listView.ColumnHeaders[(int)Columns.User].Width = 16;
-        _listView.ColumnHeaders[(int)Columns.Priority].Width = 4;
+        _listView.ColumnHeaders[(int)Columns.Pid].Width = COLUMN_PID_WIDTH;
+        _listView.ColumnHeaders[(int)Columns.User].Width = COLUMN_USER_WIDTH;
+        _listView.ColumnHeaders[(int)Columns.Priority].Width = COLUMN_PRIORITY_WIDTH;
         _listView.ColumnHeaders[(int)Columns.Priority].RightAligned = true;
-        _listView.ColumnHeaders[(int)Columns.Cpu].Width = 7;
+        _listView.ColumnHeaders[(int)Columns.Cpu].Width = COLUMN_CPU_WIDTH;
         _listView.ColumnHeaders[(int)Columns.Cpu].RightAligned = true;
-        _listView.ColumnHeaders[(int)Columns.Threads].Width = 7;
+        _listView.ColumnHeaders[(int)Columns.Threads].Width = COLUMN_THREADS_WIDTH;
         _listView.ColumnHeaders[(int)Columns.Threads].RightAligned = true;
-        _listView.ColumnHeaders[(int)Columns.Memory].Width = 10;
+        _listView.ColumnHeaders[(int)Columns.Memory].Width = COLUMN_MEMORY_WIDTH;
         _listView.ColumnHeaders[(int)Columns.Memory].RightAligned = true;
+
+        int total =
+            COLUMN_PROCESS_WIDTH + COLUMN_MARGIN +
+            COLUMN_PID_WIDTH + COLUMN_MARGIN +
+            COLUMN_USER_WIDTH + COLUMN_MARGIN +
+            COLUMN_PRIORITY_WIDTH + COLUMN_MARGIN +
+            COLUMN_CPU_WIDTH + COLUMN_MARGIN +
+            COLUMN_THREADS_WIDTH + COLUMN_MARGIN +
+            COLUMN_MEMORY_WIDTH + COLUMN_MARGIN;
+
+        if (total + COLUMN_COMMANDLINE_WIDTH + COLUMN_MARGIN < Terminal.WindowWidth) {
+            _listView.ColumnHeaders[(int)Columns.CommandLine].Width = Terminal.WindowWidth - total - COLUMN_MARGIN;    
+        }
+        else {
+            _listView.ColumnHeaders[(int)Columns.CommandLine].Width = COLUMN_COMMANDLINE_WIDTH;
+        }
 
         for (int i = 0; i < (int)Columns.Count; i++) {
             _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
             _listView.ColumnHeaders[i].ForegroundColour = Theme.HeaderForeground;
         }
+        
+        _cachedTerminalWidth = Terminal.WindowWidth;
     }
     
     private void UpdateListViewItems()
@@ -213,7 +236,7 @@ public sealed partial class ProcessControl : Control
         lock (_processLock) {
 
             var sortedProcesses = _allProcesses
-                .OrderByDescending(p => p.CpuUserTimePercent)
+                .OrderByDescending(p => p.CpuTimePercent)
                 .ToArray();
             
             if (_listView.Items.Count == 0) {
@@ -230,20 +253,17 @@ public sealed partial class ProcessControl : Control
                 bool found = false;
                 
                 for (int j = 0; j < _listView.Items.Count; j++) {
-                    var item = _listView.Items[j] as ProcessListViewItem;
-                    
-                    if (item == null) {
-                        continue;
-                    }
+                    var item = (ProcessListViewItem)_listView.Items[j];
                     
                     if (sortedProcesses[i].Pid == item.Pid) {
                         item.UpdateItem(ref sortedProcesses[i]);
-                        
-                        _listView.Items.Remove(item);
-                        
-                        int insertAt = i > _listView.Items.Count - 1 ? _listView.Items.Count - 1 : i;
-                        
+
+                        int insertAt = i > _listView.Items.Count - 1 
+                            ? _listView.Items.Count - 1 
+                            : i;
+
                         _listView.Items.InsertAt(insertAt, item);
+                        _listView.Items.RemoveAt(j);
                         
                         found = true;
                         break;

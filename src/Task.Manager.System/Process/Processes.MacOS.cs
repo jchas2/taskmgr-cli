@@ -7,6 +7,17 @@ namespace Task.Manager.System.Process;
 public partial class Processes : IProcesses
 {
 #if __APPLE__    
+    private string GetProcessCommandLine(global::System.Diagnostics.Process process)
+    {
+        // TODO: Determine for Mach
+        try {
+            return process.MainModule?.FileName ?? process.ProcessName;
+        }
+        catch {
+            return Process.ProcessName;
+        }
+    }
+
     private static unsafe ProcInfo.proc_taskallinfo? GetProcessInfoById(int pid)
     {
         int size = sizeof(ProcInfo.proc_taskallinfo);
