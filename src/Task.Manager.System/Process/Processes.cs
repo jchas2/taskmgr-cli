@@ -10,7 +10,7 @@ public partial class Processes : IProcesses
     private readonly ISystemInfo _systemInfo;
 
     private const int INIT_BUFF_SIZE = 512;
-    public const int UPDATE_TIME_MS = 3000;
+    public const int UPDATE_TIME_MS = 2000;
     
     private ProcessInfo[] _allProcesses;
     private Dictionary<int, ProcessInfo> _processMap;
@@ -35,7 +35,8 @@ public partial class Processes : IProcesses
             ExeName = process.ProcessName,
             FileDescription = GetProcessProductName(process),
             UserName = GetProcessUserName(process),
-            CmdLine = string.Empty
+            CmdLine = GetProcessCommandLine(process),
+            StartTime = process.StartTime
         };
     
      public ProcessInfo[] GetAll()
@@ -57,7 +58,7 @@ public partial class Processes : IProcesses
                 continue;
             }
 #endif
-            /* Skip any process that generates an "Access Denied" Exception. */
+             /* Skip any process that generates an "Access Denied" Exception. */
             if (null == TryGetProcessHandle(procs[index])) {
                 delta++;
                 continue;
@@ -72,7 +73,7 @@ public partial class Processes : IProcesses
             }
 
             /* Pid has been reallocated to new process. */
-            if (false == procInfo.ExeName.Equals(procs[index].ProcessName, StringComparison.CurrentCultureIgnoreCase)) {
+            if (false == procInfo.StartTime.Equals(procs[index].StartTime)) {
                 UpdateProcInfo(ref procInfo, procs[index]);
                 _processMap[procInfo.Pid] = procInfo;
             }
@@ -228,6 +229,7 @@ public partial class Processes : IProcesses
         procInfo.ExeName = process.ProcessName;
         procInfo.FileDescription = GetProcessProductName(process);
         procInfo.UserName = GetProcessUserName(process);
-        procInfo.CmdLine = string.Empty;
+        procInfo.CmdLine = GetProcessCommandLine(process);
+        procInfo.StartTime = process.StartTime;
     }
 }

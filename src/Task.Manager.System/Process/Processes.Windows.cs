@@ -18,6 +18,17 @@ public partial class Processes : IProcesses
     private const string SERVICE_HOST = "svchost.exe";
     private static Dictionary<string, string> _userMap = new();
 
+    private string GetProcessCommandLine(global::System.Diagnostics.Process process)
+    {
+        // TODO: Kernel PEB + Commandline offset. 
+        try {
+            return process.MainModule?.FileName ?? process.ProcessName;
+        }
+        catch {
+            return process.ProcessName;
+        }
+    }
+    
     private string GetProcessProductName(SysDiag::Process process)
     {
         try {
