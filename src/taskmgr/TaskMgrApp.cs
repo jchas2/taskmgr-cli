@@ -15,6 +15,7 @@ public sealed class TaskMgrApp
     private const string ConfigFile = "taskmgr.config";
 
     private readonly RunContext _runContext;
+    private static Mutex? _mutex = null;
     
     public TaskMgrApp(RunContext runContext)
     {
@@ -170,28 +171,39 @@ public sealed class TaskMgrApp
             return -1;
         }
 #endif
-        using var mutex = new Mutex(initiallyOwned: false, name: MutexId);
-        
-        if (false == mutex.WaitOne(timeout: TimeSpan.Zero, exitContext: false)) {
-            OutputWriter.Error.WriteLine("Another instance of app is already running.".ToRed());
-            return -1;
+
+        bool ownsMutex = true;
+
+        try {
+            _mutex = new Mutex(initiallyOwned: false, name: MutexId, out ownsMutex);
+
+            if (false == ownsMutex) {
+                OutputWriter.Error.WriteLine("Another instance of app is already running.".ToRed());
+                return -1;
+            }
+
+            Config? config = null;
+
+            if (TryGetConfigurationPath(out string? configPath) && false == string.IsNullOrEmpty(configPath)) {
+                string configFile = Path.Combine(configPath, ConfigFile);
+                if (_runContext.FileSystem.Exists(configFile)) {
+                    TryGetConfigurationFromFile(configFile, out config);
+                }
+            }
+
+            config ??= ConfigBuilder.BuildDefault();
+
+            var rootCommand = InitRootCommand(config);
+            int exitCode = rootCommand.Invoke(args);
+
+            return exitCode;
         }
-
-        Config? config = null;
-        
-        if (TryGetConfigurationPath(out string? configPath) && false == string.IsNullOrEmpty(configPath)) {
-            string configFile = Path.Combine(configPath, ConfigFile);
-            if (_runContext.FileSystem.Exists(configFile)) {
-                TryGetConfigurationFromFile(configFile, out config);
-            }            
+        finally {
+            if (_mutex != null && ownsMutex) {
+                _mutex.ReleaseMutex();
+                _mutex.Dispose();
+            }
         }
-
-        config ??= ConfigBuilder.BuildDefault();
-        
-        var rootCommand = InitRootCommand(config);
-        int exitCode = rootCommand.Invoke(args);
-
-        return exitCode;
     }
 
     private bool TryGetConfigurationFromFile(string configFile, out Config? config)

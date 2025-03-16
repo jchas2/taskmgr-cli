@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using System.Management;
 using Microsoft.Win32.SafeHandles;
 using Task.Manager.Interop.Win32;
 using SysDiag = System.Diagnostics;
@@ -14,7 +13,6 @@ public partial class Processes : IProcesses
 {
 #if __WIN32__    
     private const string DEFAULT_USER = "SYSTEM";
-    private const string MO_WIN32_SERVICE = "Select * From Win32_Service where ProcessId = {0}";
     private const string SERVICE_HOST = "svchost.exe";
     private static Dictionary<string, string> _userMap = new();
 
@@ -26,7 +24,7 @@ public partial class Processes : IProcesses
         }
         catch {
             return process.ProcessName;
-        }
+        } 
     }
     
     private string GetProcessProductName(SysDiag::Process process)

@@ -46,10 +46,10 @@ public partial class Processes : IProcesses
 
         int delta = 0;
         int index = 0;
-        
+
         _processCount = 0;
         _threadCount = 0;
-        
+
         for (index = 0; index < procs.Length; index++) {
 #if __WIN32__
             /* On Windows, ignore the system "idle" process auto assigned to Pid 0. */

@@ -1,5 +1,5 @@
 ﻿#if DEBUG
-    //#define DEBUG_TRACE_LISTENER 
+    #define DEBUG_TRACE_LISTENER 
 #endif
 
 using System.Diagnostics;

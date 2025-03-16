@@ -42,17 +42,17 @@ public partial class ProcessControl
             if (processInfo.CpuTimePercent > 0.0) {
                 if (processInfo.CpuTimePercent < 10.0) {
                     SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeLowBackground;
-                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.RangeLowForeground;
+                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.Foreground;
                     SubItems[(int)Columns.Cpu].BackgroundColor = Theme.RangeLowBackground;
                 }
                 else if (processInfo.CpuTimePercent < 50.0) {
                     SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeMidBackground;
-                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.RangeMidForeground;
+                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.Foreground;
                     SubItems[(int)Columns.Cpu].BackgroundColor = Theme.RangeMidBackground;
                 }
                 else {
                     SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeHighBackground;
-                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.RangeHighForeground;
+                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.Foreground;
                     SubItems[(int)Columns.Cpu].BackgroundColor = Theme.RangeHighBackground;
                 }
             }
