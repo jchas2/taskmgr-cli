@@ -9,6 +9,7 @@ public static unsafe class Sys
 {
     public enum Selectors
     {
+        CTL_KERN = 0x01,
         CTL_HW = 0x06,              /* Hardware */
     }
 
@@ -19,6 +20,10 @@ public static unsafe class Sys
         HW_CPU_FREQ = 0x08,         /* Cpu frequency in Hz, does not work on Apple Silicon Mn chips */
         HW_MEMSIZE = 0x18,          /* Memory size in bytes */
     }
+
+    public const int KERN_PROC_PATHNAME = 12;
+    public const int KERN_PROC = 14;
+    public const int KERN_PROC_PID = 1;
     
     private enum Error
     {

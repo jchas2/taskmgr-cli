@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text;
 using Task.Manager.Interop.Mach;
 using SysDiag = System.Diagnostics;
 
@@ -33,8 +34,34 @@ public partial class Processes : IProcesses
         return (result == size ? new ProcInfo.proc_taskallinfo?(info) : null);
     }
     
-    private string GetProcessProductName(SysDiag::Process process)
+    private static unsafe string GetProcessProductName(SysDiag::Process process)
     {
+        // ReadOnlySpan<int> sysctlName = [
+        //     (int)Sys.Selectors.CTL_KERN, 
+        //     Sys.KERN_PROC, 
+        //     Sys.KERN_PROC_PATHNAME, 
+        //     process.Id];
+        //
+        // byte* buffer = null;
+        // int bytesLength = 0;
+        //
+        // if (Sys.Sysctl(sysctlName, ref buffer, ref bytesLength)) {
+        //     /* Byte array returned contains a null terminator byte. */
+        //     return Encoding.UTF8.GetString(buffer, bytesLength - 1);
+        //     // TODO: NativeMemory.Free(pBuffer);
+        // }
+
+        // Try:
+        // struct kinfo_proc proc;
+        // size_t proc_size = sizeof(proc);
+        // int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
+        //
+        // if (sysctl(mib, 4, &proc, &proc_size, NULL, 0) == 0) {
+        //     printf("Application Name: %s\n", proc.kp_proc.p_comm);
+        // } else {
+        //     perror("sysctl");
+        // }
+        
         return process.ProcessName;
     }
 
@@ -59,8 +86,7 @@ public partial class Processes : IProcesses
             bufferSize);
         
         if (0 == error && null != passwd.Name) {
-            string userName = Marshal.PtrToStringUTF8((IntPtr)passwd.Name) ?? string.Empty;
-            return userName;
+            return Marshal.PtrToStringUTF8((IntPtr)passwd.Name) ?? string.Empty;
         }
         
         return string.Empty;
