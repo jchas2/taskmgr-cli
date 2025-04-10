@@ -15,7 +15,7 @@ public partial class Processes : IProcesses
             return process.MainModule?.FileName ?? process.ProcessName;
         }
         catch {
-            return Process.ProcessName;
+            return process.ProcessName;
         }
     }
 
