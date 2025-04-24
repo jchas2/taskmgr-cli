@@ -52,9 +52,7 @@ class Program
         }
         
 #if DEBUG_TRACE_LISTENER
-        var traceListener = new TextWriterTraceListener("debug.txt");
-        Trace.Listeners.Add(traceListener);
-        Trace.AutoFlush = true;
+        FormattedTextWriterTraceListener.Initialise();
 #endif
         
         try {
