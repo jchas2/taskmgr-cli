@@ -130,7 +130,7 @@ public sealed partial class ProcessControl : Control
                 // TODO: Handle input (up + down arrows etc. Simulate it here with a thread sleep.
                 Thread.Sleep(1000);
                 var duration = DateTime.Now - startTime;
-                if (duration.TotalMilliseconds >= Processes.UPDATE_TIME_MS) {
+                if (duration.TotalMilliseconds >= Processes.UpdateTimeInMs) {
                     break;
                 }
             }

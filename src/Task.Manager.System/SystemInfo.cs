@@ -54,11 +54,10 @@ public partial class SystemInfo : ISystemInfo
 
         var ip = GetPreferredIpAddress();
         
+        /* With no Nic in an operational status the ip returned can be null. */
         systemStatistics.PrivateIPv4Address = ip == null 
             ? string.Empty 
             : ip.ToString();
-
-        result = result && systemStatistics.PrivateIPv4Address != string.Empty;
         
         systemStatistics.OsVersion = Environment.OSVersion.VersionString;
         

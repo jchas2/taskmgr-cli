@@ -9,8 +9,8 @@ public partial class Processes : IProcesses
 {
     private readonly ISystemInfo _systemInfo;
 
-    private const int INIT_BUFF_SIZE = 512;
-    public const int UPDATE_TIME_MS = 2000;
+    private const int InitialBufferSize = 512;
+    public const int UpdateTimeInMs = 2000;
     
     private ProcessInfo[] _allProcesses;
     private Dictionary<int, ProcessInfo> _processMap;
@@ -22,25 +22,13 @@ public partial class Processes : IProcesses
     public Processes()
     {
         _systemInfo = new SystemInfo();
-        _allProcesses = new ProcessInfo[INIT_BUFF_SIZE];
+        _allProcesses = new ProcessInfo[InitialBufferSize];
         _processMap = new Dictionary<int, ProcessInfo>();
         _isWindows = OperatingSystem.IsWindows();
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ProcessInfo CreateProcInfo(SysDiag::Process process) =>
-        new ProcessInfo { 
-            Pid = process.Id,
-            ParentPid = 0,
-            ExeName = process.ProcessName,
-            FileDescription = GetProcessProductName(process),
-            UserName = GetProcessUserName(process),
-            CmdLine = GetProcessCommandLine(process),
-            StartTime = process.StartTime
-        };
     
-     public ProcessInfo[] GetAll()
-     {
+    public ProcessInfo[] GetAll()
+    {
         SysDiag::Process[] procs = SysDiag::Process.GetProcesses();
         Array.Clear(_allProcesses);
 
@@ -59,28 +47,40 @@ public partial class Processes : IProcesses
             }
 #endif
              /* Skip any process that generates an "Access Denied" Exception. */
-            if (null == TryGetProcessHandle(procs[index])) {
+            if (false == TryGetProcessHandle(procs[index], out _)) {
                 delta++;
                 continue;
             }
-            
+
             var prevProcTimes = new ProcessTimeInfo();
-            MapProcessTimes(procs[index], ref prevProcTimes);
+
+            if (false == TryMapProcessTimeInfo(procs[index], ref prevProcTimes)) {
+                delta++;
+                continue;
+            }
 
             if (false == _processMap.TryGetValue(procs[index].Id, out ProcessInfo procInfo)) {
-                procInfo = CreateProcInfo(procs[index]);
+                procInfo = new ProcessInfo();
+
+                if (false == TryMapProcessInfo(procs[index], ref procInfo)) {
+                    delta++;
+                    continue;
+                }
+                
                 _processMap.Add(procInfo.Pid, procInfo);
             }
 
             /* Pid has been reallocated to new process. */
             if (false == procInfo.StartTime.Equals(procs[index].StartTime)) {
-                UpdateProcInfo(ref procInfo, procs[index]);
+
+                if (false == TryMapProcessInfo(procs[index], ref procInfo)) {
+                    delta++;
+                    continue;
+                }
+                
                 _processMap[procInfo.Pid] = procInfo;
             }
 
-            procInfo.ThreadCount = procs[index].Threads.Count;
-            procInfo.BasePriority = procs[index].BasePriority;
-            procInfo.ParentPid = 0;
             procInfo.UsedMemory = procs[index].WorkingSet64;
             procInfo.DiskOperations = 0;
             procInfo.DiskUsage = 0;
@@ -91,7 +91,7 @@ public partial class Processes : IProcesses
             procInfo.PrevCpuUserTime = prevProcTimes.UserTime;
             procInfo.CurrCpuKernelTime = 0;
             procInfo.CurrCpuUserTime = 0;
-           
+            
             if (index == _allProcesses.Length) {
                 Array.Resize(ref _allProcesses, _allProcesses.Length * 2);
             }
@@ -104,7 +104,7 @@ public partial class Processes : IProcesses
         Array.Resize(ref _allProcesses, index - delta);
         
         GetSystemTimes(out SystemTimes prevSysTimes);
-        Thread.Sleep(UPDATE_TIME_MS);
+        Thread.Sleep(UpdateTimeInMs);
         GetSystemTimes(out SystemTimes currSysTimes);
         
         var sysTimesDeltas = new SystemTimes {
@@ -145,7 +145,7 @@ public partial class Processes : IProcesses
     {
         try {
             var proc = SysDiag::Process.GetProcessById(pid);
-            MapProcessTimes(proc, ref ptInfo);
+            TryMapProcessTimeInfo(proc, ref ptInfo);
             return true;
         }
         catch (ArgumentException) {
@@ -169,7 +169,7 @@ public partial class Processes : IProcesses
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void MapProcessTimes(SysDiag::Process proc, ref ProcessTimeInfo ptInfo)
+    private bool TryMapProcessTimeInfo(SysDiag::Process proc, ref ProcessTimeInfo ptInfo)
     {
         ptInfo.DiskOperations = 0;
 
@@ -188,13 +188,39 @@ public partial class Processes : IProcesses
             */
             ptInfo.KernelTime = proc.PrivilegedProcessorTime.Ticks * 1000;
             ptInfo.UserTime = proc.UserProcessorTime.Ticks * 1000;
-#endif            
+#endif
+            return true;
         }
 #pragma warning disable CS0168 // The variable is declared but never used
         catch (Exception e) {
 #if DEBUG
             SysDiag::Debug.WriteLine($"Failed PrivilegedProcessorTime() {proc.ProcessName} {proc.Id} with {e.Message}");
 #endif
+            return false;
+        }
+#pragma warning restore CS0168 // The variable is declared but never used
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryMapProcessInfo(SysDiag::Process process, ref ProcessInfo procInfo)
+    {
+        try {
+            procInfo.Pid = process.Id;
+            procInfo.ParentPid = 0;
+            procInfo.ExeName = process.ProcessName;
+            procInfo.FileDescription = GetProcessProductName(process);
+            procInfo.UserName = GetProcessUserName(process);
+            procInfo.CmdLine = GetProcessCommandLine(process);
+            procInfo.StartTime = process.StartTime;
+            procInfo.ThreadCount = process.Threads.Count;
+            procInfo.BasePriority = process.BasePriority;
+            procInfo.ParentPid = 0;
+            return true;
+        }
+#pragma warning disable CS0168 // The variable is declared but never used
+        catch (Exception e) {
+            SysDiag::Debug.WriteLine($"Failed TryMapProcessInfo() {process.ProcessName} {process.Id} with {e}");
+            return false;
         }
 #pragma warning restore CS0168 // The variable is declared but never used
     }
@@ -203,7 +229,7 @@ public partial class Processes : IProcesses
     public int ProcessCount => _processCount;
     public int ThreadCount => _threadCount;
     
-    private IntPtr? TryGetProcessHandle(SysDiag::Process proc)
+    private bool TryGetProcessHandle(SysDiag::Process proc, out IntPtr? processHandle)
     {
         try {
             /*
@@ -211,25 +237,17 @@ public partial class Processes : IProcesses
              * "Access denied" Exception. This is usually for the "system"
              * process assigned to Pid 4.
              */
-            return proc.Handle;
+            processHandle = proc.Handle;
+            return true;
         }
 #pragma warning disable CS0168 // The variable is declared but never used
         catch (Exception e) {
 #if DEBUG
             SysDiag::Debug.WriteLine($"Failed Handle() {proc.ProcessName} {proc.Id} with {e.Message}");
 #endif
-            return null;
+            processHandle = null;
+            return false;
         }
 #pragma warning restore CS0168 // The variable is declared but never used
-    }
-
-    private void UpdateProcInfo(ref ProcessInfo procInfo, SysDiag::Process process)
-    {
-        procInfo.ParentPid = 0;
-        procInfo.ExeName = process.ProcessName;
-        procInfo.FileDescription = GetProcessProductName(process);
-        procInfo.UserName = GetProcessUserName(process);
-        procInfo.CmdLine = GetProcessCommandLine(process);
-        procInfo.StartTime = process.StartTime;
     }
 }
