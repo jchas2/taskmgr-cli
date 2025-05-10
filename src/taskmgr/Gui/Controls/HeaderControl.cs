@@ -158,7 +158,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 
         nlines++;
         
-        nchars = DrawColumnLabelValue(
+        nchars += DrawColumnLabelValue(
             "  Idle:    ",
             (systemStats.CpuPercentIdleTime / 100).ToString("000.0%"),
             ForegroundColour);
@@ -173,7 +173,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
             ((double)(systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
         
-        Terminal.WriteEmptyLineTo(nchars);
+        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars);
         
         nlines++;
         

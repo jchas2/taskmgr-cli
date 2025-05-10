@@ -70,8 +70,13 @@ public partial class Processes : IProcesses
                 _processMap.Add(procInfo.Pid, procInfo);
             }
 
+            if (false == TryGetProcessStartTime(procs[index], out DateTime startTime)) {
+                delta++;
+                continue;
+            }
+            
             /* Pid has been reallocated to new process. */
-            if (false == procInfo.StartTime.Equals(procs[index].StartTime)) {
+            if (false == procInfo.StartTime.Equals(startTime)) {
 
                 if (false == TryMapProcessInfo(procs[index], ref procInfo)) {
                     delta++;
@@ -249,5 +254,20 @@ public partial class Processes : IProcesses
             return false;
         }
 #pragma warning restore CS0168 // The variable is declared but never used
+    }
+
+    private bool TryGetProcessStartTime(SysDiag::Process proc, out DateTime startTime)
+    {
+        try {
+            startTime = proc.StartTime;
+            return true;
+        }
+        catch (Exception e) {
+#if DEBUG
+            SysDiag::Debug.WriteLine($"Failed StartTime() {proc.ProcessName} {proc.Id} with {e.Message}");
+#endif
+            startTime = DateTime.Now;
+            return false;
+        }
     }
 }
