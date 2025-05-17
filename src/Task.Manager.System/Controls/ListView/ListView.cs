@@ -96,6 +96,8 @@ public class ListView : Control
         }
         
         _terminal.Write(_buffer.ToString());
+        
+        _terminal.BackgroundColor = _columnHeaders[ColumnHeaderCount - 1].BackgroundColour;
         _terminal.WriteEmptyLineTo(_terminal.WindowWidth - c);
     }
 
@@ -149,6 +151,8 @@ public class ListView : Control
         }
 
         _terminal.Write(_buffer.ToString());
+
+        _terminal.BackgroundColor = item.SubItems[item.SubItemCount - 1].BackgroundColor;
         _terminal.WriteEmptyLineTo(_terminal.WindowWidth - c);
     }
     
