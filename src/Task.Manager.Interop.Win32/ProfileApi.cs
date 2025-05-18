@@ -8,5 +8,5 @@ public static class ProfileApi
 {
     [DllImport(Libraries.Kernel32, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool QueryPerformanceFrequency(out long frequency);
+    public static extern unsafe bool QueryPerformanceFrequency(uint* frequency);
 }

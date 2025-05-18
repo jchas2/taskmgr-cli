@@ -7,9 +7,9 @@ namespace Task.Manager.Interop.Win32;
 public class WinNt
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    public struct SID_AND_ATTRIBUTES
+    public unsafe struct SID_AND_ATTRIBUTES
     {
-        public IntPtr Sid;
+        public uint* Sid;
         public uint Attributes;
     }
 

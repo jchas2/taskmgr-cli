@@ -54,16 +54,16 @@ public partial class SystemInfo
         return true;
     }
     
-    private static bool GetCpuTimesInternal(ref SystemTimes systemTimes)
+    private static unsafe bool GetCpuTimesInternal(ref SystemTimes systemTimes)
     {
-        MinWinBase.FILETIME idleFileTime;
-        MinWinBase.FILETIME kernelFileTime;
-        MinWinBase.FILETIME userFileTime;
+        MinWinBase.FILETIME lpIdleFileTime;
+        MinWinBase.FILETIME lpKernelFileTime;
+        MinWinBase.FILETIME lpUserFileTime;
 
         if (false == ProcessThreadsApi.GetSystemTimes(
-            out idleFileTime,
-            out kernelFileTime,
-            out userFileTime)) {
+            &lpIdleFileTime,
+            &lpKernelFileTime,
+            &lpUserFileTime)) {
 #if DEBUG
             int error = Marshal.GetLastWin32Error();
             Debug.Assert(error == 0, $"Failed GetSystemTimes(): {Marshal.GetPInvokeErrorMessage(error)}");
@@ -71,14 +71,14 @@ public partial class SystemInfo
             return false;
         }
 
-        systemTimes.Idle = idleFileTime.ToLong();
-        systemTimes.Kernel = kernelFileTime.ToLong();
-        systemTimes.User = userFileTime.ToLong();
+        systemTimes.Idle = lpIdleFileTime.ToLong();
+        systemTimes.Kernel = lpKernelFileTime.ToLong();
+        systemTimes.User = lpUserFileTime.ToLong();
         
         return true;
 	}
 
-    private static bool GetSystemMemoryInternal(SystemStatistics systemStatistics)
+    private static unsafe bool GetSystemMemoryInternal(SystemStatistics systemStatistics)
     {
         systemStatistics.AvailablePageFile = 0;
         systemStatistics.AvailablePhysical = 0;
@@ -88,8 +88,8 @@ public partial class SystemInfo
         systemStatistics.TotalVirtual = 0;
 
         SysInfoApi.MEMORYSTATUSEX memoryStatus = new();
-
-        if (false == SysInfoApi.GlobalMemoryStatusEx(ref memoryStatus)) {
+        
+        if (false == SysInfoApi.GlobalMemoryStatusEx(&memoryStatus)) {
 #if DEBUG
             int error = Marshal.GetLastWin32Error();
             Debug.Assert(error == 0, $"Failed GlobalMemoryStatusEx(): {Marshal.GetPInvokeErrorMessage(error)}");
