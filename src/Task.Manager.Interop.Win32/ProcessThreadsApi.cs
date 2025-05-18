@@ -9,10 +9,10 @@ public static class ProcessThreadsApi
 {
     [DllImport(Libraries.Kernel32, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool GetSystemTimes(
-        out MinWinBase.FILETIME idleTime,
-        out MinWinBase.FILETIME kernelTime,
-        out MinWinBase.FILETIME userTime);
+    public static extern unsafe bool GetSystemTimes(
+        MinWinBase.FILETIME* lpIdleTime,
+        MinWinBase.FILETIME* lpKernelTime,
+        MinWinBase.FILETIME* lpUserTime);
     
     [DllImport(Libraries.Advapi32, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

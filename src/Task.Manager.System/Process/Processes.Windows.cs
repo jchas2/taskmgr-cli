@@ -48,44 +48,43 @@ public partial class Processes : IProcesses
         }
     }
     
-    private bool GetProcessTokenSid(SafeProcessHandle processHandle, out SecurityIdentifier sid)
+    private unsafe bool GetProcessTokenSid(SafeProcessHandle processHandle, out SecurityIdentifier sid)
     {
         bool result = false;
-        IntPtr tokenInfo = IntPtr.Zero;
         const int BUF_LENGTH = 256;
-
+        const int TOKEN_USER = 1;
+        
         sid = new SecurityIdentifier(WellKnownSidType.NullSid, null);
 
         try {
-            tokenInfo = Marshal.AllocHGlobal(BUF_LENGTH);
-            int bufLength = BUF_LENGTH;
-            
-            result = SecurityBaseApi.GetTokenInformation(
-                processHandle, 
-                1, 
-                tokenInfo, 
-                bufLength, 
-                ref bufLength);
+            byte[] buffer = new byte[BUF_LENGTH];
+            fixed (byte* tokenInfo = &buffer[0]) {
+                uint bufLength = BUF_LENGTH;
 
-            if (result) {
-                WinNt.TOKEN_USER tokenUser = Marshal.PtrToStructure<WinNt.TOKEN_USER>(tokenInfo);
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                    sid = new SecurityIdentifier(tokenUser.sidAndAttributes.Sid);
+                result = SecurityBaseApi.GetTokenInformation(
+                    processHandle,
+                    TOKEN_USER,
+                    (uint*)tokenInfo,
+                    BUF_LENGTH,
+                    &bufLength);
+
+                if (result) {
+                    WinNt.TOKEN_USER* tokenUser = (WinNt.TOKEN_USER*)tokenInfo;
+                    
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                        uint* sidPtr = tokenUser->sidAndAttributes.Sid;
+                        sid = new SecurityIdentifier(new IntPtr(sidPtr));
+                    }
                 }
-            }
 
-            return result;
+                return result;
+            }
         }
         catch (Exception ex) {
 #if DEBUG
             Debug.WriteLine(ex.Message);
 #endif
             return result;
-        }
-        finally {
-            if (tokenInfo != IntPtr.Zero) {
-                Marshal.FreeHGlobal(tokenInfo);
-            }
         }
     }
     

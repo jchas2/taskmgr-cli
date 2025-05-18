@@ -4,7 +4,7 @@ namespace Task.Manager.Interop.Win32;
 
 // Following declarations are found in the platform sdk header file SysInfoApi.h
 
-public static class SysInfoApi
+public static unsafe class SysInfoApi
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct MEMORYSTATUSEX
@@ -31,9 +31,9 @@ public static class SysInfoApi
         public ushort wProcessorArchitecture;
         public ushort wReserved;
         public uint dwPageSize;
-        public IntPtr lpMinimumApplicationAddress;
-        public IntPtr lpMaximumApplicationAddress;
-        public IntPtr dwActiveProcessorMask;
+        public uint* lpMinimumApplicationAddress;
+        public uint* lpMaximumApplicationAddress;
+        public uint* dwActiveProcessorMask;
         public uint dwNumberOfProcessors;
         public uint dwProcessorType;
         public uint dwAllocationGranularity;
@@ -42,8 +42,8 @@ public static class SysInfoApi
     }
 
     [DllImport(Libraries.Kernel32, SetLastError = true)]
-    public static extern void GetSystemInfo(out SYSTEM_INFO lpSystemInfo);
+    public static extern void GetSystemInfo(SYSTEM_INFO* lpSystemInfo);
     
     [DllImport(Libraries.Kernel32, SetLastError = true)]
-    public static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
+    public static extern bool GlobalMemoryStatusEx(MEMORYSTATUSEX* lpBuffer);
 }

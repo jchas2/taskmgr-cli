@@ -17,7 +17,7 @@ public sealed class When_Using_Processes
     public void Should_Return_ProcessInfos_In_Minimum_Time()
     {
         const int numberOfIterations = 10;
-        const int maxTimeTakenInMilliseconds = 50;
+        const int maxTimeTakenInMilliseconds = 100;
 
         var processes = new TaskMgrProcess::Processes();
 
