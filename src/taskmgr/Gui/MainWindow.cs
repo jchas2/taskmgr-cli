@@ -41,6 +41,8 @@ public sealed class MainWindow : Control
         base.OnLoad();
 
         _processControl.Show();
+
+        Thread.CurrentThread.Join();
     }
 
     protected override void OnUnload()

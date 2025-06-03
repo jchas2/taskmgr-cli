@@ -58,6 +58,64 @@ public class ListView : Control
         return _items.Contains(item);
     }
     
+    private void DoScroll(ConsoleKey consoleKey) 
+    {
+        switch (consoleKey) {
+            case ConsoleKey.DownArrow:
+                if (_viewPort.SelectedIndex != _items.Count - 1) {
+                    _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
+                    _viewPort.SelectedIndex++;
+                    
+                    if (_viewPort.SelectedIndex - _viewPort.CurrentIndex >= _viewPort.RowCount) {
+                        if (_viewPort.CurrentIndex <= _items.Count - _viewPort.Height + 1) {
+                            _viewPort.CurrentIndex++;
+                        }
+                    }
+                }
+                break;
+            case ConsoleKey.UpArrow:
+                if (_viewPort.SelectedIndex != 0) {
+                    _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
+                    _viewPort.SelectedIndex--;
+                    
+                    if (_viewPort.SelectedIndex <= _viewPort.CurrentIndex - 1 && _viewPort.CurrentIndex != 0) {
+                        _viewPort.CurrentIndex--;
+                    }
+                }
+                break;
+            case ConsoleKey.PageDown:
+                if (_viewPort.SelectedIndex != _items.Count - 1) {
+                    _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
+                    _viewPort.SelectedIndex += _viewPort.RowCount;
+                    
+                    if (_viewPort.SelectedIndex > _items.Count - 1) {
+                        _viewPort.SelectedIndex = _items.Count - 1;
+                    }
+                    
+                    if (_viewPort.SelectedIndex - _viewPort.CurrentIndex >= _viewPort.RowCount) {
+                        _viewPort.CurrentIndex = Math.Min(_items.Count - _viewPort.RowCount, _viewPort.SelectedIndex);
+                    }
+                }
+                break;
+            case ConsoleKey.PageUp:
+                if (_viewPort.SelectedIndex != 0) {
+                    _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
+                    
+                    if (_viewPort.SelectedIndex > _viewPort.RowCount) {
+                        _viewPort.SelectedIndex -= _viewPort.RowCount;
+                    }
+                    else {
+                        _viewPort.SelectedIndex = 0;
+                    }
+                    
+                    if (_viewPort.SelectedIndex <= _viewPort.CurrentIndex - 1 && _viewPort.CurrentIndex != 0) {
+                        _viewPort.CurrentIndex = Math.Max(0, _viewPort.SelectedIndex);
+                    }
+                }
+                break;
+        }
+    }
+    
     public void Draw(in Rectangle bounds)
     {
         _viewPort.Bounds = bounds;
@@ -71,7 +129,7 @@ public class ListView : Control
         _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y - 1);
 
         if (ColumnHeaderCount == 0) {
-            _terminal.WriteEmptyLine();
+            _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width);
             return;
         }
 
@@ -81,7 +139,7 @@ public class ListView : Control
         int c = 0;
         
         for (int i = 0; i < ColumnHeaderCount; i++) {
-            if (c + _columnHeaders[i].Width >= _terminal.WindowWidth) {
+            if (c + _columnHeaders[i].Width >= _viewPort.Bounds.Width) {
                 break;
             }
 
@@ -96,9 +154,8 @@ public class ListView : Control
         }
         
         _terminal.Write(_buffer.ToString());
-        
         _terminal.BackgroundColor = _columnHeaders[ColumnHeaderCount - 1].BackgroundColour;
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - c);
+        _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width - c);
     }
 
     private void DrawItem(
@@ -122,7 +179,7 @@ public class ListView : Control
                 columnWidth = _columnHeaders[i].Width;
             }
 
-            if (c + columnWidth >= _terminal.WindowWidth) {
+            if (c + columnWidth >= _viewPort.Bounds.Width) {
                 break;
             }
             
@@ -151,9 +208,8 @@ public class ListView : Control
         }
 
         _terminal.Write(_buffer.ToString());
-
         _terminal.BackgroundColor = item.SubItems[item.SubItemCount - 1].BackgroundColor;
-        _terminal.WriteEmptyLineTo(_terminal.WindowWidth - c);
+        _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width - c);
     }
     
     private void DrawItems()
@@ -179,7 +235,7 @@ public class ListView : Control
         }
 
         for (int i = n; i < _viewPort.Height - 1; i++) {
-            _terminal.WriteEmptyLine();
+            _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width);
         }
     }
 
