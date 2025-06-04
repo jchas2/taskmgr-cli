@@ -214,7 +214,7 @@ public class ListView : Control
     
     private void DrawItems()
     {
-        _viewPort.Height = _terminal.WindowHeight - _viewPort.Bounds.Y - 1;
+        _viewPort.Height = _viewPort.Bounds.Height - _viewPort.Bounds.Y - 1;
         _viewPort.RowCount = _viewPort.Height - 2;
 
         int n = 0;
@@ -247,7 +247,47 @@ public class ListView : Control
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _columnHeaders.Count, nameof(index));
         return _columnHeaders[index];
     }
-    
+
+    public override bool GetInput(ref ConsoleKeyInfo keyInfo)
+    {
+        bool handled = false;
+        
+        if (false == base.GetInput(ref keyInfo)) {
+            return handled;
+        }
+
+        switch (keyInfo.Key) {
+            case ConsoleKey.UpArrow:
+            case ConsoleKey.DownArrow:
+            case ConsoleKey.PageUp:
+            case ConsoleKey.PageDown: {
+                DoScroll(keyInfo.Key);
+                _terminal.SetCursorPosition(0, _viewPort.Bounds.Y + _viewPort.SelectedIndex - _viewPort.CurrentIndex);
+                var selectedItem = _items[_viewPort.SelectedIndex];
+                
+                DrawItem(
+                    selectedItem,
+                    _viewPort.Bounds.Width,
+                    highlight: true);
+
+                if (_viewPort.PreviousSelectedIndex != _viewPort.SelectedIndex) {
+                    _terminal.SetCursorPosition(0, _viewPort.Bounds.Y + _viewPort.PreviousSelectedIndex - _viewPort.CurrentIndex);
+                    var previousSelectedItem = _items[_viewPort.PreviousSelectedIndex];
+                    
+                    DrawItem(
+                        previousSelectedItem,
+                        _viewPort.Bounds.Width,
+                        highlight: false);
+                }
+
+                handled = true;
+                break;
+            }
+        }
+
+        return handled;
+    }
+
     internal ListViewItem GetItemByIndex(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
