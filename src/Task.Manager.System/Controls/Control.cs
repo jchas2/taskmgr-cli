@@ -73,19 +73,11 @@ public class Control
 
     private bool IsActive { get; set; } = false;
     
-    protected virtual bool GetInput(int timeoutMilliseconds, ref ConsoleKeyInfo keyInfo)
+    public virtual bool GetInput(ref ConsoleKeyInfo keyInfo)
     {
-        const int waitMilliseconds = 50;
-        DateTime timeout = DateTime.Now.AddMilliseconds(timeoutMilliseconds);
-
-        while (DateTime.Now < timeout) {
-            
-            if (_terminal.KeyAvailable) {
-                keyInfo = _terminal.ReadKey();
-                return true;
-            }
-
-            Thread.Sleep(waitMilliseconds); 
+        if (_terminal.KeyAvailable) {
+            keyInfo = _terminal.ReadKey();
+            return true;
         }
 
         return false;

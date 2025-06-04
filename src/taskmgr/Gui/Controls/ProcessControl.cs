@@ -127,12 +127,17 @@ public sealed partial class ProcessControl : Control
             var startTime = DateTime.Now;
 
             while (true) {
-                // TODO: Handle input (up + down arrows etc. Simulate it here with a thread sleep.
-                Thread.Sleep(1000);
-                var duration = DateTime.Now - startTime;
-                if (duration.TotalMilliseconds >= Processes.UpdateTimeInMs) {
-                    break;
+                ConsoleKeyInfo keyInfo = new ConsoleKeyInfo();
+                bool handled = _listView.GetInput(ref keyInfo);
+
+                if (false == handled) {
+                    var duration = DateTime.Now - startTime;
+                    if (duration.TotalMilliseconds >= Processes.UpdateTimeInMs) {
+                        break;
+                    }
                 }
+                
+                Thread.Sleep(50);
             }
         }
     }
