@@ -137,7 +137,7 @@ public sealed partial class ProcessControl : Control
                     }
                 }
                 
-                Thread.Sleep(50);
+                Thread.Sleep(30);
             }
         }
     }
