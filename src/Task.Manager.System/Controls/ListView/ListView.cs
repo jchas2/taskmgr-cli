@@ -58,8 +58,10 @@ public class ListView : Control
         return _items.Contains(item);
     }
     
-    private void DoScroll(ConsoleKey consoleKey) 
+    private void DoScroll(ConsoleKey consoleKey, out bool redrawAllItems)
     {
+        redrawAllItems = false;
+        
         switch (consoleKey) {
             case ConsoleKey.DownArrow:
                 if (_viewPort.SelectedIndex != _items.Count - 1) {
@@ -69,6 +71,7 @@ public class ListView : Control
                     if (_viewPort.SelectedIndex - _viewPort.CurrentIndex >= _viewPort.RowCount) {
                         if (_viewPort.CurrentIndex <= _items.Count - _viewPort.Height + 1) {
                             _viewPort.CurrentIndex++;
+                            redrawAllItems = true;
                         }
                     }
                 }
@@ -80,6 +83,7 @@ public class ListView : Control
                     
                     if (_viewPort.SelectedIndex <= _viewPort.CurrentIndex - 1 && _viewPort.CurrentIndex != 0) {
                         _viewPort.CurrentIndex--;
+                        redrawAllItems = true;
                     }
                 }
                 break;
@@ -94,6 +98,7 @@ public class ListView : Control
                     
                     if (_viewPort.SelectedIndex - _viewPort.CurrentIndex >= _viewPort.RowCount) {
                         _viewPort.CurrentIndex = Math.Min(_items.Count - _viewPort.RowCount, _viewPort.SelectedIndex);
+                        redrawAllItems = true;
                     }
                 }
                 break;
@@ -110,6 +115,7 @@ public class ListView : Control
                     
                     if (_viewPort.SelectedIndex <= _viewPort.CurrentIndex - 1 && _viewPort.CurrentIndex != 0) {
                         _viewPort.CurrentIndex = Math.Max(0, _viewPort.SelectedIndex);
+                        redrawAllItems = true;
                     }
                 }
                 break;
@@ -261,23 +267,14 @@ public class ListView : Control
             case ConsoleKey.DownArrow:
             case ConsoleKey.PageUp:
             case ConsoleKey.PageDown: {
-                DoScroll(keyInfo.Key);
-                _terminal.SetCursorPosition(0, _viewPort.Bounds.Y + _viewPort.SelectedIndex - _viewPort.CurrentIndex);
-                var selectedItem = _items[_viewPort.SelectedIndex];
-                
-                DrawItem(
-                    selectedItem,
-                    _viewPort.Bounds.Width,
-                    highlight: true);
+                DoScroll(keyInfo.Key, out bool redrawAllItems);
 
-                if (_viewPort.PreviousSelectedIndex != _viewPort.SelectedIndex) {
-                    _terminal.SetCursorPosition(0, _viewPort.Bounds.Y + _viewPort.PreviousSelectedIndex - _viewPort.CurrentIndex);
-                    var previousSelectedItem = _items[_viewPort.PreviousSelectedIndex];
-                    
-                    DrawItem(
-                        previousSelectedItem,
-                        _viewPort.Bounds.Width,
-                        highlight: false);
+                if (redrawAllItems) {
+                    DrawHeader();
+                    DrawItems();
+                }
+                else {
+                    RedrawItem();
                 }
 
                 handled = true;
@@ -356,6 +353,33 @@ public class ListView : Control
     
     public ListViewItemCollection Items => _itemCollection;
 
+    private void RedrawItem()
+    {
+        _terminal.SetCursorPosition(
+            0,
+            _viewPort.Bounds.Y + _viewPort.SelectedIndex - _viewPort.CurrentIndex);
+                    
+        var selectedItem = _items[_viewPort.SelectedIndex];
+
+        DrawItem(
+            selectedItem,
+            _viewPort.Bounds.Width,
+            highlight: true);
+
+        if (_viewPort.PreviousSelectedIndex != _viewPort.SelectedIndex) {
+            _terminal.SetCursorPosition(
+                0,
+                _viewPort.Bounds.Y + _viewPort.PreviousSelectedIndex - _viewPort.CurrentIndex);
+                        
+            var previousSelectedItem = _items[_viewPort.PreviousSelectedIndex];
+
+            DrawItem(
+                previousSelectedItem,
+                _viewPort.Bounds.Width,
+                highlight: false);
+        }
+    }
+    
     internal void RemoveAt(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
