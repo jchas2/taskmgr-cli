@@ -9,7 +9,7 @@ namespace Task.Manager.System.Process;
 
 #pragma warning disable CA1416 // Validate platform compatibility        
 
-public partial class Processes : IProcesses
+public partial class Processor : IProcessor
 {
 #if __WIN32__    
     private const string DEFAULT_USER = "SYSTEM";
@@ -81,9 +81,7 @@ public partial class Processes : IProcesses
             }
         }
         catch (Exception ex) {
-#if DEBUG
-            Debug.WriteLine(ex.Message);
-#endif
+            Trace.WriteLine(ex.Message);
             return result;
         }
     }
@@ -116,10 +114,7 @@ public partial class Processes : IProcesses
             }
         }
         catch (Exception e) {
-#if DEBUG
-            /* */
-            Debug.WriteLine(e);
-#endif
+            Trace.WriteLine(e);
         }
         
         return DEFAULT_USER;

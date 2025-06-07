@@ -9,7 +9,6 @@ namespace Task.Manager.Gui;
 
 public sealed class MainWindow : Control
 {
-    private readonly IProcesses _processor;
     private readonly RunContext _runContext;
     private readonly Theme _theme;
 
@@ -25,11 +24,9 @@ public sealed class MainWindow : Control
         _runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
 
-        _processor = new Processes();
-        
         _processControl = new ProcessControl(
             terminal, 
-            _processor, 
+            _runContext.Processor, 
             _runContext.SystemInfo,
             _theme);
         
@@ -40,6 +37,7 @@ public sealed class MainWindow : Control
     {
         base.OnLoad();
 
+        _runContext.Processor.Run();
         _processControl.Show();
 
         Thread.CurrentThread.Join();

@@ -19,7 +19,7 @@ public sealed class When_Using_Processes
         const int numberOfIterations = 10;
         const int maxTimeTakenInMilliseconds = 100;
 
-        var processes = new TaskMgrProcess::Processes();
+        var processes = new TaskMgrProcess::Processor();
 
         for (int i = 0; i < numberOfIterations; i++) {
             var timeTaken = Time(() => processes.GetAll());

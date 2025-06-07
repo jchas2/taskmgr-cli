@@ -8,11 +8,11 @@ namespace Task.Manager;
 public class RunContext(
     IFileSystem fileSystem,
     ISystemInfo systemInfo,
-    IProcesses processes,
+    IProcessor processor,
     IOutputWriter? outputWriter = null)
 {
     public IFileSystem FileSystem { get; } = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-    public IProcesses Processes { get; } = processes ?? throw new ArgumentNullException(nameof(processes));
+    public IProcessor Processor { get; } = processor ?? throw new ArgumentNullException(nameof(processor));
     public ISystemInfo SystemInfo { get; } = systemInfo ?? throw new ArgumentNullException(nameof(systemInfo));
     public IOutputWriter OutputWriter { get; } = outputWriter ?? Cli.Utils.OutputWriter.Out;
 }
