@@ -11,9 +11,7 @@ namespace Task.Manager.Gui.Controls;
 
 public sealed partial class ProcessControl : Control
 {
-    private ProcessInfo[] _allProcesses;
-    private readonly object _processLock = new();
-    private readonly IProcesses _processes;
+    private readonly IProcessor _processor;
     private readonly ISystemInfo _systemInfo;
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly SystemStatistics _systemStatistics;
@@ -25,13 +23,12 @@ public sealed partial class ProcessControl : Control
     
     public ProcessControl(
         ISystemTerminal terminal, 
-        IProcesses processes, 
+        IProcessor processor, 
         ISystemInfo systemInfo,
         Theme theme)
         : base(terminal)
     {
-        _allProcesses = [];
-        _processes = processes ?? throw new ArgumentNullException(nameof(processes));
+        _processor = processor ?? throw new ArgumentNullException(nameof(processor));
         _systemInfo = systemInfo ?? throw new ArgumentNullException(nameof(systemInfo));
         _systemStatistics = new SystemStatistics();
         
@@ -75,17 +72,19 @@ public sealed partial class ProcessControl : Control
         _listView.Draw(bounds);
     }
     
-    private void GetTotalSystemTimes()
+    private void GetTotalSystemTimes(ProcessInfo[] allProcesses)
     {
         _systemStatistics.CpuPercentIdleTime = 0.0;
         _systemStatistics.CpuPercentUserTime = 0.0;
         _systemStatistics.CpuPercentKernelTime = 0.0;
         
-        lock (_processLock) {
-            for (int i = 0; i < _allProcesses.Length; i++) {
-                _systemStatistics.CpuPercentUserTime += _allProcesses[i].CpuUserTimePercent;
-                _systemStatistics.CpuPercentKernelTime += _allProcesses[i].CpuKernelTimePercent;
-            }
+        _systemStatistics.ProcessCount = _processor.ProcessCount;
+        _systemStatistics.ThreadCount = _processor.ThreadCount;
+        _systemStatistics.GhostProcessCount = _processor.GhostProcessCount;
+            
+        for (int i = 0; i < allProcesses.Length; i++) {
+            _systemStatistics.CpuPercentUserTime += allProcesses[i].CpuUserTimePercent;
+            _systemStatistics.CpuPercentKernelTime += allProcesses[i].CpuKernelTimePercent;
         }
         
         _systemStatistics.CpuPercentIdleTime = 100.0 - (_systemStatistics.CpuPercentUserTime + _systemStatistics.CpuPercentKernelTime);
@@ -99,8 +98,8 @@ public sealed partial class ProcessControl : Control
         
         _cancellationTokenSource = new CancellationTokenSource();
         
-        var processThread = new Thread(() => RunProcessLoop(_cancellationTokenSource.Token));
-        processThread.Start();
+        var ioThread = new Thread(() => RunIoLoop(_cancellationTokenSource.Token));
+        ioThread.Start();
         
         var renderThread = new Thread(() => RunRenderLoop(_cancellationTokenSource.Token));
         renderThread.Start();
@@ -115,65 +114,44 @@ public sealed partial class ProcessControl : Control
 
     private void RunRenderLoop(CancellationToken token)
     {
-        _systemInfo.GetSystemInfo(_systemStatistics);
-        _systemInfo.GetSystemMemory(_systemStatistics);
+        while (false == token.IsCancellationRequested) {
+            ProcessInfo[] allProcesses = _processor.GetAll();
+
+            if (allProcesses.Length == 0) {
+                continue;
+            }
+
+            _systemInfo.GetSystemInfo(_systemStatistics);
+            _systemInfo.GetSystemMemory(_systemStatistics);
+            
+            GetTotalSystemTimes(allProcesses);
+            UpdateColumnHeaders();
+            UpdateListViewItems(allProcesses);
+            Draw();
+            
+            Thread.Sleep(Processor.UpdateTimeInMs);
+        }
+    }
+    
+    private void RunIoLoop(CancellationToken token)
+    {
+        ConsoleKeyInfo keyInfo = new ConsoleKeyInfo();
 
         while (false == token.IsCancellationRequested) {
-            GetTotalSystemTimes();
-            UpdateColumnHeaders();
-            UpdateListViewItems();
-            Draw();
-
+            
             var startTime = DateTime.Now;
-
+            
             while (true) {
-                ConsoleKeyInfo keyInfo = new ConsoleKeyInfo();
                 bool handled = _listView.GetInput(ref keyInfo);
 
                 if (false == handled) {
                     var duration = DateTime.Now - startTime;
-                    if (duration.TotalMilliseconds >= Processes.UpdateTimeInMs) {
+                    if (duration.TotalMilliseconds >= Processor.UpdateTimeInMs) {
                         break;
                     }
                 }
                 
                 Thread.Sleep(30);
-            }
-        }
-    }
-    
-    private void RunProcessLoop(CancellationToken token)
-    {
-        while (false == token.IsCancellationRequested) {
-            /*
-             * This function runs on a worker thread. The allProcesses array is cloned
-             * into the member array _allProcesses for thread-safe access to the data.
-             */
-            var allProcesses = _processes.GetAll();
-
-            _systemStatistics.ProcessCount = _processes.ProcessCount;
-            _systemStatistics.ThreadCount = _processes.ThreadCount;
-            _systemStatistics.GhostProcessCount = _processes.GhostProcessCount;
-
-            if (allProcesses.Length == 0) {
-                continue;
-            }
-            
-            lock (_processLock) {
-                
-                Array.Clear(
-                    array: _allProcesses, 
-                    index: 0, 
-                    length: _allProcesses.Length);
-                
-                Array.Resize(ref _allProcesses, allProcesses.Length);
-
-                Array.Copy(
-                    sourceArray: allProcesses, 
-                    sourceIndex: 0, 
-                    destinationArray: _allProcesses, 
-                    destinationIndex: 0, 
-                    length: _allProcesses.Length);
             }
         }
     }
@@ -236,49 +214,46 @@ public sealed partial class ProcessControl : Control
         _cachedTerminalWidth = Terminal.WindowWidth;
     }
     
-    private void UpdateListViewItems()
+    private void UpdateListViewItems(ProcessInfo[] allProcesses)
     {
-        lock (_processLock) {
-
-            var sortedProcesses = _allProcesses
-                .OrderByDescending(p => p.CpuTimePercent)
-                .ToArray();
+        var sortedProcesses = allProcesses
+            .OrderByDescending(p => p.CpuTimePercent)
+            .ToArray();
+        
+        if (_listView.Items.Count == 0) {
             
-            if (_listView.Items.Count == 0) {
+            for (int i = 0; i < sortedProcesses.Length; i++) {
+                var item = new ProcessListViewItem(ref sortedProcesses[i], Theme);
+                _listView.Items.Add(item);
+            }
+            
+            return;
+        }
+
+        for (int i = 0; i < sortedProcesses.Length; i++) {
+            bool found = false;
+            
+            for (int j = 0; j < _listView.Items.Count; j++) {
+                var item = (ProcessListViewItem)_listView.Items[j];
                 
-                for (int i = 0; i < sortedProcesses.Length; i++) {
-                    var item = new ProcessListViewItem(ref sortedProcesses[i], Theme);
-                    _listView.Items.Add(item);
+                if (sortedProcesses[i].Pid == item.Pid) {
+                    item.UpdateItem(ref sortedProcesses[i]);
+
+                    int insertAt = i > _listView.Items.Count - 1 
+                        ? _listView.Items.Count - 1 
+                        : i;
+
+                    _listView.Items.InsertAt(insertAt, item);
+                    _listView.Items.RemoveAt(j);
+                    
+                    found = true;
+                    break;
                 }
-                
-                return;
             }
 
-            for (int i = 0; i < sortedProcesses.Length; i++) {
-                bool found = false;
-                
-                for (int j = 0; j < _listView.Items.Count; j++) {
-                    var item = (ProcessListViewItem)_listView.Items[j];
-                    
-                    if (sortedProcesses[i].Pid == item.Pid) {
-                        item.UpdateItem(ref sortedProcesses[i]);
-
-                        int insertAt = i > _listView.Items.Count - 1 
-                            ? _listView.Items.Count - 1 
-                            : i;
-
-                        _listView.Items.InsertAt(insertAt, item);
-                        _listView.Items.RemoveAt(j);
-                        
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (false == found) {
-                    var item = new ProcessListViewItem(ref sortedProcesses[i], Theme);
-                    _listView.Items.InsertAt(i, item);
-                }
+            if (false == found) {
+                var item = new ProcessListViewItem(ref sortedProcesses[i], Theme);
+                _listView.Items.InsertAt(i, item);
             }
         }
     }

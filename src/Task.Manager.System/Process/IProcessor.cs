@@ -1,11 +1,12 @@
 namespace Task.Manager.System.Process;
 
-public interface IProcesses
+public interface IProcessor
 {
     ProcessInfo[] GetAll();
-    bool GetProcessTimes(in int pid, ref ProcessTimeInfo ptInfo);
     public int GhostProcessCount { get; }
     public int ProcessCount { get; }
+    public void Run();
+    public void Stop();
     public int ThreadCount { get; }
 
 }

@@ -59,7 +59,7 @@ class Program
             var runContext = new RunContext(
                 new FileSystem(),
                 new SystemInfo(),
-                new Processes(),
+                new Processor(),
                 outputWriter: null);
 
             var app = new TaskMgrApp(runContext);

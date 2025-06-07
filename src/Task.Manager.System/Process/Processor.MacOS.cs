@@ -5,7 +5,7 @@ using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
 
-public partial class Processes : IProcesses
+public partial class Processor : IProcessor
 {
 #if __APPLE__    
     private string GetProcessCommandLine(global::System.Diagnostics.Process process)
