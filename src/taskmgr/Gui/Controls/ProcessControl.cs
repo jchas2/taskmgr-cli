@@ -98,9 +98,6 @@ public sealed partial class ProcessControl : Control
         
         _cancellationTokenSource = new CancellationTokenSource();
         
-        var ioThread = new Thread(() => RunIoLoop(_cancellationTokenSource.Token));
-        ioThread.Start();
-        
         var renderThread = new Thread(() => RunRenderLoop(_cancellationTokenSource.Token));
         renderThread.Start();
     }
@@ -129,29 +126,23 @@ public sealed partial class ProcessControl : Control
             UpdateListViewItems(allProcesses);
             Draw();
             
-            Thread.Sleep(Processor.UpdateTimeInMs);
-        }
-    }
-    
-    private void RunIoLoop(CancellationToken token)
-    {
-        ConsoleKeyInfo keyInfo = new ConsoleKeyInfo();
-
-        while (false == token.IsCancellationRequested) {
-            
+            ConsoleKeyInfo keyInfo = new ConsoleKeyInfo();
             var startTime = DateTime.Now;
             
             while (true) {
                 bool handled = _listView.GetInput(ref keyInfo);
 
-                if (false == handled) {
-                    var duration = DateTime.Now - startTime;
-                    if (duration.TotalMilliseconds >= Processor.UpdateTimeInMs) {
-                        break;
-                    }
+                if (handled) {
+                    startTime = DateTime.Now;
+                }
+                else { 
+                    Thread.Sleep(30);
                 }
                 
-                Thread.Sleep(30);
+                var duration = DateTime.Now - startTime;
+                if (duration.TotalMilliseconds >= Processor.UpdateTimeInMs) {
+                    break;
+                }
             }
         }
     }
