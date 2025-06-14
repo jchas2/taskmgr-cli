@@ -41,7 +41,10 @@ public partial class Processor : IProcessor
             }
             
             var versionInfo = FileVersionInfo.GetVersionInfo(processPath);
-            return versionInfo.FileDescription ?? process.ProcessName;
+            
+            return string.IsNullOrWhiteSpace(versionInfo.FileDescription) 
+                ? process.ProcessName 
+                : versionInfo.FileDescription;
         }
         catch {
             return process.ProcessName;            

@@ -251,6 +251,7 @@ public class ListView : Control
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _columnHeaders.Count, nameof(index));
+        
         return _columnHeaders[index];
     }
 
@@ -289,6 +290,7 @@ public class ListView : Control
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
+        
         return _items[index];
     }
 
@@ -327,12 +329,14 @@ public class ListView : Control
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
+        
         _columnHeaders.Insert(index, columnHeader);
     }
 
     internal void InsertColumnHeaders(ListViewColumnHeader[] columnHeaders)
     {
         ArgumentNullException.ThrowIfNull(columnHeaders, nameof(columnHeaders));
+        
         _columnHeaders.AddRange(columnHeaders);
     }
     
@@ -340,12 +344,14 @@ public class ListView : Control
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(index, _items.Count, nameof(index));
+        
         _items.Insert(index, item);
     }
 
     internal void InsertItems(ListViewItem[] items)
     {
         ArgumentNullException.ThrowIfNull(items, nameof(items));
+        
         _items.AddRange(items);
     }
     
@@ -384,6 +390,7 @@ public class ListView : Control
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
+        
         _items.RemoveAt(index);
     }
 

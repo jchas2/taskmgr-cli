@@ -21,7 +21,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         
         Terminal.WriteEmptyLineTo(offsetX);
         Terminal.Write(menubar);
-        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - offsetX - menubar.Length);
+        Terminal.WriteEmptyLineTo(bounds.Width - offsetX - menubar.Length);
         
         nlines += 2;
 
@@ -36,7 +36,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
             systemStats.PrivateIPv4Address.Length + 5 +
             systemStats.PublicIPv4Address.Length;
         
-        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars);
+        Terminal.WriteEmptyLineTo(bounds.Width - nchars);
         
         nlines++;
         
@@ -47,7 +47,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
             systemStats.CpuName.Length + 8 +
             systemStats.CpuCores.ToString().Length + 1;
 
-        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars);
+        Terminal.WriteEmptyLineTo(bounds.Width - nchars);
         Terminal.WriteEmptyLine();
         
         nlines += 2;
@@ -97,7 +97,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
             virRatio.ToString("000.0%"),
             virColour);
         
-        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars - 4);
+        Terminal.WriteEmptyLineTo(bounds.Width - nchars - 4);
         
         nlines++;
         
@@ -123,7 +123,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
             ((double)(systemStats.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
         
-        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars - 4);
+        Terminal.WriteEmptyLineTo(bounds.Width - nchars - 4);
 
         nlines++;
         
@@ -149,7 +149,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
             ((double)(systemStats.TotalPageFile - systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
         
-        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars - 4);
+        Terminal.WriteEmptyLineTo(bounds.Width - nchars - 4);
 
         nlines++;
         nchars = 4 + 1 + MetreWidth + 1;
@@ -173,7 +173,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
             ((double)(systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
         
-        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars);
+        Terminal.WriteEmptyLineTo(bounds.Width - nchars);
         
         nlines++;
         
@@ -192,7 +192,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
             systemStats.ThreadCount.ToString(),
             ForegroundColour);
         
-        Terminal.WriteEmptyLineTo(Terminal.WindowWidth - nchars);
+        Terminal.WriteEmptyLineTo(bounds.Width - nchars);
         
         bounds.Y = nlines;
         bounds.X = 0;
