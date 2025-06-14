@@ -2,7 +2,7 @@
 
 namespace Task.Manager.System;
 
-public class SystemTerminal : ISystemTerminal
+public partial class SystemTerminal : ISystemTerminal
 {
     public SystemTerminal()
     {
@@ -26,6 +26,12 @@ public class SystemTerminal : ISystemTerminal
         get => Console.CursorTop;
         set => Console.CursorTop = value;
     }
+
+    // public bool CursorVisible
+    // {
+    //     get => Console.CursorVisible;
+    //     set => Console.CursorVisible = value;
+    // }
 
     public ConsoleColor ForegroundColor
     {

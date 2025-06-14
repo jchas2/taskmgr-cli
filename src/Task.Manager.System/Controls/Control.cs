@@ -25,6 +25,8 @@ public class Control
     public ConsoleColor BackgroundColour { get; set; } = ConsoleColor.Black;
     
     internal void ClearControls() => _controls.Clear();
+
+    public void Close() => OnUnload();
     
     internal int ControlCount => _controls.Count;
     
@@ -42,6 +44,7 @@ public class Control
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _controls.Count, nameof(index));
+        
         return _controls[index];
     }
     
@@ -62,12 +65,14 @@ public class Control
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(index, _controls.Count, nameof(index));
+        
         _controls.Insert(index, control);
     }
 
     internal void InsertControls(Control[] controls)
     {
         ArgumentNullException.ThrowIfNull(controls, nameof(controls));
+        
         _controls.AddRange(controls);
     }
 
@@ -83,9 +88,26 @@ public class Control
         return false;
     }
 
+    public int Height => Terminal.WindowHeight - MarginTop - MarginBottom;
+
+    public int MarginBottom { get; set; } = 0;
+    
+    public int MarginLeft { get; set; } = 0;
+    
+    public int MarginRight { get; set; } = 0;
+    
+    public int MarginTop { get; set; } = 0;
+
     protected virtual void OnLoad() => IsActive = true;
 
-    protected virtual void OnUnload() => IsActive = false;
+    protected virtual void OnUnload()
+    {
+        foreach (var control in Controls) {
+            control.Close();
+        }
+        
+        IsActive = false;   
+    }
     
     internal void RemoveControlAt(int index)
     {
@@ -97,6 +119,7 @@ public class Control
     internal void RemoveControl(Control control)
     {
         ArgumentNullException.ThrowIfNull(control, nameof(control));
+        
         int index = IndexOfControl(control);
         
         if (index != -1) {
@@ -107,4 +130,6 @@ public class Control
     public void Show() => OnLoad();
     
     protected ISystemTerminal Terminal => _terminal;
+    
+    public int Width => Terminal.WindowWidth - MarginLeft - MarginRight;
 }

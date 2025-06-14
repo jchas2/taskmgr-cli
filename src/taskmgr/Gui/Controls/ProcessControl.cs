@@ -13,6 +13,7 @@ public sealed partial class ProcessControl : Control
 {
     private readonly IProcessor _processor;
     private readonly ISystemInfo _systemInfo;
+    private readonly Theme _theme;
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly SystemStatistics _systemStatistics;
 
@@ -30,28 +31,11 @@ public sealed partial class ProcessControl : Control
     {
         _processor = processor ?? throw new ArgumentNullException(nameof(processor));
         _systemInfo = systemInfo ?? throw new ArgumentNullException(nameof(systemInfo));
+        _theme = theme ?? throw new ArgumentNullException(nameof(theme));
         _systemStatistics = new SystemStatistics();
         
         _headerControl = new HeaderControl(Terminal);
-        _headerControl.BackgroundColour = theme.Background;
-        _headerControl.ForegroundColour = theme.Foreground;
-        _headerControl.MenubarColour = theme.Menubar;
-        
         _listView = new ListView(Terminal);
-        _listView.BackgroundHighlightColour = theme.BackgroundHighlight;
-        _listView.ForegroundHighlightColour = theme.ForegroundHighlight;
-        _listView.BackgroundColour = theme.Background;
-        _listView.ForegroundColour = theme.Foreground;
-        _listView.HeaderBackgroundColour = theme.HeaderBackground;
-        _listView.HeaderForegroundColour = theme.HeaderForeground;
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PROCESS"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PID"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("USER"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PRI"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("CPU%"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("THRDS"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("MEM"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PATH"));
         
         Controls.Add(_headerControl);
         Controls.Add(_listView);
@@ -62,13 +46,12 @@ public sealed partial class ProcessControl : Control
     private void Draw()
     {
         var bounds = new Rectangle(
-            x: 0, 
-            y: 0, 
-            Terminal.WindowWidth, 
-            Terminal.WindowHeight);
+            x: MarginLeft, 
+            y: MarginTop, 
+            Width, 
+            Height);
         
         _headerControl.Draw(_systemStatistics, ref bounds);
-
         _listView.Draw(bounds);
     }
     
@@ -93,6 +76,25 @@ public sealed partial class ProcessControl : Control
     protected override void OnLoad()
     {
         base.OnLoad();
+        
+        _headerControl.BackgroundColour = _theme.Background;
+        _headerControl.ForegroundColour = _theme.Foreground;
+        _headerControl.MenubarColour = _theme.Menubar;
+
+        _listView.BackgroundHighlightColour = _theme.BackgroundHighlight;
+        _listView.ForegroundHighlightColour = _theme.ForegroundHighlight;
+        _listView.BackgroundColour = _theme.Background;
+        _listView.ForegroundColour = _theme.Foreground;
+        _listView.HeaderBackgroundColour = _theme.HeaderBackground;
+        _listView.HeaderForegroundColour = _theme.HeaderForeground;
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PROCESS"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PID"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("USER"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PRI"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("CPU%"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("THRDS"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("MEM"));
+        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PATH"));
 
         SafelyDisposeCancellationTokenSource(_cancellationTokenSource);
         
@@ -104,9 +106,8 @@ public sealed partial class ProcessControl : Control
 
     protected override void OnUnload()
     {
-        base.OnUnload();
-        
         _cancellationTokenSource?.Cancel();
+        base.OnUnload();
     }
 
     private void RunRenderLoop(CancellationToken token)
@@ -190,8 +191,8 @@ public sealed partial class ProcessControl : Control
             COLUMN_THREADS_WIDTH + COLUMN_MARGIN +
             COLUMN_MEMORY_WIDTH + COLUMN_MARGIN;
 
-        if (total + COLUMN_COMMANDLINE_WIDTH + COLUMN_MARGIN < Terminal.WindowWidth) {
-            _listView.ColumnHeaders[(int)Columns.CommandLine].Width = Terminal.WindowWidth - total - COLUMN_MARGIN;    
+        if (total + COLUMN_COMMANDLINE_WIDTH + COLUMN_MARGIN < Width) {
+            _listView.ColumnHeaders[(int)Columns.CommandLine].Width = Width - total - COLUMN_MARGIN;    
         }
         else {
             _listView.ColumnHeaders[(int)Columns.CommandLine].Width = COLUMN_COMMANDLINE_WIDTH;

@@ -5,6 +5,7 @@ public interface ISystemTerminal
     ConsoleColor BackgroundColor { get; set; }
     int CursorLeft { get; set; }
     int CursorTop { get; set; }
+    //bool CursorVisible { get; set; }
     ConsoleColor ForegroundColor { get; set; }
     bool KeyAvailable { get; }
     TextWriter StdError { get; }

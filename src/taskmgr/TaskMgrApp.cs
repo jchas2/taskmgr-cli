@@ -178,7 +178,7 @@ public sealed class TaskMgrApp
             _mutex = new Mutex(initiallyOwned: false, name: MutexId, out ownsMutex);
 
             if (false == ownsMutex) {
-                OutputWriter.Error.WriteLine("Another instance of app is already running.".ToRed());
+                _runContext.OutputWriter.WriteLine("Another instance of app is already running.".ToRed());
                 return -1;
             }
 
