@@ -7,6 +7,7 @@ public interface IProcessor
     public int ProcessCount { get; }
     public void Run();
     public void Stop();
+    public SystemStatistics SystemStatistics { get; }
     public int ThreadCount { get; }
 
 }

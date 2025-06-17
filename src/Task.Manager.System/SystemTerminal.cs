@@ -39,11 +39,8 @@ public partial class SystemTerminal : ISystemTerminal
         set => Console.ForegroundColor = value;
     }
 
-    public bool KeyAvailable
-    {
-        get => Console.KeyAvailable;
-    }
-    
+    public bool KeyAvailable => Console.KeyAvailable;
+
     public TextWriter StdError => Console.Error;
     public TextReader StdIn => Console.In;
     public TextWriter StdOut => Console.Out;

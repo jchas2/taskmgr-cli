@@ -78,7 +78,7 @@ public partial class SystemInfo
         return true;
 	}
 
-    private static unsafe bool GetSystemMemoryInternal(SystemStatistics systemStatistics)
+    private static unsafe bool GetSystemMemoryInternal(ref SystemStatistics systemStatistics)
     {
         systemStatistics.AvailablePageFile = 0;
         systemStatistics.AvailablePhysical = 0;

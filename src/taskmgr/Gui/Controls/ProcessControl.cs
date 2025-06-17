@@ -12,10 +12,8 @@ namespace Task.Manager.Gui.Controls;
 public sealed partial class ProcessControl : Control
 {
     private readonly IProcessor _processor;
-    private readonly ISystemInfo _systemInfo;
     private readonly Theme _theme;
     private CancellationTokenSource? _cancellationTokenSource;
-    private readonly SystemStatistics _systemStatistics;
 
     private readonly HeaderControl _headerControl;
     private readonly ListView _listView;
@@ -25,17 +23,14 @@ public sealed partial class ProcessControl : Control
     public ProcessControl(
         ISystemTerminal terminal, 
         IProcessor processor, 
-        ISystemInfo systemInfo,
         Theme theme)
         : base(terminal)
     {
         _processor = processor ?? throw new ArgumentNullException(nameof(processor));
-        _systemInfo = systemInfo ?? throw new ArgumentNullException(nameof(systemInfo));
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        _systemStatistics = new SystemStatistics();
         
-        _headerControl = new HeaderControl(Terminal);
-        _listView = new ListView(Terminal);
+        _headerControl = new HeaderControl(processor, terminal);
+        _listView = new ListView(terminal);
         
         Controls.Add(_headerControl);
         Controls.Add(_listView);
@@ -45,34 +40,20 @@ public sealed partial class ProcessControl : Control
 
     private void Draw()
     {
-        var bounds = new Rectangle(
-            x: MarginLeft, 
-            y: MarginTop, 
-            Width, 
-            Height);
+        _headerControl.X = 0;
+        _headerControl.Y = 0;
+        _headerControl.Width = Width;
         
-        _headerControl.Draw(_systemStatistics, ref bounds);
-        _listView.Draw(bounds);
+        _headerControl.Draw();
+
+        _listView.X = 0;
+        _listView.Y = _headerControl.Y + _headerControl.Height + 1;
+        _listView.Width = Width;
+        _listView.Height = Terminal.WindowHeight - (_headerControl.Height + 1);
+        
+        _listView.Draw();
     }
     
-    private void GetTotalSystemTimes(ProcessInfo[] allProcesses)
-    {
-        _systemStatistics.CpuPercentIdleTime = 0.0;
-        _systemStatistics.CpuPercentUserTime = 0.0;
-        _systemStatistics.CpuPercentKernelTime = 0.0;
-        
-        _systemStatistics.ProcessCount = _processor.ProcessCount;
-        _systemStatistics.ThreadCount = _processor.ThreadCount;
-        _systemStatistics.GhostProcessCount = _processor.GhostProcessCount;
-            
-        for (int i = 0; i < allProcesses.Length; i++) {
-            _systemStatistics.CpuPercentUserTime += allProcesses[i].CpuUserTimePercent;
-            _systemStatistics.CpuPercentKernelTime += allProcesses[i].CpuKernelTimePercent;
-        }
-        
-        _systemStatistics.CpuPercentIdleTime = 100.0 - (_systemStatistics.CpuPercentUserTime + _systemStatistics.CpuPercentKernelTime);
-    }
-
     protected override void OnLoad()
     {
         base.OnLoad();
@@ -95,6 +76,10 @@ public sealed partial class ProcessControl : Control
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("THRDS"));
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("MEM"));
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("PATH"));
+        _listView.X = 0;
+        _listView.Y = _headerControl.Y + _headerControl.Height + 1;
+        _listView.Width = Terminal.WindowWidth;
+        
 
         SafelyDisposeCancellationTokenSource(_cancellationTokenSource);
         
@@ -119,10 +104,6 @@ public sealed partial class ProcessControl : Control
                 continue;
             }
 
-            _systemInfo.GetSystemInfo(_systemStatistics);
-            _systemInfo.GetSystemMemory(_systemStatistics);
-            
-            GetTotalSystemTimes(allProcesses);
             UpdateColumnHeaders();
             UpdateListViewItems(allProcesses);
             Draw();
@@ -169,33 +150,33 @@ public sealed partial class ProcessControl : Control
         /* Bug on MacOS where ProcessName returns truncated 15 char value. */
         _listView.ColumnHeaders[(int)Columns.Process].Width = 16;
 #elif __WIN32__ 
-        _listView.ColumnHeaders[(int)Columns.Process].Width = COLUMN_PROCESS_WIDTH;
+        _listView.ColumnHeaders[(int)Columns.Process].Width = ColumnProcessWidth;
 #endif
-        _listView.ColumnHeaders[(int)Columns.Pid].Width = COLUMN_PID_WIDTH;
-        _listView.ColumnHeaders[(int)Columns.User].Width = COLUMN_USER_WIDTH;
-        _listView.ColumnHeaders[(int)Columns.Priority].Width = COLUMN_PRIORITY_WIDTH;
+        _listView.ColumnHeaders[(int)Columns.Pid].Width = ColumnPidWidth;
+        _listView.ColumnHeaders[(int)Columns.User].Width = ColumnUserWidth;
+        _listView.ColumnHeaders[(int)Columns.Priority].Width = ColumnPriorityWidth;
         _listView.ColumnHeaders[(int)Columns.Priority].RightAligned = true;
-        _listView.ColumnHeaders[(int)Columns.Cpu].Width = COLUMN_CPU_WIDTH;
+        _listView.ColumnHeaders[(int)Columns.Cpu].Width = ColumnCpuWidth;
         _listView.ColumnHeaders[(int)Columns.Cpu].RightAligned = true;
-        _listView.ColumnHeaders[(int)Columns.Threads].Width = COLUMN_THREADS_WIDTH;
+        _listView.ColumnHeaders[(int)Columns.Threads].Width = ColumnThreadsWidth;
         _listView.ColumnHeaders[(int)Columns.Threads].RightAligned = true;
-        _listView.ColumnHeaders[(int)Columns.Memory].Width = COLUMN_MEMORY_WIDTH;
+        _listView.ColumnHeaders[(int)Columns.Memory].Width = ColumnMemoryWidth;
         _listView.ColumnHeaders[(int)Columns.Memory].RightAligned = true;
 
         int total =
-            COLUMN_PROCESS_WIDTH + COLUMN_MARGIN +
-            COLUMN_PID_WIDTH + COLUMN_MARGIN +
-            COLUMN_USER_WIDTH + COLUMN_MARGIN +
-            COLUMN_PRIORITY_WIDTH + COLUMN_MARGIN +
-            COLUMN_CPU_WIDTH + COLUMN_MARGIN +
-            COLUMN_THREADS_WIDTH + COLUMN_MARGIN +
-            COLUMN_MEMORY_WIDTH + COLUMN_MARGIN;
+            ColumnProcessWidth + ColumnMargin +
+            ColumnPidWidth + ColumnMargin +
+            ColumnUserWidth + ColumnMargin +
+            ColumnPriorityWidth + ColumnMargin +
+            ColumnCpuWidth + ColumnMargin +
+            ColumnThreadsWidth + ColumnMargin +
+            ColumnMemoryWidth + ColumnMargin;
 
-        if (total + COLUMN_COMMANDLINE_WIDTH + COLUMN_MARGIN < Width) {
-            _listView.ColumnHeaders[(int)Columns.CommandLine].Width = Width - total - COLUMN_MARGIN;    
+        if (total + ColumnCommandlineWidth + ColumnMargin < Width) {
+            _listView.ColumnHeaders[(int)Columns.CommandLine].Width = Width - total - ColumnMargin;    
         }
         else {
-            _listView.ColumnHeaders[(int)Columns.CommandLine].Width = COLUMN_COMMANDLINE_WIDTH;
+            _listView.ColumnHeaders[(int)Columns.CommandLine].Width = ColumnCommandlineWidth;
         }
 
         for (int i = 0; i < (int)Columns.Count; i++) {

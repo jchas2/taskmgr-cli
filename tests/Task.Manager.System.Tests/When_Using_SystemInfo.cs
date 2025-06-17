@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Xunit.Abstractions;
 
-namespace Task.Manager.System.IntegrationTests;
+namespace Task.Manager.System.Tests;
 
 public sealed class When_Using_SystemInfo
 {
@@ -32,7 +32,7 @@ public sealed class When_Using_SystemInfo
         SystemStatistics systemStatistics = new();
         SystemInfo systemInfo = new();
         
-        bool result = systemInfo.GetSystemInfo(systemStatistics);
+        bool result = systemInfo.GetSystemInfo(ref systemStatistics);
         Assert.True(result);
 
         _testOutputHelper.WriteLine($"CPU    : {systemStatistics.CpuName}");
@@ -44,7 +44,7 @@ public sealed class When_Using_SystemInfo
         _testOutputHelper.WriteLine($"Priv IP: {systemStatistics.PrivateIPv4Address}");
         _testOutputHelper.WriteLine($"Pub IP : {systemStatistics.PublicIPv4Address}");
         
-        result = systemInfo.GetSystemMemory(systemStatistics);
+        result = systemInfo.GetSystemMemory(ref systemStatistics);
         Assert.True(result);
         
         _testOutputHelper.WriteLine($"Avail Phys: {systemStatistics.AvailablePhysical}");
