@@ -11,9 +11,10 @@ public partial class Processor : IProcessor
     private const int InitialBufferSize = 512;
     
     private readonly ISystemInfo _systemInfo;
+    private SystemStatistics _systemStatistics;
     private ProcessInfo[] _allProcesses;
     private ProcessInfo[] _allProcessesCopy;
-    private Dictionary<int, ProcessInfo> _processMap;
+    private readonly Dictionary<int, ProcessInfo> _processMap;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly Lock _lock;
     private readonly bool _isWindows = false;
@@ -26,6 +27,7 @@ public partial class Processor : IProcessor
     public Processor()
     {
         _systemInfo = new SystemInfo();
+        _systemStatistics = new SystemStatistics();
         _allProcesses = new ProcessInfo[InitialBufferSize];
         _allProcessesCopy = [];
         _processMap = new Dictionary<int, ProcessInfo>();
@@ -67,14 +69,18 @@ public partial class Processor : IProcessor
             systemTimes.User = 0;
         }
     }
+    
+    public int GhostProcessCount => _ghostProcessCount;
+    
+    public int ProcessCount => _processCount;
 
     public void Run()
     {
         var workerThread = new Thread(() => RunInternal(_cancellationTokenSource.Token));
         workerThread.Start();
     }
-    
-    public void RunInternal(CancellationToken cancellationToken)
+
+    private void RunInternal(CancellationToken cancellationToken)
     {
         while (false == cancellationToken.IsCancellationRequested) {
             SysDiag::Process[] procs = SysDiag::Process.GetProcesses();
@@ -159,12 +165,19 @@ public partial class Processor : IProcessor
             GetSystemTimes(out SystemTimes prevSysTimes);
             Thread.Sleep(UpdateTimeInMs);
             GetSystemTimes(out SystemTimes currSysTimes);
-
+            
             var sysTimesDeltas = new SystemTimes {
                 Idle = currSysTimes.Idle - prevSysTimes.Idle,
                 Kernel = currSysTimes.Kernel - prevSysTimes.Kernel,
                 User = currSysTimes.User - prevSysTimes.User
             };
+
+            _systemStatistics.CpuPercentIdleTime = 0.0;
+            _systemStatistics.CpuPercentUserTime = 0.0;
+            _systemStatistics.CpuPercentKernelTime = 0.0;
+
+            _systemInfo.GetSystemInfo(ref _systemStatistics);
+            _systemInfo.GetSystemMemory(ref _systemStatistics);
 
             long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User;
             var currProcTimes = new ProcessTimeInfo();
@@ -190,9 +203,17 @@ public partial class Processor : IProcessor
                 _allProcesses[i].CpuTimePercent = 100 * (double)totalProc / totalSysTime;
                 _allProcesses[i].CpuKernelTimePercent = 100 * (double)procKernelDiff / totalSysTime;
                 _allProcesses[i].CpuUserTimePercent = 100 * (double)procUserDiff / totalSysTime;
+                
+                _systemStatistics.CpuPercentUserTime += _allProcesses[i].CpuUserTimePercent;
+                _systemStatistics.CpuPercentKernelTime += _allProcesses[i].CpuKernelTimePercent;
             }
-
+            
             _ghostProcessCount = delta;
+            
+            _systemStatistics.CpuPercentIdleTime = 100.0 - (_systemStatistics.CpuPercentUserTime + _systemStatistics.CpuPercentKernelTime);
+            _systemStatistics.ProcessCount = _processCount;
+            _systemStatistics.ThreadCount = _threadCount;
+            _systemStatistics.GhostProcessCount = _ghostProcessCount;
 
             lock (_lock) {
                 Array.Resize(ref _allProcessesCopy, _allProcesses.Length);
@@ -207,9 +228,16 @@ public partial class Processor : IProcessor
         }
     }
 
-    public void Stop()
+    public void Stop() => _cancellationTokenSource.Cancel();
+
+    public SystemStatistics SystemStatistics
     {
-        _cancellationTokenSource.Cancel();
+        get {
+            lock (_lock) {
+                /* Value type, returns a cooy. */
+                return _systemStatistics;
+            }
+        }
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -269,8 +297,6 @@ public partial class Processor : IProcessor
 #pragma warning restore CS0168 // The variable is declared but never used
     }
 
-    public int GhostProcessCount => _ghostProcessCount;
-    public int ProcessCount => _processCount;
     public int ThreadCount => _threadCount;
     
     private bool TryGetProcessHandle(SysDiag::Process proc, out IntPtr? processHandle)

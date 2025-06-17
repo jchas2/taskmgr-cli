@@ -36,13 +36,13 @@ class Program
     
     private static int Main(string[] args)
     {
-        using TerminalUTF8Encoder _ = new();
-        Console.OutputEncoding = Encoding.UTF8;
-
         AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) => {
             HandleException(eventArgs);
         };
 
+        using TerminalUTF8Encoder _ = new();
+        Console.OutputEncoding = Encoding.UTF8;
+        
         if (args.Any(arg => arg.Equals("--debug", StringComparison.CurrentCultureIgnoreCase))) {
             OutputWriter.Out.WriteLine($"Waiting for debugger attach to Pid {Environment.ProcessId}");
             while (false == Debugger.IsAttached) {

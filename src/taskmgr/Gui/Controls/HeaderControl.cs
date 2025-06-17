@@ -1,18 +1,26 @@
 using System.Drawing;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
+using Task.Manager.System.Process;
 
 namespace Task.Manager.Gui.Controls;
 
-public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
+public sealed class HeaderControl : Control
 {
+    private readonly IProcessor _processor;
     private const int MetreWidth = 32;
 
-    public void Draw(SystemStatistics systemStats, ref Rectangle bounds)
+    public HeaderControl(IProcessor processor, ISystemTerminal terminal) : base(terminal)
     {
+        _processor = processor ?? throw new ArgumentNullException(nameof(processor));
+    }
+
+    public void Draw()
+    {
+        var systemStatistics = _processor.SystemStatistics;
         int nlines = 0;
         
-        Terminal.SetCursorPosition(left: bounds.X, top: bounds.Y);
+        Terminal.SetCursorPosition(left: X, top: Y);
         Terminal.BackgroundColor = MenubarColour;
         Terminal.ForegroundColor = ForegroundColour;
 
@@ -21,40 +29,40 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         
         Terminal.WriteEmptyLineTo(offsetX);
         Terminal.Write(menubar);
-        Terminal.WriteEmptyLineTo(bounds.Width - offsetX - menubar.Length);
+        Terminal.WriteEmptyLineTo(Width - offsetX - menubar.Length);
         
-        nlines += 2;
+        nlines++;
 
         Terminal.BackgroundColor = BackgroundColour;
 
         Terminal.Write(
-            $"{systemStats.MachineName}  ({systemStats.OsVersion})  IP {systemStats.PrivateIPv4Address} Pub {systemStats.PublicIPv4Address}");
+            $"{systemStatistics.MachineName}  ({systemStatistics.OsVersion})  IP {systemStatistics.PrivateIPv4Address} Pub {systemStatistics.PublicIPv4Address}");
         
         int nchars =
-            systemStats.MachineName.Length + 3 +
-            systemStats.OsVersion.Length + 6 +
-            systemStats.PrivateIPv4Address.Length + 5 +
-            systemStats.PublicIPv4Address.Length;
+            systemStatistics.MachineName.Length + 3 +
+            systemStatistics.OsVersion.Length + 6 +
+            systemStatistics.PrivateIPv4Address.Length + 5 +
+            systemStatistics.PublicIPv4Address.Length;
         
-        Terminal.WriteEmptyLineTo(bounds.Width - nchars);
+        Terminal.WriteEmptyLineTo(Width - nchars);
         
         nlines++;
         
         Terminal.Write(
-            $"{systemStats.CpuName} (Cores {systemStats.CpuCores})");
+            $"{systemStatistics.CpuName} (Cores {systemStatistics.CpuCores})");
 
         nchars =
-            systemStats.CpuName.Length + 8 +
-            systemStats.CpuCores.ToString().Length + 1;
+            systemStatistics.CpuName.Length + 8 +
+            systemStatistics.CpuCores.ToString().Length + 1;
 
-        Terminal.WriteEmptyLineTo(bounds.Width - nchars);
+        Terminal.WriteEmptyLineTo(Width - nchars);
         Terminal.WriteEmptyLine();
         
         nlines += 2;
 
-        double totalCpu = systemStats.CpuPercentKernelTime + systemStats.CpuPercentUserTime;
-        double memRatio = 1.0 - ((double)(systemStats.AvailablePhysical) / (double)(systemStats.TotalPhysical));
-        double virRatio = 1.0 - ((double)(systemStats.AvailablePageFile) / (double)(systemStats.TotalPageFile));
+        double totalCpu = systemStatistics.CpuPercentKernelTime + systemStatistics.CpuPercentUserTime;
+        double memRatio = 1.0 - ((double)(systemStatistics.AvailablePhysical) / (double)(systemStatistics.TotalPhysical));
+        double virRatio = 1.0 - ((double)(systemStatistics.AvailablePageFile) / (double)(systemStatistics.TotalPageFile));
         
         var userColour = totalCpu < 50.0 ? ConsoleColor.DarkGreen
             : totalCpu < 75.0 ? ConsoleColor.DarkYellow
@@ -76,10 +84,10 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 
         nchars = DrawStackedPercentageBar(
             "k",
-            systemStats.CpuPercentKernelTime / 100,
+            systemStatistics.CpuPercentKernelTime / 100,
             kernelColour,
             "u",
-            systemStats.CpuPercentUserTime / 100,
+            systemStatistics.CpuPercentUserTime / 100,
             userColour);
         
         nchars += DrawColumnLabelValue(
@@ -97,7 +105,7 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
             virRatio.ToString("000.0%"),
             virColour);
         
-        Terminal.WriteEmptyLineTo(bounds.Width - nchars - 4);
+        Terminal.WriteEmptyLineTo(Width - nchars - 4);
         
         nlines++;
         
@@ -110,20 +118,20 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 
         nchars += DrawColumnLabelValue(
             "  User:    ",
-            (systemStats.CpuPercentUserTime / 100).ToString("000.0%"),
+            (systemStatistics.CpuPercentUserTime / 100).ToString("000.0%"),
             userColour);
 
         nchars += DrawColumnLabelValue(
             "  Total: ",
-            ((double)(systemStats.TotalPhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            ((double)(systemStatistics.TotalPhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
         
         nchars += DrawColumnLabelValue(
             "  Total: ",
-            ((double)(systemStats.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            ((double)(systemStatistics.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
         
-        Terminal.WriteEmptyLineTo(bounds.Width - nchars - 4);
+        Terminal.WriteEmptyLineTo(Width - nchars - 4);
 
         nlines++;
         
@@ -136,20 +144,20 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
 
         nchars += DrawColumnLabelValue(
             "  Kernel:  ",
-            (systemStats.CpuPercentKernelTime / 100).ToString("000.0%"),
+            (systemStatistics.CpuPercentKernelTime / 100).ToString("000.0%"),
             kernelColour);
 
         nchars += DrawColumnLabelValue(
             "  Used:  ",
-            ((double)(systemStats.TotalPhysical - systemStats.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            ((double)(systemStatistics.TotalPhysical - systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
         
         nchars += DrawColumnLabelValue(
             "  Used:  ",
-            ((double)(systemStats.TotalPageFile - systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            ((double)(systemStatistics.TotalPageFile - systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
         
-        Terminal.WriteEmptyLineTo(bounds.Width - nchars - 4);
+        Terminal.WriteEmptyLineTo(Width - nchars - 4);
 
         nlines++;
         nchars = 4 + 1 + MetreWidth + 1;
@@ -160,42 +168,41 @@ public sealed class HeaderControl(ISystemTerminal terminal) : Control(terminal)
         
         nchars += DrawColumnLabelValue(
             "  Idle:    ",
-            (systemStats.CpuPercentIdleTime / 100).ToString("000.0%"),
+            (systemStatistics.CpuPercentIdleTime / 100).ToString("000.0%"),
             ForegroundColour);
 
         nchars += DrawColumnLabelValue(
             "  Free:  ",
-            ((double)(systemStats.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            ((double)(systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
         
         nchars += DrawColumnLabelValue(
             "  Free:  ",
-            ((double)(systemStats.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
+            ((double)(systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
         
-        Terminal.WriteEmptyLineTo(bounds.Width - nchars);
+        Terminal.WriteEmptyLineTo(Width - nchars);
         
         nlines++;
         
         nchars = DrawColumnLabelValue(
             "Processes: ",
-            systemStats.ProcessCount.ToString(),
+            systemStatistics.ProcessCount.ToString(),
             ForegroundColour);
 #if DEBUG        
         nchars += DrawColumnLabelValue(
             ", Ghosts: ",
-            systemStats.GhostProcessCount.ToString(),
+            systemStatistics.GhostProcessCount.ToString(),
             ForegroundColour);
 #endif
         nchars += DrawColumnLabelValue(
             ", Threads: ",
-            systemStats.ThreadCount.ToString(),
+            systemStatistics.ThreadCount.ToString(),
             ForegroundColour);
         
-        Terminal.WriteEmptyLineTo(bounds.Width - nchars);
+        Terminal.WriteEmptyLineTo(Width - nchars);
         
-        bounds.Y = nlines;
-        bounds.X = 0;
+        Height = nlines;
     }
 
     private int DrawColumnLabelValue(

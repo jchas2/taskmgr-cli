@@ -1,25 +1,25 @@
 namespace Task.Manager.System;
 
-public sealed class SystemStatistics
+public struct SystemStatistics()
 {
     /* Memory */
-    public ulong AvailablePhysical { get; set; }
-    public ulong AvailablePageFile { get; set; }
-    public ulong AvailableVirtual { get; set; }
-    public ulong TotalPhysical { get; set; }
-    public ulong TotalPageFile { get; set; }
-    public ulong TotalVirtual { get; set; }
-    
+    public ulong AvailablePhysical { get; set; } = 0;
+    public ulong AvailablePageFile { get; set; } = 0;
+    public ulong AvailableVirtual { get; set; } = 0;
+    public ulong TotalPhysical { get; set; } = 0;
+    public ulong TotalPageFile { get; set; } = 0;
+    public ulong TotalVirtual { get; set; } = 0;
+
     /* Cpu Info */
-    public double CpuFrequency { get; set; }
-    public ulong CpuCores { get; set; }
+    public double CpuFrequency { get; set; } = 0;
+    public ulong CpuCores { get; set; } = 0;
     public string CpuName { get; set; } = string.Empty;
     
     /* Cpu % Times */
-    public double CpuPercentIdleTime { get; set; }
-    public double CpuPercentKernelTime { get; set; }
-    public double CpuPercentUserTime { get; set; }
-    
+    public double CpuPercentIdleTime { get; set; } = 0;
+    public double CpuPercentKernelTime { get; set; } = 0;
+    public double CpuPercentUserTime { get; set; } = 0;
+
     /* System */
     public string MachineName { get; set; } = string.Empty;
     public string OsVersion { get; set; } = string.Empty;
@@ -29,7 +29,7 @@ public sealed class SystemStatistics
     public string PrivateIPv4Address { get; set; } = string.Empty;
     
     /* Processes */
-    public int ProcessCount { get; set; }
-    public int GhostProcessCount { get; set; }
-    public int ThreadCount { get; set; }
+    public int ProcessCount { get; set; } = 0;
+    public int GhostProcessCount { get; set; } = 0;
+    public int ThreadCount { get; set; } = 0;
 }

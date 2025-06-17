@@ -41,16 +41,14 @@ public partial class SystemInfo : ISystemInfo
         }
     }
 
-    public bool GetSystemMemory(SystemStatistics systemStatistics) => GetSystemMemoryInternal(systemStatistics);
+    public bool GetSystemMemory(ref SystemStatistics systemStatistics) => GetSystemMemoryInternal(ref systemStatistics);
 
-    public bool GetSystemInfo(SystemStatistics systemStatistics)
+    public bool GetSystemInfo(ref SystemStatistics systemStatistics)
     {
-        ArgumentNullException.ThrowIfNull(systemStatistics);
-        
         systemStatistics.MachineName = Environment.MachineName;
         systemStatistics.CpuCores = (ulong)Environment.ProcessorCount;
         
-        bool result = GetCpuInfoInternal(systemStatistics);
+        bool result = GetCpuInfoInternal(ref systemStatistics);
 
         var ip = GetPreferredIpAddress();
         

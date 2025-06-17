@@ -27,7 +27,6 @@ public sealed class MainWindow : Control
         _processControl = new ProcessControl(
             terminal, 
             _runContext.Processor, 
-            _runContext.SystemInfo,
             _theme);
 
         Controls.Add(_processControl);
@@ -37,10 +36,10 @@ public sealed class MainWindow : Control
     {
         base.OnLoad();
 
-        _processControl.MarginBottom = 0;
-        _processControl.MarginLeft = 0;
-        _processControl.MarginRight = 0;
-        _processControl.MarginTop = 0;
+        _processControl.X = 0;
+        _processControl.Y = 0;
+        _processControl.Width = Terminal.WindowWidth;
+        _processControl.Height = Terminal.WindowHeight - 2;
         
         _runContext.OutputWriter.WriteLine("Loading processor...");
         _runContext.Processor.Run();

@@ -122,9 +122,9 @@ public class ListView : Control
         }
     }
     
-    public void Draw(in Rectangle bounds)
+    public void Draw()
     {
-        _viewPort.Bounds = bounds;
+        _viewPort.Bounds = new Rectangle(X, Y, Width, Height);
         
         DrawHeader();
         DrawItems();
@@ -220,8 +220,8 @@ public class ListView : Control
     
     private void DrawItems()
     {
-        _viewPort.Height = _viewPort.Bounds.Height - _viewPort.Bounds.Y - 1;
-        _viewPort.RowCount = _viewPort.Height - 2;
+        _viewPort.Height = _viewPort.Bounds.Height;
+        _viewPort.RowCount = _viewPort.Height - 1;
 
         int n = 0;
 

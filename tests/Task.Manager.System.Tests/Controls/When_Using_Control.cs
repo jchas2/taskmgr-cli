@@ -1,6 +1,6 @@
 ﻿using Task.Manager.System.Controls;
 
-namespace Task.Manager.System.UnitTests.Controls;
+namespace Task.Manager.System.Tests.Controls;
 
 public class When_Using_Control
 {

@@ -2,16 +2,16 @@ namespace Task.Manager.Gui.Controls;
 
 public partial class ProcessControl
 {
-    internal const int COLUMN_PROCESS_WIDTH = 32;
-    internal const int COLUMN_PID_WIDTH = 7;
-    internal const int COLUMN_USER_WIDTH = 16;
-    internal const int COLUMN_PRIORITY_WIDTH = 4;
-    internal const int COLUMN_CPU_WIDTH = 7;
-    internal const int COLUMN_THREADS_WIDTH = 7;
-    internal const int COLUMN_MEMORY_WIDTH = 10;
-    internal const int COLUMN_COMMANDLINE_WIDTH = 32;
+    internal const int ColumnProcessWidth = 32;
+    internal const int ColumnPidWidth = 7;
+    internal const int ColumnUserWidth = 16;
+    internal const int ColumnPriorityWidth = 4;
+    internal const int ColumnCpuWidth = 7;
+    internal const int ColumnThreadsWidth = 7;
+    internal const int ColumnMemoryWidth = 10;
+    internal const int ColumnCommandlineWidth = 32;
 
-    internal const int COLUMN_MARGIN = 1;    
+    internal const int ColumnMargin = 1;    
     
     private enum Columns
     {

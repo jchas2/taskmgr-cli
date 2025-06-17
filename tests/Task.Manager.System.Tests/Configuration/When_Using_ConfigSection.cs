@@ -1,6 +1,6 @@
 ﻿using Task.Manager.System.Configuration;
 
-namespace Task.Manager.System.UnitTests.Configuration;
+namespace Task.Manager.System.Tests.Configuration;
 
 public class When_Using_ConfigSection
 {

@@ -27,7 +27,7 @@ public partial class SystemInfo
             (Convert.ToInt64(systemTime / NanosecondsTo100NanosecondsFactor * timeBase.numer / timeBase.denom)));
     }
     
-    private static unsafe bool GetCpuInfoInternal(SystemStatistics systemStatistics)
+    private static unsafe bool GetCpuInfoInternal(ref SystemStatistics systemStatistics)
     {
         systemStatistics.CpuCores = (ulong)Environment.ProcessorCount;
         systemStatistics.CpuFrequency = 0;
@@ -105,7 +105,7 @@ public partial class SystemInfo
         return pageSize;
     }
     
-    private static unsafe bool GetSystemMemoryInternal(SystemStatistics systemStatistics)
+    private static unsafe bool GetSystemMemoryInternal(ref SystemStatistics systemStatistics)
     {
         systemStatistics.AvailablePageFile = 0;
         systemStatistics.AvailablePhysical = 0;

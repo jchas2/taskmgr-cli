@@ -88,16 +88,8 @@ public class Control
         return false;
     }
 
-    public int Height => Terminal.WindowHeight - MarginTop - MarginBottom;
-
-    public int MarginBottom { get; set; } = 0;
+    public int Height { get; set; } = 0;
     
-    public int MarginLeft { get; set; } = 0;
-    
-    public int MarginRight { get; set; } = 0;
-    
-    public int MarginTop { get; set; } = 0;
-
     protected virtual void OnLoad() => IsActive = true;
 
     protected virtual void OnUnload()
@@ -131,5 +123,9 @@ public class Control
     
     protected ISystemTerminal Terminal => _terminal;
     
-    public int Width => Terminal.WindowWidth - MarginLeft - MarginRight;
+    public int Width { get; set; } = 0;
+
+    public int X { get; set; } = 0;
+    
+    public int Y { get; set; } = 0;
 }
