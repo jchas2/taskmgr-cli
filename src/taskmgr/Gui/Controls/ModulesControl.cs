@@ -10,11 +10,9 @@ namespace Task.Manager.Gui.Controls;
 public partial class ModulesControl : Control
 {
     private readonly Theme _theme;
-    private CancellationTokenSource? _cancellationTokenSource;
-
     private readonly ListView _listView;
 
-    private int _cachedTerminalWidth = 0;
+    private int _selectedProcessId = -1;
     
     public ModulesControl(
         ISystemTerminal terminal, 
@@ -30,15 +28,40 @@ public partial class ModulesControl : Control
         Theme = theme;
     }
 
-    private void Draw()
+    private void LoadModuleInfos()
     {
+        _listView.Items.Clear();
+
+        var modules = ModuleInfo.GetModules(SelectedProcessId)
+            .OrderBy(m => m.ModuleName)
+            .ToList();
         
+        foreach (var moduleInfo in modules) {
+            var item = new ModuleListViewItem(moduleInfo, Theme);
+            _listView.Items.Add(item);
+        }
     }
     
+    protected override void OnDraw()
+    {
+        _listView.X = 0;
+        _listView.Y = 0;
+        _listView.Width = Width;
+        _listView.Height = Terminal.WindowHeight - 1;
+
+        UpdateColumnHeaders();
+        LoadModuleInfos();
+        
+        _listView.Draw();
+    }
+
+    protected override void OnKeyPressed(ConsoleKeyInfo keyInfo)
+    {
+        _listView.KeyPressed(keyInfo);
+    }
+
     protected override void OnLoad()
     {
-        base.OnLoad();
-        
         _listView.BackgroundHighlightColour = _theme.BackgroundHighlight;
         _listView.ForegroundHighlightColour = _theme.ForegroundHighlight;
         _listView.BackgroundColour = _theme.Background;
@@ -50,110 +73,34 @@ public partial class ModulesControl : Control
         _listView.X = 0;
         _listView.Y = 0;
         _listView.Width = Terminal.WindowWidth;
-
-        SafelyDisposeCancellationTokenSource(_cancellationTokenSource);
-        
-        _cancellationTokenSource = new CancellationTokenSource();
-        
-        var renderThread = new Thread(() => RunRenderLoop(_cancellationTokenSource.Token));
-        renderThread.Start();
-    }
-
-    protected override void OnUnload()
-    {
-        _cancellationTokenSource?.Cancel();
-        base.OnUnload();
-    }
-
-    private void RunRenderLoop(CancellationToken token)
-    {
-        var moduleInfos = ModuleInfo.GetModules(0);
-
-        if (moduleInfos.Length == 0) {
-            
-        }
-        
-        while (false == token.IsCancellationRequested) {
-            UpdateColumnHeaders();
-            Draw();
-            
-            ConsoleKeyInfo keyInfo = new ConsoleKeyInfo();
-            var startTime = DateTime.Now;
-            
-            while (true) {
-                bool handled = _listView.GetInput(ref keyInfo);
-
-                if (handled) {
-                    startTime = DateTime.Now;
-                }
-                else { 
-                    Thread.Sleep(30);
-                }
-                
-                var duration = DateTime.Now - startTime;
-                if (duration.TotalMilliseconds >= 1000) {
-                    break;
-                }
-            }
-        }
+        _listView.Load();
     }
     
-    private void SafelyDisposeCancellationTokenSource(CancellationTokenSource? cancellationTokenSource)
+    public int SelectedProcessId
     {
-        try {
-            cancellationTokenSource?.Dispose();
-        }
-        catch (Exception ex) {
-            Debug.WriteLine($"Failed SafelyDisposeCancellationTokenSource(): {ex}");            
-        }
+        get => _selectedProcessId;
+        set => _selectedProcessId = value;
     }
 
     private Theme Theme { get; }
 
     private void UpdateColumnHeaders()
     {
-        if (_cachedTerminalWidth == Terminal.WindowWidth) {
-            return;
-        }
-// #if __APPLE__
-//         /* Bug on MacOS where ProcessName returns truncated 15 char value. */
-//         _listView.ColumnHeaders[(int)Columns.Process].Width = 16;
-// #elif __WIN32__ 
-//         _listView.ColumnHeaders[(int)Columns.Process].Width = ColumnProcessWidth;
-// #endif
-//         _listView.ColumnHeaders[(int)Columns.Pid].Width = ColumnPidWidth;
-//         _listView.ColumnHeaders[(int)Columns.User].Width = ColumnUserWidth;
-//         _listView.ColumnHeaders[(int)Columns.Priority].Width = ColumnPriorityWidth;
-//         _listView.ColumnHeaders[(int)Columns.Priority].RightAligned = true;
-//         _listView.ColumnHeaders[(int)Columns.Cpu].Width = ColumnCpuWidth;
-//         _listView.ColumnHeaders[(int)Columns.Cpu].RightAligned = true;
-//         _listView.ColumnHeaders[(int)Columns.Threads].Width = ColumnThreadsWidth;
-//         _listView.ColumnHeaders[(int)Columns.Threads].RightAligned = true;
-//         _listView.ColumnHeaders[(int)Columns.Memory].Width = ColumnMemoryWidth;
-//         _listView.ColumnHeaders[(int)Columns.Memory].RightAligned = true;
-//
-//         int total =
-//             ColumnProcessWidth + ColumnMargin +
-//             ColumnPidWidth + ColumnMargin +
-//             ColumnUserWidth + ColumnMargin +
-//             ColumnPriorityWidth + ColumnMargin +
-//             ColumnCpuWidth + ColumnMargin +
-//             ColumnThreadsWidth + ColumnMargin +
-//             ColumnMemoryWidth + ColumnMargin;
-//
-//         if (total + ColumnCommandlineWidth + ColumnMargin < Width) {
-//             _listView.ColumnHeaders[(int)Columns.CommandLine].Width = Width - total - ColumnMargin;    
-//         }
-//         else {
-//             _listView.ColumnHeaders[(int)Columns.CommandLine].Width = ColumnCommandlineWidth;
-//         }
-//
-//         for (int i = 0; i < (int)Columns.Count; i++) {
-//             _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
-//             _listView.ColumnHeaders[i].ForegroundColour = Theme.HeaderForeground;
-//         }
-        
-        _cachedTerminalWidth = Terminal.WindowWidth;
-    }
+        _listView.ColumnHeaders[(int)Columns.ModuleName].Width = ColumnModuleNameWidth;
 
+        int total =
+            ColumnModuleNameWidth + ColumnMargin;
+        
+         if (total + ColumnFileNameWidth + ColumnMargin < Width) {
+             _listView.ColumnHeaders[(int)Columns.FileName].Width = Width - total - ColumnMargin;    
+         }
+         else {
+             _listView.ColumnHeaders[(int)Columns.FileName].Width = ColumnFileNameWidth;
+         }
+
+         for (int i = 0; i < (int)Columns.Count; i++) {
+             _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
+             _listView.ColumnHeaders[i].ForegroundColour = Theme.HeaderForeground;
+         }
+    }
 }

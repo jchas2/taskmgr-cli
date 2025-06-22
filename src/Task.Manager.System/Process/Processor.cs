@@ -328,7 +328,7 @@ public partial class Processor : IProcessor
             return true;
         }
         catch (Exception e) {
-            SysDiag.Trace.WriteLine($"Failed StartTime() {proc.ProcessName} {proc.Id} with {e.Message}");
+            SysDiag.Debug.WriteLine($"Failed StartTime() {proc.ProcessName} {proc.Id} with {e.Message}");
             startTime = DateTime.Now;
             return false;
         }

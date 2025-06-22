@@ -122,14 +122,6 @@ public class ListView : Control
         }
     }
     
-    public void Draw()
-    {
-        _viewPort.Bounds = new Rectangle(X, Y, Width, Height);
-        
-        DrawHeader();
-        DrawItems();
-    }
-
     private void DrawHeader()
     {
         _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y - 1);
@@ -254,38 +246,7 @@ public class ListView : Control
         
         return _columnHeaders[index];
     }
-
-    public override bool GetInput(ref ConsoleKeyInfo keyInfo)
-    {
-        bool handled = false;
-        
-        if (false == base.GetInput(ref keyInfo)) {
-            return handled;
-        }
-
-        switch (keyInfo.Key) {
-            case ConsoleKey.UpArrow:
-            case ConsoleKey.DownArrow:
-            case ConsoleKey.PageUp:
-            case ConsoleKey.PageDown: {
-                DoScroll(keyInfo.Key, out bool redrawAllItems);
-
-                if (redrawAllItems) {
-                    DrawHeader();
-                    DrawItems();
-                }
-                else {
-                    RedrawItem();
-                }
-
-                handled = true;
-                break;
-            }
-        }
-
-        return handled;
-    }
-
+    
     internal ListViewItem GetItemByIndex(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
@@ -358,6 +319,38 @@ public class ListView : Control
     internal int ItemCount => _items.Count;
     
     public ListViewItemCollection Items => _itemCollection;
+    
+    protected override void OnDraw()
+    {
+        // Bounds is the scrollable region for the ListViewItems. The value 1
+        // is added to make room for the header.
+        _viewPort.Bounds = new Rectangle(X, Y + 1, Width, Height);
+        
+        DrawHeader();
+        DrawItems();
+    }
+
+    protected override void OnKeyPressed(ConsoleKeyInfo keyInfo)
+    {
+        switch (keyInfo.Key) {
+            case ConsoleKey.UpArrow:
+            case ConsoleKey.DownArrow:
+            case ConsoleKey.PageUp:
+            case ConsoleKey.PageDown: {
+                DoScroll(keyInfo.Key, out bool redrawAllItems);
+
+                if (redrawAllItems) {
+                    DrawHeader();
+                    DrawItems();
+                }
+                else {
+                    RedrawItem();
+                }
+                
+                break;
+            }
+        }
+    }
 
     private void RedrawItem()
     {
@@ -403,4 +396,8 @@ public class ListView : Control
             RemoveAt(index);
         }
     }
+    
+    public int SelectedIndex => _viewPort.SelectedIndex;
+    
+    public ListViewItem SelectedItem => _items[SelectedIndex];
 }

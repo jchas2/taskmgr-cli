@@ -28,16 +28,20 @@ class Program
             OutputWriter.Error.WriteLine(e.GetType().ToString().ToRed());
             OutputWriter.Error.WriteLine(e.Message.ToRed());
             OutputWriter.Error.WriteLine(e.StackTrace?? e.ToString().ToYellow());
+            Debug.WriteLine(e.ToString());
             return;
         }
         
-        OutputWriter.Error.WriteLine($"Unhandled error: {ev.ExceptionObject.GetType().Name}".ToRed());
+        string unhandledError = $"Unhandled error: {ev.ExceptionObject.GetType().Name}";
+        OutputWriter.Error.WriteLine(unhandledError.ToRed());
+        Debug.WriteLine(unhandledError);
     }
     
     private static int Main(string[] args)
     {
         AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) => {
             HandleException(eventArgs);
+            Environment.Exit(UnhandledExceptionExitCode);
         };
 
         using TerminalUTF8Encoder _ = new();
@@ -67,7 +71,9 @@ class Program
         }
         catch (Exception e) {
             HandleException(new UnhandledExceptionEventArgs(e, isTerminating: true));
-            return UnhandledExceptionExitCode;
+            Environment.Exit(UnhandledExceptionExitCode);
         }
+
+        return 0;
     }
 }

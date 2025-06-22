@@ -37,7 +37,7 @@ public class ListViewColumnHeaderCollection : IEnumerable<ListViewColumnHeader>
         var columnHeaders = new List<ListViewColumnHeader>(_owner.ColumnHeaderCount);
         
         for (int i = 0; i < _owner.ColumnHeaderCount; i++) {
-            columnHeaders[i] = _owner.GetColumnHeaderByIndex(i);
+            columnHeaders.Add(_owner.GetColumnHeaderByIndex(i));
         }
         
         return columnHeaders.GetEnumerator();

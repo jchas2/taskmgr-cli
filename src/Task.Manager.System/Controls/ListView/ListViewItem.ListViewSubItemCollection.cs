@@ -37,7 +37,7 @@ public class ListViewSubItemCollection : IEnumerable<ListViewSubItem>
         var subItems = new List<ListViewSubItem>(_owner.SubItemCount);
         
         for (int i = 0; i < _owner.SubItemCount; i++) {
-            subItems[i] = _owner.GetSubItemByIndex(i);
+            subItems.Add(_owner.GetSubItemByIndex(i));
         }
         
         return subItems.GetEnumerator();

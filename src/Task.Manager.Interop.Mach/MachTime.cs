@@ -4,7 +4,7 @@ namespace Task.Manager.Interop.Mach;
 
 // Following declarations are found in the Mach Kernel header file mach_time.h
 
-public class MachTime
+public sealed class MachTime
 {
     public struct mach_timebase_info_data_t
     {

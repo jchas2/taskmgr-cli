@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace Task.Manager.Interop.Mach;
 
-public class Pwd
+public sealed class Pwd
 {
     public unsafe struct Passwd
     {

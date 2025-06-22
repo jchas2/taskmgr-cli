@@ -6,6 +6,7 @@ using Task.Manager.Configuration;
 using Task.Manager.Gui;
 using Task.Manager.System;
 using Task.Manager.System.Configuration;
+using Task.Manager.System.Screens;
 
 namespace Task.Manager;
 
@@ -152,13 +153,13 @@ public sealed class TaskMgrApp
         Config config, 
         Theme theme)
     {
-        var window = new MainWindow(
+        var screen = new MainScreen(
             runContext, 
             new SystemTerminal(), 
             theme, 
             config);
         
-        window.Show();
+        ScreenApplication.Run(screen);
         
         return 0;
     }

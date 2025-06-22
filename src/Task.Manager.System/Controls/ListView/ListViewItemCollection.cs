@@ -39,7 +39,7 @@ public sealed class ListViewItemCollection : IEnumerable<ListViewItem>
         var items = new List<ListViewItem>(_owner.Items.Count);
         
         for (int i = 0; i < _owner.ItemCount; i++) {
-            items[i] = _owner.GetItemByIndex(i);
+            items.Add(_owner.GetItemByIndex(i));
         }
         
         return items.GetEnumerator();

@@ -13,12 +13,14 @@ public sealed partial class ProcessControl : Control
 {
     private readonly IProcessor _processor;
     private readonly Theme _theme;
+    private Thread? _renderThread;
     private CancellationTokenSource? _cancellationTokenSource;
 
     private readonly HeaderControl _headerControl;
     private readonly ListView _listView;
 
     private int _cachedTerminalWidth = 0;
+    private bool _inRedraw = false;
     
     public ProcessControl(
         ISystemTerminal terminal, 
@@ -38,8 +40,10 @@ public sealed partial class ProcessControl : Control
         Theme = theme;
     }
 
-    private void Draw()
+    protected override void OnDraw()
     {
+        _inRedraw = true;
+        
         _headerControl.X = 0;
         _headerControl.Y = 0;
         _headerControl.Width = Width;
@@ -47,20 +51,26 @@ public sealed partial class ProcessControl : Control
         _headerControl.Draw();
 
         _listView.X = 0;
-        _listView.Y = _headerControl.Y + _headerControl.Height + 1;
+        _listView.Y = _headerControl.Y + _headerControl.Height; // + 1
         _listView.Width = Width;
         _listView.Height = Terminal.WindowHeight - (_headerControl.Height + 1);
         
         _listView.Draw();
+        
+        _inRedraw = false;
     }
-    
+
+    protected override void OnKeyPressed(ConsoleKeyInfo keyInfo)
+    {
+        _listView.KeyPressed(keyInfo);
+    }
+
     protected override void OnLoad()
     {
-        base.OnLoad();
-        
         _headerControl.BackgroundColour = _theme.Background;
         _headerControl.ForegroundColour = _theme.Foreground;
         _headerControl.MenubarColour = _theme.Menubar;
+        _headerControl.Load();
 
         _listView.BackgroundHighlightColour = _theme.BackgroundHighlight;
         _listView.ForegroundHighlightColour = _theme.ForegroundHighlight;
@@ -77,22 +87,31 @@ public sealed partial class ProcessControl : Control
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("MEM"));
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("PATH"));
         _listView.X = 0;
-        _listView.Y = _headerControl.Y + _headerControl.Height + 1;
+        _listView.Y = _headerControl.Y + _headerControl.Height; // + 1
         _listView.Width = Terminal.WindowWidth;
-        
+        _listView.Load();
 
         SafelyDisposeCancellationTokenSource(_cancellationTokenSource);
         
         _cancellationTokenSource = new CancellationTokenSource();
         
-        var renderThread = new Thread(() => RunRenderLoop(_cancellationTokenSource.Token));
-        renderThread.Start();
+        _renderThread = new Thread(() => RunRenderLoop(_cancellationTokenSource.Token));
+        _renderThread.Start();
     }
 
     protected override void OnUnload()
     {
+        // Signal the render thread to stop running.
         _cancellationTokenSource?.Cancel();
-        base.OnUnload();
+
+        // Block until the thread ends.
+        if (_renderThread != null) {
+            while (_renderThread.IsAlive) {
+                Thread.Sleep(100);
+            }
+        }
+        
+        _renderThread = null;
     }
 
     private void RunRenderLoop(CancellationToken token)
@@ -104,27 +123,21 @@ public sealed partial class ProcessControl : Control
                 continue;
             }
 
-            UpdateColumnHeaders();
-            UpdateListViewItems(allProcesses);
-            Draw();
-            
-            ConsoleKeyInfo keyInfo = new ConsoleKeyInfo();
+            if (false == _inRedraw && false == token.IsCancellationRequested) {
+                UpdateColumnHeaders();
+                UpdateListViewItems(allProcesses);
+                Draw();
+            }
+
             var startTime = DateTime.Now;
             
-            while (true) {
-                bool handled = _listView.GetInput(ref keyInfo);
-
-                if (handled) {
-                    startTime = DateTime.Now;
-                }
-                else { 
-                    Thread.Sleep(30);
-                }
-                
+            while (false == token.IsCancellationRequested) {
                 var duration = DateTime.Now - startTime;
                 if (duration.TotalMilliseconds >= Processor.UpdateTimeInMs) {
                     break;
                 }
+
+                Thread.Sleep(200);
             }
         }
     }
@@ -135,7 +148,20 @@ public sealed partial class ProcessControl : Control
             cancellationTokenSource?.Dispose();
         }
         catch (Exception ex) {
-            Debug.WriteLine($"Failed SafelyDisposeCancellationTokenSource(): {ex}");            
+            Trace.WriteLine($"Failed SafelyDisposeCancellationTokenSource(): {ex}");            
+        }
+    }
+
+    public int SelectedProcessId
+    {
+        get {
+            var selectedSubItem = _listView.SelectedItem.SubItems[(int)Columns.Pid];
+            
+            if (int.TryParse(selectedSubItem.Text, out int pid)) {
+                return pid;
+            }
+            
+            return -1;
         }
     }
 
@@ -147,7 +173,7 @@ public sealed partial class ProcessControl : Control
             return;
         }
 #if __APPLE__
-        /* Bug on MacOS where ProcessName returns truncated 15 char value. */
+        // Bug on MacOS where ProcessName returns truncated 15 char value.
         _listView.ColumnHeaders[(int)Columns.Process].Width = 16;
 #elif __WIN32__ 
         _listView.ColumnHeaders[(int)Columns.Process].Width = ColumnProcessWidth;
