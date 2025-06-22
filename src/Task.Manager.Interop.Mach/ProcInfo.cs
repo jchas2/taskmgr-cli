@@ -4,7 +4,7 @@ namespace Task.Manager.Interop.Mach;
 
 // Following declarations are found in the Mach Kernel header file proc_info.h
 
-public class ProcInfo
+public sealed class ProcInfo
 {
     private const int MAXCOMLEN = 16;
     public const int PROC_PIDTASKALLINFO = 2;

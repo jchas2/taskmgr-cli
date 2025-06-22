@@ -26,7 +26,9 @@ public class Control
     
     internal void ClearControls() => _controls.Clear();
 
-    public void Close() => OnUnload();
+    public void Unload() => OnUnload();
+    
+    public void Draw() => OnDraw();
     
     internal int ControlCount => _controls.Count;
     
@@ -48,6 +50,18 @@ public class Control
         return _controls[index];
     }
     
+    // public virtual bool GetInput(ref ConsoleKeyInfo keyInfo)
+    // {
+    //     if (_terminal.KeyAvailable) {
+    //         keyInfo = _terminal.ReadKey();
+    //         return true;
+    //     }
+    //
+    //     return false;
+    // }
+    
+    public int Height { get; set; } = 0;
+
     internal int IndexOfControl(Control control)
     {
         ArgumentNullException.ThrowIfNull(control, nameof(control));
@@ -75,30 +89,24 @@ public class Control
         
         _controls.AddRange(controls);
     }
-
-    private bool IsActive { get; set; } = false;
     
-    public virtual bool GetInput(ref ConsoleKeyInfo keyInfo)
-    {
-        if (_terminal.KeyAvailable) {
-            keyInfo = _terminal.ReadKey();
-            return true;
-        }
-
-        return false;
-    }
-
-    public int Height { get; set; } = 0;
+    public void KeyPressed(ConsoleKeyInfo keyInfo) => OnKeyPressed(keyInfo);
     
-    protected virtual void OnLoad() => IsActive = true;
+    public void Load() => OnLoad();
+
+    protected virtual void OnDraw() { }
+
+    protected virtual void OnLoad() { }
+
+    protected virtual void OnKeyPressed(ConsoleKeyInfo keyInfo) { }
+
+    protected virtual void OnResize() { }
 
     protected virtual void OnUnload()
     {
         foreach (var control in Controls) {
-            control.Close();
+            control.Unload();
         }
-        
-        IsActive = false;   
     }
     
     internal void RemoveControlAt(int index)
@@ -119,7 +127,7 @@ public class Control
         }
     }
 
-    public void Show() => OnLoad();
+    public void Resize() => OnResize();
     
     protected ISystemTerminal Terminal => _terminal;
     

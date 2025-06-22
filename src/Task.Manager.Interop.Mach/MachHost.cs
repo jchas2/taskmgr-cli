@@ -4,7 +4,7 @@ namespace Task.Manager.Interop.Mach;
 
 // Following declarations are found in the Mach Kernel header file mach_host.h
 
-public class MachHost
+public sealed class MachHost
 {
     // Const to set the host_statistics64 flavor arg.
     public const int HOST_CPU_LOAD_INFO = 3;

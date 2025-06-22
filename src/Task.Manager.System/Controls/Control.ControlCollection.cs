@@ -39,7 +39,7 @@ public class ControlCollection : IEnumerable<Control>
         var items = new List<Control>(_owner.Controls.Count);
         
         for (int i = 0; i < _owner.ControlCount; i++) {
-            items[i] = _owner.GetControlByIndex(i);
+            items.Add(_owner.GetControlByIndex(i));
         }
         
         return items.GetEnumerator();

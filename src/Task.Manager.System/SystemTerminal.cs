@@ -27,11 +27,11 @@ public partial class SystemTerminal : ISystemTerminal
         set => Console.CursorTop = value;
     }
 
-    // public bool CursorVisible
-    // {
-    //     get => Console.CursorVisible;
-    //     set => Console.CursorVisible = value;
-    // }
+    public bool CursorVisible
+    {
+        get => CursorVisibleInternal;
+        set => CursorVisibleInternal = value;
+    }
 
     public ConsoleColor ForegroundColor
     {

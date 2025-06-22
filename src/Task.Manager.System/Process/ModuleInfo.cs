@@ -2,30 +2,21 @@ using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
 
-public sealed class ModuleInfo
+public sealed partial class ModuleInfo
 {
     public string FileName { get; set; } = string.Empty;
     public string ModuleName { get; set; } = string.Empty;
 
 
-    public static ModuleInfo[] GetModules(int pid)
+    public static List<ModuleInfo> GetModules(int pid)
     {
         if (false == TryGetProcessByPid(pid, out SysDiag::Process? process) ||
             process == null) {
             return [];
         }
         
-        if (false == TryGetProcessModules(process, out var modules)) {
+        if (false == GetProcessModulesInternal(process, out var moduleInfos)) {
             return [];
-        }
-
-        var moduleInfos = new ModuleInfo[modules.Length];
-        
-        for (int i = 0; i < modules.Length; i++) {
-            var moduleInfo = new ModuleInfo();
-            moduleInfo.FileName = modules[i].FileName;
-            moduleInfo.ModuleName = modules[i].ModuleName;
-            moduleInfos[i] = moduleInfo;
         }
         
         return moduleInfos;

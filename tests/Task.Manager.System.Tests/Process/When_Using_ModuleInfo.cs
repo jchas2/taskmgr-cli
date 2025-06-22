@@ -10,6 +10,6 @@ public sealed class When_Using_ModuleInfo
     {
         using var currentProcess = SysDiag::Process.GetCurrentProcess();
         var modules = ModuleInfo.GetModules(currentProcess.Id);
-        Assert.True(modules.Length > 0);
+        Assert.True(modules.Count > 0);
     }
 }

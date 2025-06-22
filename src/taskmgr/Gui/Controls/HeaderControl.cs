@@ -15,7 +15,7 @@ public sealed class HeaderControl : Control
         _processor = processor ?? throw new ArgumentNullException(nameof(processor));
     }
 
-    public void Draw()
+    protected override void OnDraw()
     {
         var systemStatistics = _processor.SystemStatistics;
         int nlines = 0;
