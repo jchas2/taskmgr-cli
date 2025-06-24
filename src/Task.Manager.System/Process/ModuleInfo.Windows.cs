@@ -7,7 +7,7 @@ namespace Task.Manager.System.Process;
 public partial class ModuleInfo
 {
 #if __WIN32__
-    private static bool GetProcessModulesInternal(SysDiag::Process process, out List<ModuleInfo> moduleInfos)
+    private static bool GetModulesInternal(SysDiag::Process process, out List<ModuleInfo> moduleInfos)
     {
         moduleInfos = new List<ModuleInfo>();
 

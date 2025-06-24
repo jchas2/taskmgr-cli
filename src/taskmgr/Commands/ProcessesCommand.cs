@@ -10,8 +10,7 @@ public sealed class ProcessesCommand(MainScreen mainScreen) : AbstractCommand
     public override void Execute()
     {
         MainScreen.SetActiveControl<ProcessControl>();
-        var processControl = MainScreen.GetActiveControl as ProcessControl;
-        processControl!.Draw();
+        MainScreen.Draw();
     }
 
     public override bool IsEnabled => true;

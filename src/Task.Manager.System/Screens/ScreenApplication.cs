@@ -5,7 +5,9 @@ public sealed class ScreenApplication
     public sealed class ScreenApplicationContext
     {
         private Screen? _mainScreen;
-        
+
+        public ScreenApplicationContext() { }
+
         public Screen? MainScreen { get => _mainScreen; }
 
         public void RunApplicationLoop(Screen? mainScreen)
@@ -24,7 +26,7 @@ public sealed class ScreenApplication
             
                 // Resize Events.
                 if (screenWidth != Console.WindowWidth || screenHeight != Console.WindowHeight) {
-                    _mainScreen!.Resize();
+                    _mainScreen.Resize();
                     screenWidth = Console.WindowWidth;
                     screenHeight = Console.WindowHeight;
                 }
@@ -33,7 +35,7 @@ public sealed class ScreenApplication
                 if (Console.KeyAvailable) {
                     var consoleKeyInfo = Console.ReadKey(intercept: true);
                     consoleKey = consoleKeyInfo.Key;
-                    _mainScreen!.KeyPressed(consoleKeyInfo);
+                    _mainScreen.KeyPressed(consoleKeyInfo);
                 }
             
                 // TODO: Mouse Events would be awesome.
@@ -45,7 +47,7 @@ public sealed class ScreenApplication
                 Thread.Sleep(30);
             }
             
-            _mainScreen?.Close();
+            _mainScreen.Close();
         }
     }
 

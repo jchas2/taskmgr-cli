@@ -7,7 +7,7 @@ namespace Task.Manager.System.Process;
 public partial class ModuleInfo
 {
 #if __APPLE__
-    private static bool GetProcessModulesInternal(SysDiag::Process process, out List<ModuleInfo> moduleInfos)
+    private static bool GetModulesInternal(SysDiag::Process process, out List<ModuleInfo> moduleInfos)
     {
         moduleInfos = new List<ModuleInfo>();
         uint imageCount = DyLib._dyld_image_count();
@@ -25,9 +25,10 @@ public partial class ModuleInfo
                 continue;
             }
 
-            var moduleInfo = new ModuleInfo();
-            moduleInfo.ModuleName = Path.GetFileName(imagePath);
-            moduleInfo.FileName = imagePath;
+            var moduleInfo = new ModuleInfo() {
+                ModuleName = Path.GetFileName(imagePath),
+                FileName = imagePath
+            };
             
             moduleInfos.Add(moduleInfo);
         }

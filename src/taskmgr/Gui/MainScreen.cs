@@ -5,7 +5,6 @@ using Task.Manager.Gui.Controls;
 using Task.Manager.System;
 using Task.Manager.System.Configuration;
 using Task.Manager.System.Controls;
-using Task.Manager.System.Process;
 using Task.Manager.System.Screens;
 
 namespace Task.Manager.Gui;
@@ -17,9 +16,13 @@ public sealed class MainScreen : Screen
 
     private readonly ProcessControl _processControl;
     private readonly ModulesControl _modulesControl;
+    private readonly ThreadsControl _threadsControl;
+    private readonly FooterControl _footerControl;
     private Control? _activeControl;
-
+    
     private readonly Dictionary<Type, AbstractCommand> _commandMap;
+
+    private const int FooterHeight = 1;
     
     public MainScreen(
         RunContext runContext,
@@ -33,7 +36,8 @@ public sealed class MainScreen : Screen
 
         _commandMap = new Dictionary<Type, AbstractCommand>() {
             [typeof(ProcessesCommand)] = new ProcessesCommand(this),
-            [typeof(ModulesCommand)] = new ModulesCommand(this)
+            [typeof(ModulesCommand)] = new ModulesCommand(this),
+            [typeof(ThreadsCommand)] = new ThreadsCommand(this)
         };
         
         _processControl = new ProcessControl(
@@ -42,9 +46,12 @@ public sealed class MainScreen : Screen
             _theme);
 
         _modulesControl = new ModulesControl(terminal, _theme);
+        _threadsControl = new ThreadsControl(terminal, _theme);
+        _footerControl = new FooterControl(terminal);
 
         Controls.Add(_processControl);
         Controls.Add(_modulesControl);
+        Controls.Add(_threadsControl);
     }
 
     public Control? GetActiveControl => _activeControl;
@@ -53,6 +60,8 @@ public sealed class MainScreen : Screen
     
     public void SetActiveControl<T>() where T : Control
     {
+        Debug.Assert(_activeControl != null);
+        
         var nextControl = Controls.ToList().SingleOrDefault(c => c.GetType() == typeof(T));
         
         if (nextControl == null) {
@@ -61,12 +70,18 @@ public sealed class MainScreen : Screen
         
         _activeControl?.Unload();
         _activeControl = nextControl;
+        
+        SizeControl(_activeControl);
+        
         _activeControl!.Load();
     }
 
     protected override void OnDraw()
     {
-        _processControl.Draw();
+        Debug.Assert(_activeControl != null);
+        
+        _activeControl.Draw();
+        _footerControl.Draw();
     }
 
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo)
@@ -74,6 +89,7 @@ public sealed class MainScreen : Screen
         AbstractCommand? command = keyInfo.Key switch {
             ConsoleKey.F1 => GetCommandInstance<ProcessesCommand>(),
             ConsoleKey.F2 => GetCommandInstance<ModulesCommand>(),
+            ConsoleKey.F3 => GetCommandInstance<ThreadsCommand>(),
             _ => null
         };
 
@@ -88,35 +104,31 @@ public sealed class MainScreen : Screen
 
     protected override void OnLoad()
     {
-        _processControl.X = 0;
-        _processControl.Y = 0;
-        _processControl.Width = Terminal.WindowWidth;
-        _processControl.Height = Terminal.WindowHeight - 2;
-
-        _modulesControl.X = 0;
-        _modulesControl.Y = 0;
-        _modulesControl.Width = Terminal.WindowWidth;
-        _modulesControl.Height = Terminal.WindowHeight - 2;
+        SizeControl(_processControl);
+        SizeControl(_modulesControl);
+        SizeControl(_threadsControl);
         
-        _runContext.OutputWriter.WriteLine("Loading processor...");
+        _footerControl.X = 0;
+        _footerControl.Y = Terminal.WindowHeight - FooterHeight;
+        _footerControl.Width = Terminal.WindowWidth;
+        _footerControl.Height = FooterHeight;
+        
         _runContext.Processor.Run();
-
-        _runContext.OutputWriter.WriteLine("Loading TUI...");
-        _processControl.Load();
         
         _activeControl = _processControl;
+        _activeControl.Load();
     }
 
     protected override void OnResize()
     {
-        Debug.Assert(_activeControl == null);
-
         foreach (var control in Controls) {
-            control.Width = Terminal.WindowWidth;
-            control.Height = Terminal.WindowHeight - 2;
+            SizeControl(control);            
         }
+
+        _footerControl.Y = Terminal.WindowHeight - FooterHeight;
+        _footerControl.Width = Terminal.WindowWidth;
         
-        _activeControl?.Draw();
+        OnDraw();
     }
 
     protected override void OnUnload()
@@ -124,5 +136,13 @@ public sealed class MainScreen : Screen
         foreach (var control in Controls) {
             control.Unload();
         }
+    }
+
+    private void SizeControl(Control control)
+    {
+        control.X = 0;
+        control.Y = 0;
+        control.Width = Terminal.WindowWidth;
+        control.Height = Terminal.WindowHeight - FooterHeight;
     }
 }
