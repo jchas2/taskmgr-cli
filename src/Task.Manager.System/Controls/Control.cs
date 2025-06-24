@@ -50,16 +50,6 @@ public class Control
         return _controls[index];
     }
     
-    // public virtual bool GetInput(ref ConsoleKeyInfo keyInfo)
-    // {
-    //     if (_terminal.KeyAvailable) {
-    //         keyInfo = _terminal.ReadKey();
-    //         return true;
-    //     }
-    //
-    //     return false;
-    // }
-    
     public int Height { get; set; } = 0;
 
     internal int IndexOfControl(Control control)
