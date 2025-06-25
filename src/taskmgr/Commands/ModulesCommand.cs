@@ -16,8 +16,7 @@ public sealed class ModulesCommand(MainScreen mainScreen) : AbstractCommand
         var processControl = MainScreen.GetActiveControl as ProcessControl;
         int pid = processControl!.SelectedProcessId;
         
-        MainScreen.SetActiveControl<ModulesControl>();
-        var modulesControl = MainScreen.GetActiveControl as ModulesControl;
+        var modulesControl = MainScreen.SetActiveControl<ModulesControl>() as ModulesControl;
         modulesControl!.SelectedProcessId = pid;
         MainScreen.Draw();
     }

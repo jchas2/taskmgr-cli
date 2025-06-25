@@ -232,6 +232,8 @@ public class ListView : Control
             }
         }
 
+        _terminal.BackgroundColor = BackgroundColour;
+
         for (int i = n; i < _viewPort.Height - 1; i++) {
             _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width);
         }

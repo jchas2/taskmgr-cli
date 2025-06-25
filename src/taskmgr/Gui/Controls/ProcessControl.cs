@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Drawing;
-using System.Globalization;
 using Task.Manager.Configuration;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
@@ -13,29 +11,22 @@ public sealed partial class ProcessControl : Control
 {
     private readonly IProcessor _processor;
     private readonly Theme _theme;
-    private Thread? _renderThread;
-    private CancellationTokenSource? _cancellationTokenSource;
-
-    private readonly HeaderControl _headerControl;
     private readonly ListView _listView;
 
+    private ProcessInfo[] _allProcesses = [];
+    private Lock _lock = new();
+    
     private int _cachedWidth = 0;
-    private bool _inRedraw = false;
     
     public ProcessControl(
-        ISystemTerminal terminal, 
         IProcessor processor, 
+        ISystemTerminal terminal, 
         Theme theme)
         : base(terminal)
     {
         _processor = processor ?? throw new ArgumentNullException(nameof(processor));
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
         
-        _headerControl = new HeaderControl(processor, terminal);
-        _headerControl.BackgroundColour = _theme.Background;
-        _headerControl.ForegroundColour = _theme.Foreground;
-        _headerControl.MenubarColour = _theme.Menubar;
-
         _listView = new ListView(terminal);
         _listView.BackgroundHighlightColour = _theme.BackgroundHighlight;
         _listView.ForegroundHighlightColour = _theme.ForegroundHighlight;
@@ -52,7 +43,6 @@ public sealed partial class ProcessControl : Control
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("MEM"));
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("PATH"));
         
-        Controls.Add(_headerControl);
         Controls.Add(_listView);
         
         Theme = theme;
@@ -60,97 +50,50 @@ public sealed partial class ProcessControl : Control
 
     protected override void OnDraw()
     {
-        _inRedraw = true;
-        
-        _headerControl.X = 0;
-        _headerControl.Y = 0;
-        _headerControl.Width = Width;
-        
-        _headerControl.Draw();
+        lock (_lock) {
+            _listView.X = X;
+            _listView.Y = Y;
+            _listView.Width = Width;
+            _listView.Height = Height;
 
-        _listView.X = 0;
-        _listView.Y = _headerControl.Y + _headerControl.Height;
-        _listView.Width = Width;
-        _listView.Height = Height - (_headerControl.Height);
-        
-        _listView.Draw();
-        
-        _inRedraw = false;
+            UpdateColumnHeaders();
+            UpdateListViewItems(_allProcesses);
+
+            _listView.Draw();
+        }
     }
 
-    protected override void OnKeyPressed(ConsoleKeyInfo keyInfo) =>
-        _listView.KeyPressed(keyInfo);
+    protected override void OnKeyPressed(ConsoleKeyInfo keyInfo)
+    {
+        lock (_lock) {
+            _listView.KeyPressed(keyInfo);
+        }
+    }
 
     protected override void OnLoad()
     {
-        _headerControl.Load();
-
-        _listView.X = 0;
-        _listView.Y = _headerControl.Y + _headerControl.Height;
+        _listView.X = X;
+        _listView.Y = Y;
         _listView.Width = Width;
         _listView.Load();
-
-        SafelyDisposeCancellationTokenSource(_cancellationTokenSource);
         
-        _cancellationTokenSource = new CancellationTokenSource();
-        
-        _renderThread = new Thread(() => RunRenderLoop(_cancellationTokenSource.Token));
-        _renderThread.Start();
+        _processor.ProcessorUpdated += ProcessorOnProcessorUpdated;
     }
 
     protected override void OnUnload()
     {
-        // Signal the render thread to stop running.
-        _cancellationTokenSource?.Cancel();
-
-        // Block until the thread ends.
-        if (_renderThread != null) {
-            while (_renderThread.IsAlive) {
-                Thread.Sleep(100);
-            }
-        }
+        _listView.Unload();
         
-        _renderThread = null;
-    }
-
-    private void RunRenderLoop(CancellationToken token)
-    {
-        while (false == token.IsCancellationRequested) {
-            ProcessInfo[] allProcesses = _processor.GetAll();
-
-            if (allProcesses.Length == 0) {
-                continue;
-            }
-
-            if (false == _inRedraw && false == token.IsCancellationRequested) {
-                UpdateColumnHeaders();
-                UpdateListViewItems(allProcesses);
-                Draw();
-            }
-
-            var startTime = DateTime.Now;
-            
-            while (false == token.IsCancellationRequested) {
-                var duration = DateTime.Now - startTime;
-                if (duration.TotalMilliseconds >= Processor.UpdateTimeInMs) {
-                    break;
-                }
-
-                Thread.Sleep(200);
-            }
-        }
+        _processor.ProcessorUpdated -= ProcessorOnProcessorUpdated;
     }
     
-    private void SafelyDisposeCancellationTokenSource(CancellationTokenSource? cancellationTokenSource)
+    private void ProcessorOnProcessorUpdated(object? sender, ProcessorEventArgs e)
     {
-        try {
-            cancellationTokenSource?.Dispose();
-        }
-        catch (Exception ex) {
-            Trace.WriteLine($"Failed SafelyDisposeCancellationTokenSource(): {ex}");            
-        }
+        _allProcesses = e.ProcessInfos;
+        
+        Draw();
     }
-
+    
     public int SelectedProcessId
     {
         get {

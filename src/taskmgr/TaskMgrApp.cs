@@ -158,7 +158,7 @@ public sealed class TaskMgrApp
             new SystemTerminal(), 
             theme, 
             config);
-        
+
         ScreenApplication.Run(screen);
         
         return 0;
