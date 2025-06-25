@@ -13,15 +13,17 @@ public sealed class MainScreen : Screen
 {
     private readonly RunContext _runContext;
     private readonly Theme _theme;
-
+    
     private readonly ProcessControl _processControl;
     private readonly ModulesControl _modulesControl;
     private readonly ThreadsControl _threadsControl;
+    private readonly HeaderControl _headerControl;
     private readonly FooterControl _footerControl;
     private Control? _activeControl;
     
     private readonly Dictionary<Type, AbstractCommand> _commandMap;
 
+    private const int HeaderHeight = 9;
     private const int FooterHeight = 1;
     
     public MainScreen(
@@ -39,12 +41,17 @@ public sealed class MainScreen : Screen
             [typeof(ModulesCommand)] = new ModulesCommand(this),
             [typeof(ThreadsCommand)] = new ThreadsCommand(this)
         };
+
+        _headerControl = new HeaderControl(
+            _runContext.Processor,
+            terminal,
+            theme);
         
         _processControl = new ProcessControl(
+            _runContext.Processor,
             terminal, 
-            _runContext.Processor, 
             _theme);
-
+        
         _modulesControl = new ModulesControl(terminal, _theme);
         _threadsControl = new ThreadsControl(terminal, _theme);
         _footerControl = new FooterControl(terminal);
@@ -58,28 +65,11 @@ public sealed class MainScreen : Screen
 
     private AbstractCommand GetCommandInstance<T>() where T : AbstractCommand => _commandMap[typeof(T)];
     
-    public void SetActiveControl<T>() where T : Control
-    {
-        Debug.Assert(_activeControl != null);
-        
-        var nextControl = Controls.ToList().SingleOrDefault(c => c.GetType() == typeof(T));
-        
-        if (nextControl == null) {
-            throw new InvalidOperationException();
-        }
-        
-        _activeControl?.Unload();
-        _activeControl = nextControl;
-        
-        SizeControl(_activeControl);
-        
-        _activeControl!.Load();
-    }
-
     protected override void OnDraw()
     {
         Debug.Assert(_activeControl != null);
         
+        _headerControl.Draw();
         _activeControl.Draw();
         _footerControl.Draw();
     }
@@ -104,31 +94,35 @@ public sealed class MainScreen : Screen
 
     protected override void OnLoad()
     {
-        SizeControl(_processControl);
-        SizeControl(_modulesControl);
-        SizeControl(_threadsControl);
-        
-        _footerControl.X = 0;
-        _footerControl.Y = Terminal.WindowHeight - FooterHeight;
-        _footerControl.Width = Terminal.WindowWidth;
-        _footerControl.Height = FooterHeight;
+        _activeControl = _processControl;
+
+        _headerControl.Load();
+        _activeControl.Load();
+        _footerControl.Load();
         
         _runContext.Processor.Run();
-        
-        _activeControl = _processControl;
-        _activeControl.Load();
     }
-
+    
     protected override void OnResize()
     {
+        X = 0;
+        Y = 0;
+        Height = Terminal.WindowHeight;
+        Width = Terminal.WindowWidth;
+        
+        _headerControl.X = 0;
+        _headerControl.Y = 0;
+        _headerControl.Height = HeaderHeight;
+        _headerControl.Width = Width;
+        
         foreach (var control in Controls) {
             SizeControl(control);            
         }
 
+        _footerControl.X = 0;
         _footerControl.Y = Terminal.WindowHeight - FooterHeight;
         _footerControl.Width = Terminal.WindowWidth;
-        
-        OnDraw();
+        _footerControl.Height = FooterHeight;
     }
 
     protected override void OnUnload()
@@ -136,13 +130,36 @@ public sealed class MainScreen : Screen
         foreach (var control in Controls) {
             control.Unload();
         }
+        
+        _runContext.Processor.Stop();
+    }
+
+    public Control SetActiveControl<T>() where T : Control
+    {
+        Debug.Assert(_activeControl != null);
+        
+        var nextControl = Controls.ToList().SingleOrDefault(c => c.GetType() == typeof(T));
+        
+        if (nextControl == null) {
+            throw new InvalidOperationException();
+        }
+        
+        _activeControl.Unload();
+        _activeControl = nextControl;
+        
+        SizeControl(_activeControl);
+        
+        _activeControl.Load();
+        _activeControl.Resize();
+
+        return _activeControl;
     }
 
     private void SizeControl(Control control)
     {
         control.X = 0;
-        control.Y = 0;
+        control.Y = HeaderHeight;
         control.Width = Terminal.WindowWidth;
-        control.Height = Terminal.WindowHeight - FooterHeight;
+        control.Height = Terminal.WindowHeight - HeaderHeight - FooterHeight;
     }
 }

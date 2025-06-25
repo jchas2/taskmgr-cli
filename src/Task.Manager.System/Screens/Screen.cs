@@ -19,6 +19,7 @@ public partial class Screen : Control
     public void Show()
     {
         OnLoad();
+        OnResize();
         OnDraw();
         IsActive = true;
     }

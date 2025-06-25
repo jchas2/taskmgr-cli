@@ -27,6 +27,7 @@ public sealed class ScreenApplication
                 // Resize Events.
                 if (screenWidth != Console.WindowWidth || screenHeight != Console.WindowHeight) {
                     _mainScreen.Resize();
+                    _mainScreen.Draw();
                     screenWidth = Console.WindowWidth;
                     screenHeight = Console.WindowHeight;
                 }

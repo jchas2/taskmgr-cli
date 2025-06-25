@@ -51,11 +51,6 @@ public partial class ThreadsControl : Control
     
     protected override void OnDraw()
     {
-        _listView.X = 0;
-        _listView.Y = 0;
-        _listView.Width = Width;
-        _listView.Height = Height;
-
         UpdateColumnHeaders();
         LoadThreadInfos();
         
@@ -69,12 +64,17 @@ public partial class ThreadsControl : Control
 
     protected override void OnLoad()
     {
-        _listView.X = 0;
-        _listView.Y = 0;
-        _listView.Width = Terminal.WindowWidth;
         _listView.Load();
     }
-    
+
+    protected override void OnResize()
+    {
+        _listView.X = X;
+        _listView.Y = Y;
+        _listView.Width = Width;
+        _listView.Height = Height;
+    }
+
     public int SelectedProcessId
     {
         get => _selectedProcessId;

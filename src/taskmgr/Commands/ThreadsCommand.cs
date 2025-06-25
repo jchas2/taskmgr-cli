@@ -15,9 +15,8 @@ public sealed class ThreadsCommand(MainScreen mainScreen) : AbstractCommand
 
         var processControl = MainScreen.GetActiveControl as ProcessControl;
         int pid = processControl!.SelectedProcessId;
-        
-        MainScreen.SetActiveControl<ThreadsControl>();
-        var threadsControl = MainScreen.GetActiveControl as ThreadsControl;
+
+        var threadsControl = MainScreen.SetActiveControl<ThreadsControl>() as ThreadsControl;
         threadsControl!.SelectedProcessId = pid;
         MainScreen.Draw();
     }

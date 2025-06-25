@@ -15,6 +15,7 @@ public partial class Processor : IProcessor
     private ProcessInfo[] _allProcesses;
     private ProcessInfo[] _allProcessesCopy;
     private readonly Dictionary<int, ProcessInfo> _processMap;
+    private Thread? _workerThread;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly Lock _lock;
     private readonly bool _isWindows = false;
@@ -24,6 +25,8 @@ public partial class Processor : IProcessor
     
     public const int UpdateTimeInMs = 2000;
 
+    public event EventHandler<ProcessorEventArgs>? ProcessorUpdated;
+    
     public Processor()
     {
         _systemInfo = new SystemInfo();
@@ -36,13 +39,6 @@ public partial class Processor : IProcessor
         _isWindows = OperatingSystem.IsWindows();
     }
     
-    public ProcessInfo[] GetAll()
-    {
-        lock (_lock) {
-            return _allProcessesCopy;
-        }
-    }
-
     private bool GetProcessTimes(in int pid, ref ProcessTimeInfo ptInfo)
     {
         try {
@@ -76,8 +72,8 @@ public partial class Processor : IProcessor
 
     public void Run()
     {
-        var workerThread = new Thread(() => RunInternal(_cancellationTokenSource.Token));
-        workerThread.Start();
+        _workerThread = new Thread(() => RunInternal(_cancellationTokenSource.Token));
+        _workerThread.Start();
     }
 
     private void RunInternal(CancellationToken cancellationToken)
@@ -215,6 +211,9 @@ public partial class Processor : IProcessor
             _systemStatistics.ThreadCount = _threadCount;
             _systemStatistics.GhostProcessCount = _ghostProcessCount;
 
+            // TODO: Not needed anymore as i'm using a synchronous dispatch of event handlers. 
+            // Look into async dispatch of handlers so this thread does not wait for draw operations to 
+            // complete.
             lock (_lock) {
                 Array.Resize(ref _allProcessesCopy, _allProcesses.Length);
 
@@ -224,20 +223,25 @@ public partial class Processor : IProcessor
                     destinationArray: _allProcessesCopy,
                     destinationIndex: 0,
                     length: _allProcesses.Length);
+                
+                // Signal listeners processes and stats updated.
+                var eventArgs = new ProcessorEventArgs(_allProcessesCopy, _systemStatistics);
+                ProcessorUpdated?.Invoke(this, eventArgs);
             }
         }
     }
 
-    public void Stop() => _cancellationTokenSource.Cancel();
-
-    public SystemStatistics SystemStatistics
+    public void Stop()
     {
-        get {
-            lock (_lock) {
-                /* Value type, returns a cooy. */
-                return _systemStatistics;
+        _cancellationTokenSource.Cancel();
+        
+        if (_workerThread != null) {
+            while (_workerThread.IsAlive) {
+                Thread.Sleep(100);
             }
         }
+        
+        _workerThread = null;
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
