@@ -37,6 +37,8 @@ public sealed class MainScreen : Screen
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
 
         _commandMap = new Dictionary<Type, AbstractCommand>() {
+            [typeof(HelpCommand)] = new HelpCommand(),
+            [typeof(SetupCommand)] = new SetupCommand(),
             [typeof(ProcessesCommand)] = new ProcessesCommand(this),
             [typeof(ModulesCommand)] = new ModulesCommand(this),
             [typeof(ThreadsCommand)] = new ThreadsCommand(this)
@@ -54,7 +56,7 @@ public sealed class MainScreen : Screen
         
         _modulesControl = new ModulesControl(terminal, _theme);
         _threadsControl = new ThreadsControl(terminal, _theme);
-        _footerControl = new FooterControl(terminal);
+        _footerControl = new FooterControl(terminal, _theme);
 
         Controls.Add(_processControl);
         Controls.Add(_modulesControl);
@@ -77,9 +79,11 @@ public sealed class MainScreen : Screen
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo)
     {
         AbstractCommand? command = keyInfo.Key switch {
-            ConsoleKey.F1 => GetCommandInstance<ProcessesCommand>(),
-            ConsoleKey.F2 => GetCommandInstance<ModulesCommand>(),
-            ConsoleKey.F3 => GetCommandInstance<ThreadsCommand>(),
+            ConsoleKey.F1 => GetCommandInstance<HelpCommand>(),
+            ConsoleKey.F2 => GetCommandInstance<SetupCommand>(),
+            ConsoleKey.F3 => GetCommandInstance<ProcessesCommand>(),
+            ConsoleKey.F4 => GetCommandInstance<ModulesCommand>(),
+            ConsoleKey.F5 => GetCommandInstance<ThreadsCommand>(),
             _ => null
         };
 
@@ -127,11 +131,11 @@ public sealed class MainScreen : Screen
 
     protected override void OnUnload()
     {
+        _runContext.Processor.Stop();
+
         foreach (var control in Controls) {
             control.Unload();
         }
-        
-        _runContext.Processor.Stop();
     }
 
     public Control SetActiveControl<T>() where T : Control

@@ -3,26 +3,16 @@ using Task.Manager.Gui.Controls;
 
 namespace Task.Manager.Commands;
 
-public sealed class ThreadsCommand(MainScreen mainScreen) : AbstractCommand
+public sealed class ThreadsCommand(MainScreen mainScreen) : ProcessCommand(mainScreen)
 {
-    private MainScreen MainScreen { get; } = mainScreen;
-
     public override void Execute()
     {
         if (false == IsEnabled) {
             return;
         }
 
-        var processControl = MainScreen.GetActiveControl as ProcessControl;
-        int pid = processControl!.SelectedProcessId;
-
         var threadsControl = MainScreen.SetActiveControl<ThreadsControl>() as ThreadsControl;
-        threadsControl!.SelectedProcessId = pid;
+        threadsControl!.SelectedProcessId = SelectedProcessId;
         MainScreen.Draw();
     }
-
-    public override bool IsEnabled =>
-        MainScreen.GetActiveControl is ProcessControl control &&
-        control.SelectedProcessId > -1;
 }
-

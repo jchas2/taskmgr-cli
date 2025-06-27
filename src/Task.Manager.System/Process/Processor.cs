@@ -16,14 +16,14 @@ public partial class Processor : IProcessor
     private ProcessInfo[] _allProcessesCopy;
     private readonly Dictionary<int, ProcessInfo> _processMap;
     private Thread? _workerThread;
-    private readonly CancellationTokenSource _cancellationTokenSource;
+    private CancellationTokenSource? _cancellationTokenSource;
     private readonly Lock _lock;
     private readonly bool _isWindows = false;
     private int _processCount = 0;
     private int _ghostProcessCount = 0;
     private int _threadCount = 0;
     
-    public const int UpdateTimeInMs = 2000;
+    public const int UpdateTimeInMs = 1500;
 
     public event EventHandler<ProcessorEventArgs>? ProcessorUpdated;
     
@@ -34,7 +34,6 @@ public partial class Processor : IProcessor
         _allProcesses = new ProcessInfo[InitialBufferSize];
         _allProcessesCopy = [];
         _processMap = new Dictionary<int, ProcessInfo>();
-        _cancellationTokenSource = new CancellationTokenSource();
         _lock = new Lock();
         _isWindows = OperatingSystem.IsWindows();
     }
@@ -72,6 +71,8 @@ public partial class Processor : IProcessor
 
     public void Run()
     {
+        _cancellationTokenSource = new CancellationTokenSource();
+
         _workerThread = new Thread(() => RunInternal(_cancellationTokenSource.Token));
         _workerThread.Start();
     }
@@ -89,6 +90,10 @@ public partial class Processor : IProcessor
             _threadCount = 0;
 
             for (index = 0; index < procs.Length; index++) {
+                
+                if (cancellationToken.IsCancellationRequested) {
+                    return;
+                }
 #if __WIN32__
                 /* On Windows, ignore the system "idle" process auto assigned to Pid 0. */
                 if (_isWindows && procs[index].Id == 0) {
@@ -155,9 +160,13 @@ public partial class Processor : IProcessor
                 _processCount++;
                 _threadCount += procs[index].Threads.Count;
             }
+            
+            if (cancellationToken.IsCancellationRequested) {
+                return;
+            }
 
             Array.Resize(ref _allProcesses, index - delta);
-
+            
             GetSystemTimes(out SystemTimes prevSysTimes);
             Thread.Sleep(UpdateTimeInMs);
             GetSystemTimes(out SystemTimes currSysTimes);
@@ -179,6 +188,11 @@ public partial class Processor : IProcessor
             var currProcTimes = new ProcessTimeInfo();
 
             for (int i = 0; i < _allProcesses.Length; i++) {
+                
+                if (cancellationToken.IsCancellationRequested) {
+                    return;
+                }
+
                 currProcTimes.Clear();
 
                 if (false == GetProcessTimes(_allProcesses[i].Pid, ref currProcTimes)) {
@@ -233,7 +247,7 @@ public partial class Processor : IProcessor
 
     public void Stop()
     {
-        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource?.Cancel();
         
         if (_workerThread != null) {
             while (_workerThread.IsAlive) {
