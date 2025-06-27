@@ -153,13 +153,22 @@ public sealed class TaskMgrApp
         Config config, 
         Theme theme)
     {
-        var screen = new MainScreen(
+        var terminal = new SystemTerminal();
+        
+        var mainScreen = new MainScreen(
             runContext, 
-            new SystemTerminal(), 
+            terminal, 
             theme, 
             config);
 
-        ScreenApplication.Run(screen);
+        var helpScreen = new HelpScreen(terminal);
+        var setupScreen = new SetupScreen(terminal);
+        
+        ScreenApplication.RegisterScreen(mainScreen);
+        ScreenApplication.RegisterScreen(helpScreen);
+        ScreenApplication.RegisterScreen(setupScreen);
+        
+        ScreenApplication.Run(mainScreen);
         
         return 0;
     }
