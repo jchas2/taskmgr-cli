@@ -51,7 +51,6 @@ public partial class ThreadsControl : Control
     
     protected override void OnDraw()
     {
-        UpdateColumnHeaders();
         LoadThreadInfos();
         
         _listView.Draw();
@@ -73,6 +72,18 @@ public partial class ThreadsControl : Control
         _listView.Y = Y;
         _listView.Width = Width;
         _listView.Height = Height;
+        
+        _listView.ColumnHeaders[(int)Columns.Id].Width = ColumnIdWidth;
+        _listView.ColumnHeaders[(int)Columns.State].Width = ColumnStateWidth;
+        _listView.ColumnHeaders[(int)Columns.Reason].Width = ColumnReasonWidth;
+        _listView.ColumnHeaders[(int)Columns.Priority].Width = ColumnPriorityWidth;
+
+        for (int i = 0; i < (int)Columns.Count; i++) {
+            _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
+            _listView.ColumnHeaders[i].ForegroundColour = Theme.HeaderForeground;
+        }
+        
+        _listView.Resize();
     }
 
     public int SelectedProcessId
@@ -82,17 +93,4 @@ public partial class ThreadsControl : Control
     }
 
     private Theme Theme { get; }
-
-    private void UpdateColumnHeaders()
-    {
-        _listView.ColumnHeaders[(int)Columns.Id].Width = ColumnIdWidth;
-        _listView.ColumnHeaders[(int)Columns.State].Width = ColumnStateWidth;
-        _listView.ColumnHeaders[(int)Columns.Reason].Width = ColumnReasonWidth;
-        _listView.ColumnHeaders[(int)Columns.Priority].Width = ColumnPriorityWidth;
-
-         for (int i = 0; i < (int)Columns.Count; i++) {
-             _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
-             _listView.ColumnHeaders[i].ForegroundColour = Theme.HeaderForeground;
-         }
-    }
 }

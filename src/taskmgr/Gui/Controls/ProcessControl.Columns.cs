@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace Task.Manager.Gui.Controls;
 
 public partial class ProcessControl
@@ -13,15 +15,23 @@ public partial class ProcessControl
 
     internal const int ColumnMargin = 1;    
     
-    private enum Columns
+    internal enum Columns
     {
+        [Description("PROCESS")]
         Process = 0,
+        [Description("PID")]
         Pid,
+        [Description("USER")]
         User,
+        [Description("PRI")]
         Priority,
+        [Description("CPU%")]
         Cpu,
+        [Description("THRDS")]
         Threads,
+        [Description("MEM")]
         Memory,
+        [Description("PATH")]
         CommandLine,
         Count
     }

@@ -59,7 +59,13 @@ public partial class ProcessControl
             
             SubItems[(int)Columns.Process].Text = processInfo.FileDescription ?? string.Empty;
             SubItems[(int)Columns.Pid].Text = processInfo.Pid.ToString();
+            
             SubItems[(int)Columns.User].Text = processInfo.UserName ?? string.Empty;
+
+            if (false == SubItems[(int)Columns.User].Text.Equals(Environment.UserName, StringComparison.OrdinalIgnoreCase)) {
+                SubItems[(int)Columns.User].ForegroundColor = ConsoleColor.DarkGray;
+            }
+            
             SubItems[(int)Columns.Priority].Text = processInfo.BasePriority.ToString();
             SubItems[(int)Columns.Cpu].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
             SubItems[(int)Columns.Threads].Text = processInfo.ThreadCount.ToString();

@@ -118,15 +118,17 @@ public sealed class MainScreen : Screen
         _headerControl.Y = 0;
         _headerControl.Height = HeaderHeight;
         _headerControl.Width = Width;
+        _headerControl.Resize();
         
         foreach (var control in Controls) {
             SizeControl(control);            
         }
 
         _footerControl.X = 0;
-        _footerControl.Y = Terminal.WindowHeight - FooterHeight;
-        _footerControl.Width = Terminal.WindowWidth;
+        _footerControl.Y = Height - FooterHeight;
+        _footerControl.Width = Width;
         _footerControl.Height = FooterHeight;
+        _footerControl.Resize();
     }
 
     protected override void OnUnload()
@@ -163,7 +165,8 @@ public sealed class MainScreen : Screen
     {
         control.X = 0;
         control.Y = HeaderHeight;
-        control.Width = Terminal.WindowWidth;
-        control.Height = Terminal.WindowHeight - HeaderHeight - FooterHeight;
+        control.Width = Width;
+        control.Height = Height - HeaderHeight - FooterHeight;
+        control.Resize();
     }
 }
