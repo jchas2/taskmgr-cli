@@ -28,6 +28,8 @@ public class ListView : Control
     private const int DefaultColumnWidth = 30;
     private const int DefaultHeaderWidth = 80;
 
+    public event EventHandler<ListViewItemEventArgs>? ItemClicked;
+
     public ListView(ISystemTerminal terminal)
         : base(terminal)
     {
@@ -117,6 +119,11 @@ public class ListView : Control
                         _viewPort.CurrentIndex = Math.Max(0, _viewPort.SelectedIndex);
                         redrawAllItems = true;
                     }
+                }
+                break;
+            case ConsoleKey.Enter:
+                if (SelectedIndex != -1) {
+                    OnItemClicked(SelectedItem);
                 }
                 break;
         }
@@ -338,6 +345,9 @@ public class ListView : Control
         DrawItems();
     }
 
+    protected void OnItemClicked(ListViewItem item) =>
+        ItemClicked?.Invoke(this, new ListViewItemEventArgs(item));
+    
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo)
     {
         switch (keyInfo.Key) {
