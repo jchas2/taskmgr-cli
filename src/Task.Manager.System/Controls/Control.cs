@@ -28,8 +28,13 @@ public class Control
 
     public void Unload() => OnUnload();
     
-    public void Draw() => OnDraw();
-    
+    public void Draw()
+    {
+        if (Visible) {
+            OnDraw();
+        }
+    }
+
     internal int ControlCount => _controls.Count;
     
     public ConsoleColor ForegroundColour { get; set; } = ConsoleColor.White;
@@ -117,9 +122,16 @@ public class Control
         }
     }
 
-    public void Resize() => OnResize();
-    
+    public void Resize()
+    {
+        if (Visible) {
+            OnResize();
+        }
+    }
+
     protected ISystemTerminal Terminal => _terminal;
+    
+    public bool Visible { get; set; } = true;
     
     public int Width { get; set; } = 0;
 

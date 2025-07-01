@@ -50,9 +50,10 @@ public partial class ModulesControl : Control
     
     protected override void OnDraw()
     {
-        UpdateColumnHeaders();
-        LoadModuleInfos();
-        
+        if (_listView.Items.Count == 0) {
+            LoadModuleInfos();
+        }
+
         _listView.Draw();
     }
 
@@ -72,6 +73,25 @@ public partial class ModulesControl : Control
         _listView.Y = Y;
         _listView.Width = Width;
         _listView.Height = Height;
+        
+        _listView.ColumnHeaders[(int)Columns.ModuleName].Width = ColumnModuleNameWidth;
+
+        int total =
+            ColumnModuleNameWidth + ColumnMargin;
+        
+        if (total + ColumnFileNameWidth + ColumnMargin < Width) {
+            _listView.ColumnHeaders[(int)Columns.FileName].Width = Width - total - ColumnMargin;    
+        }
+        else {
+            _listView.ColumnHeaders[(int)Columns.FileName].Width = ColumnFileNameWidth;
+        }
+
+        for (int i = 0; i < (int)Columns.Count; i++) {
+            _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
+            _listView.ColumnHeaders[i].ForegroundColour = Theme.HeaderForeground;
+        }
+        
+        _listView.Resize();
     }
 
     public int SelectedProcessId
@@ -81,24 +101,4 @@ public partial class ModulesControl : Control
     }
 
     private Theme Theme { get; }
-
-    private void UpdateColumnHeaders()
-    {
-        _listView.ColumnHeaders[(int)Columns.ModuleName].Width = ColumnModuleNameWidth;
-
-        int total =
-            ColumnModuleNameWidth + ColumnMargin;
-        
-         if (total + ColumnFileNameWidth + ColumnMargin < Width) {
-             _listView.ColumnHeaders[(int)Columns.FileName].Width = Width - total - ColumnMargin;    
-         }
-         else {
-             _listView.ColumnHeaders[(int)Columns.FileName].Width = ColumnFileNameWidth;
-         }
-
-         for (int i = 0; i < (int)Columns.Count; i++) {
-             _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
-             _listView.ColumnHeaders[i].ForegroundColour = Theme.HeaderForeground;
-         }
-    }
 }

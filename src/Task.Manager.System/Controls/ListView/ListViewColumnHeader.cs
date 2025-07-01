@@ -21,9 +21,9 @@ public class ListViewColumnHeader
         ForegroundColour = foregroundColor;
     }
 
-    public ConsoleColor BackgroundColour { get; set; }
+    public ConsoleColor? BackgroundColour { get; set; }
     
-    public ConsoleColor ForegroundColour { get; set; }
+    public ConsoleColor? ForegroundColour { get; set; }
 
     public bool RightAligned { get; set; } = false;
     

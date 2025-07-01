@@ -28,6 +28,8 @@ public class ListView : Control
     private const int DefaultColumnWidth = 30;
     private const int DefaultHeaderWidth = 80;
 
+    public event EventHandler<ListViewItemEventArgs>? ItemClicked;
+
     public ListView(ISystemTerminal terminal)
         : base(terminal)
     {
@@ -119,6 +121,11 @@ public class ListView : Control
                     }
                 }
                 break;
+            case ConsoleKey.Enter:
+                if (SelectedIndex != -1) {
+                    OnItemClicked(SelectedItem);
+                }
+                break;
         }
     }
     
@@ -137,7 +144,7 @@ public class ListView : Control
         int c = 0;
         
         for (int i = 0; i < ColumnHeaderCount; i++) {
-            if (c + _columnHeaders[i].Width >= _viewPort.Bounds.Width) {
+            if (c + _columnHeaders[i].Width > _viewPort.Bounds.Width) {
                 break;
             }
 
@@ -145,14 +152,17 @@ public class ListView : Control
                 ? "{0," + _columnHeaders[i].Width.ToString() + "}"
                 : "{0,-" + _columnHeaders[i].Width.ToString() + "}";
 
+            ConsoleColor foreground = _columnHeaders[i].ForegroundColour ?? HeaderForegroundColour;
+            ConsoleColor background = _columnHeaders[i].BackgroundColour ?? HeaderBackgroundColour;
+
             _buffer.Append((string.Format(formatStr, _columnHeaders[i].Text) + ' ')
-                .ToColour(_columnHeaders[i].ForegroundColour, _columnHeaders[i].BackgroundColour));
+                .ToColour(foreground, background));
             
             c+= _columnHeaders[i].Width + 1;
         }
         
         _terminal.Write(_buffer.ToString());
-        _terminal.BackgroundColor = _columnHeaders[ColumnHeaderCount - 1].BackgroundColour;
+        _terminal.BackgroundColor = HeaderBackgroundColour;
         _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width - c);
     }
 
@@ -177,7 +187,7 @@ public class ListView : Control
                 columnWidth = _columnHeaders[i].Width;
             }
 
-            if (c + columnWidth >= _viewPort.Bounds.Width) {
+            if (c + columnWidth > _viewPort.Bounds.Width) {
                 break;
             }
             
@@ -223,6 +233,8 @@ public class ListView : Control
             if (pid < ItemCount) {
                 var item = Items[pid];
                 
+                _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y + n);
+                
                 DrawItem(
                     item,
                     _viewPort.Bounds.Width,
@@ -234,8 +246,9 @@ public class ListView : Control
 
         _terminal.BackgroundColor = BackgroundColour;
 
-        for (int i = n; i < _viewPort.Height - 1; i++) {
-            _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width);
+        for (int i = n; i < Height - 1; i++) {
+            _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y + i);
+            _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width + 1);
         }
     }
 
@@ -332,6 +345,9 @@ public class ListView : Control
         DrawItems();
     }
 
+    protected void OnItemClicked(ListViewItem item) =>
+        ItemClicked?.Invoke(this, new ListViewItemEventArgs(item));
+    
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo)
     {
         switch (keyInfo.Key) {
@@ -356,9 +372,7 @@ public class ListView : Control
 
     private void RedrawItem()
     {
-        _terminal.SetCursorPosition(
-            0,
-            _viewPort.Bounds.Y + _viewPort.SelectedIndex - _viewPort.CurrentIndex);
+        _terminal.SetCursorPosition(X, _viewPort.Bounds.Y + _viewPort.SelectedIndex - _viewPort.CurrentIndex);
                     
         var selectedItem = _items[_viewPort.SelectedIndex];
 
@@ -368,9 +382,7 @@ public class ListView : Control
             highlight: true);
 
         if (_viewPort.PreviousSelectedIndex != _viewPort.SelectedIndex) {
-            _terminal.SetCursorPosition(
-                0,
-                _viewPort.Bounds.Y + _viewPort.PreviousSelectedIndex - _viewPort.CurrentIndex);
+            _terminal.SetCursorPosition(X, _viewPort.Bounds.Y + _viewPort.PreviousSelectedIndex - _viewPort.CurrentIndex);
                         
             var previousSelectedItem = _items[_viewPort.PreviousSelectedIndex];
 
