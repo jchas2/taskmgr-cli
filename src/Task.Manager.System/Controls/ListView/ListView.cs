@@ -121,16 +121,13 @@ public class ListView : Control
                     }
                 }
                 break;
-            case ConsoleKey.Enter:
-                if (SelectedIndex != -1) {
-                    OnItemClicked(SelectedItem);
-                }
-                break;
         }
     }
     
     private void DrawHeader()
     {
+        using TerminalColourRestorer _ = new();
+
         _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y - 1);
 
         if (ColumnHeaderCount == 0) {
@@ -171,6 +168,8 @@ public class ListView : Control
         int width,
         bool highlight)
     {
+        using TerminalColourRestorer _ = new();
+
         _buffer.Clear();
 
         /* TODO: Will look into span<T> + stackalloc char[] to fast build strings */
@@ -348,7 +347,7 @@ public class ListView : Control
     protected void OnItemClicked(ListViewItem item) =>
         ItemClicked?.Invoke(this, new ListViewItemEventArgs(item));
     
-    protected override void OnKeyPressed(ConsoleKeyInfo keyInfo)
+    protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
     {
         switch (keyInfo.Key) {
             case ConsoleKey.UpArrow:
@@ -365,6 +364,16 @@ public class ListView : Control
                     RedrawItem();
                 }
                 
+                handled = true;
+                break;
+            }
+            case ConsoleKey.Enter: {
+                
+                if (SelectedIndex != -1) {
+                    OnItemClicked(SelectedItem);
+                }
+                
+                handled = true;
                 break;
             }
         }

@@ -41,7 +41,8 @@ public sealed class MainScreen : Screen
             [typeof(SetupCommand)] = new SetupCommand(),
             [typeof(ProcessesCommand)] = new ProcessesCommand(this),
             [typeof(ModulesCommand)] = new ModulesCommand(this),
-            [typeof(ThreadsCommand)] = new ThreadsCommand(this)
+            [typeof(ThreadsCommand)] = new ThreadsCommand(this),
+            [typeof(ProcessSortCommand)] = new ProcessSortCommand(this)
         };
 
         _headerControl = new HeaderControl(
@@ -76,7 +77,7 @@ public sealed class MainScreen : Screen
         _footerControl.Draw();
     }
 
-    protected override void OnKeyPressed(ConsoleKeyInfo keyInfo)
+    protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
     {
         AbstractCommand? command = keyInfo.Key switch {
             ConsoleKey.F1 => GetCommandInstance<HelpCommand>(),
@@ -84,16 +85,26 @@ public sealed class MainScreen : Screen
             ConsoleKey.F3 => GetCommandInstance<ProcessesCommand>(),
             ConsoleKey.F4 => GetCommandInstance<ModulesCommand>(),
             ConsoleKey.F5 => GetCommandInstance<ThreadsCommand>(),
+            ConsoleKey.F6 => GetCommandInstance<ProcessSortCommand>(),
             _ => null
         };
 
         if (command != null && command.IsEnabled) {
             command.Execute();
+            handled = true;
             return;
         }
         
         var activeControl = GetActiveControl;
-        activeControl?.KeyPressed(keyInfo);
+
+        if (keyInfo.Key == ConsoleKey.Escape && activeControl != _processControl) {
+            SetActiveControl<ProcessControl>();
+            Draw();
+            handled = true;
+            return;
+        }
+        
+        activeControl?.KeyPressed(keyInfo, ref handled);
     }
 
     protected override void OnLoad()
@@ -113,6 +124,8 @@ public sealed class MainScreen : Screen
         Y = 0;
         Height = Terminal.WindowHeight;
         Width = Terminal.WindowWidth;
+        
+        Clear();
         
         _headerControl.X = 0;
         _headerControl.Y = 0;
@@ -160,7 +173,7 @@ public sealed class MainScreen : Screen
 
         return _activeControl;
     }
-
+    
     private void SizeControl(Control control)
     {
         control.X = 0;
