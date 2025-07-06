@@ -18,7 +18,7 @@ public partial class ModuleInfo
             moduleInfos.Add(moduleInfo);
         }
         
-        return false;
+        return true;
     }
 #endif
 }
