@@ -14,7 +14,7 @@ namespace Task.Manager.System;
 public partial class SystemInfo
 {
 #if __WIN32__
-    private static bool GetCpuInfoInternal(SystemStatistics systemStatistics)
+    private static bool GetCpuInfoInternal(ref SystemStatistics systemStatistics)
     {
         const string REG_PATH = @"HARDWARE\DESCRIPTION\System\CentralProcessor\0\";
         const string REG_KEY_PROCESSOR_NAME = "ProcessorNameString";
