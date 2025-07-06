@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
+using Task.Manager.System;
 using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
 
@@ -10,7 +11,10 @@ public partial class ProcessControl
 {
     private class ProcessListViewItem : ListViewItem
     {
-        public ProcessListViewItem(ref ProcessInfo processInfo, Theme theme)
+        public ProcessListViewItem(
+            ref ProcessInfo processInfo,
+            ref SystemStatistics systemStatistics,
+            Theme theme) 
             : base(processInfo.FileDescription ?? string.Empty)
         {
             Theme = theme;
@@ -25,21 +29,32 @@ public partial class ProcessControl
                 new ListViewSubItem(this, processInfo.UsedMemory.ToString()),
                 new ListViewSubItem(this, processInfo.CmdLine ?? string.Empty));
 
-            UpdateItem(ref processInfo);
+            UpdateItem(ref processInfo, ref systemStatistics);
         }
 
         public int Pid { get; private set; }
 
         private Theme Theme { get; }
 
-        public void UpdateItem(ref ProcessInfo processInfo)
+        public void UpdateItem(ref ProcessInfo processInfo, ref SystemStatistics systemStatistics)
         {
             for (int i = 0; i < (int)Columns.Count; i++) {
                 SubItems[i].BackgroundColor = Theme.Background;
                 SubItems[i].ForegroundColor = Theme.Foreground;
             }
             
-            if (processInfo.CpuTimePercent > 0.0) {
+            SubItems[(int)Columns.Process].Text = processInfo.FileDescription ?? string.Empty;
+            SubItems[(int)Columns.Pid].Text = processInfo.Pid.ToString();
+            SubItems[(int)Columns.User].Text = processInfo.UserName ?? string.Empty;
+
+            if (false == SubItems[(int)Columns.User].Text.Equals(Environment.UserName, StringComparison.OrdinalIgnoreCase)) {
+                SubItems[(int)Columns.User].ForegroundColor = ConsoleColor.DarkGray;
+            }
+            
+            SubItems[(int)Columns.Priority].Text = processInfo.BasePriority.ToString();
+            SubItems[(int)Columns.Cpu].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
+            
+            if (processInfo.CpuTimePercent > 1.0) {
                 if (processInfo.CpuTimePercent < 10.0) {
                     SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeLowBackground;
                     SubItems[(int)Columns.Cpu].ForegroundColor = Theme.Foreground;
@@ -57,19 +72,24 @@ public partial class ProcessControl
                 }
             }
             
-            SubItems[(int)Columns.Process].Text = processInfo.FileDescription ?? string.Empty;
-            SubItems[(int)Columns.Pid].Text = processInfo.Pid.ToString();
-            
-            SubItems[(int)Columns.User].Text = processInfo.UserName ?? string.Empty;
-
-            if (false == SubItems[(int)Columns.User].Text.Equals(Environment.UserName, StringComparison.OrdinalIgnoreCase)) {
-                SubItems[(int)Columns.User].ForegroundColor = ConsoleColor.DarkGray;
-            }
-            
-            SubItems[(int)Columns.Priority].Text = processInfo.BasePriority.ToString();
-            SubItems[(int)Columns.Cpu].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
             SubItems[(int)Columns.Threads].Text = processInfo.ThreadCount.ToString();
             SubItems[(int)Columns.Memory].Text = processInfo.UsedMemory.ToFormattedByteSize();
+
+            double memRatio = (double)processInfo.UsedMemory / (double)systemStatistics.TotalPhysical;
+            
+            if (memRatio > 0.1 && memRatio <= 0.2) {
+                SubItems[(int)Columns.Memory].ForegroundColor = Theme.Foreground;
+                SubItems[(int)Columns.Memory].BackgroundColor = Theme.RangeLowBackground;
+            }
+            else if (memRatio > 0.2 && memRatio <= 0.5) {
+                SubItems[(int)Columns.Memory].ForegroundColor = Theme.Foreground;
+                SubItems[(int)Columns.Memory].BackgroundColor = Theme.RangeMidBackground;
+            }
+            else if (memRatio > 0.5) {
+                SubItems[(int)Columns.Memory].ForegroundColor = Theme.Foreground;
+                SubItems[(int)Columns.Memory].BackgroundColor = Theme.RangeHighBackground;
+            }
+            
             SubItems[(int)Columns.CommandLine].Text = processInfo.CmdLine ?? string.Empty;
         }
     }

@@ -17,22 +17,32 @@ public partial class ProcessControl
     
     internal enum Columns
     {
-        [Description("PROCESS")]
+        [ColumnTitle("PROCESS")]
+        [ColumnProperty("ExeName")]
         Process = 0,
-        [Description("PID")]
+        [ColumnTitle("PID")]
+        [ColumnProperty("Pid")]
         Pid,
-        [Description("USER")]
+        [ColumnTitle("USER")]
+        [ColumnProperty("UserName")]
         User,
-        [Description("PRI")]
+        [ColumnTitle("PRI")]
+        [ColumnProperty("BasePriority")]
         Priority,
-        [Description("CPU%")]
+        [ColumnTitle("CPU%")]
+        [ColumnProperty("CpuTimePercent")]
         Cpu,
-        [Description("THRDS")]
+        [ColumnTitle("THRDS")]
+        [ColumnProperty("ThreadCount")]
         Threads,
-        [Description("MEM")]
+        [ColumnTitle("MEM")]
+        [ColumnProperty("UsedMemory")]
         Memory,
-        [Description("PATH")]
+        [ColumnTitle("PATH")]
+        [ColumnProperty("CmdLine")]
         CommandLine,
+        [ColumnTitle("")]
+        [ColumnProperty("")]
         Count
     }
 }

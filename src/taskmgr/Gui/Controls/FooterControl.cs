@@ -8,17 +8,19 @@ namespace Task.Manager.Gui.Controls;
 
 public sealed class FooterControl : Control
 {
-    private Theme _theme;
-    private const string CommandText = "          Help      Setup     Processes Modules   Threads   ";
+    private readonly Theme _theme;
+    private const string CommandText = "          Help      Setup     Processes Modules   Threads   Sort      ";
 
     public FooterControl(ISystemTerminal terminal, Theme theme) : base(terminal) => _theme = theme;
 
     protected override void OnDraw()
     {
+        using TerminalColourRestorer _ = new();
+        
         Terminal.SetCursorPosition(left: X, top: Y);
         int nchars = 0;
         
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= (CommandText.Length / 10) - 1; i++) {
             Terminal.BackgroundColor = _theme.Background;
             Terminal.ForegroundColor = _theme.Foreground;
             string funcKey = $"F{i} ";

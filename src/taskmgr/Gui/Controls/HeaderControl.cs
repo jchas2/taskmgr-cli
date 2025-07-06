@@ -1,4 +1,5 @@
 using System.Drawing;
+using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
@@ -149,6 +150,8 @@ public sealed class HeaderControl : Control
 
     protected override void OnDraw()
     {
+        using TerminalColourRestorer _ = new();
+
         int nlines = 0;
         
         Terminal.SetCursorPosition(left: X, top: Y);

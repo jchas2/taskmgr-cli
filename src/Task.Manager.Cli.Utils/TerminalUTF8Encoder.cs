@@ -1,29 +1,27 @@
 using System.Security;
 using System.Text;
 
-namespace Task.Manager;
+namespace Task.Manager.Cli.Utils;
 
-internal class TerminalUTF8Encoder : IDisposable
+public sealed class TerminalUTF8Encoder : IDisposable
 {
     private Encoding? _origOutputEncoding;
     private Encoding? _origInputEncoding;
 
     public TerminalUTF8Encoder()
     {
-        UseTryCatch(() =>
-        {
+        UseTryCatch(() => {
             _origOutputEncoding = Console.OutputEncoding;
             _origInputEncoding = Console.InputEncoding;
         });
     }
-    
+
     public void Dispose()
     {
-        UseTryCatch(() =>
-        {
+        UseTryCatch(() => {
             Console.OutputEncoding = _origOutputEncoding ?? Console.OutputEncoding;
             Console.InputEncoding = _origInputEncoding ?? Console.InputEncoding;
-        });                
+        });
     }
 
     private void UseTryCatch(Action action)

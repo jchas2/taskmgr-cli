@@ -18,9 +18,10 @@ public partial class Screen : Control
 
     public void Show()
     {
-        OnLoad();
-        OnResize();
-        OnDraw();
+        Load();
+        Clear();
+        Resize();
+        Draw();
         IsActive = true;
     }
 }

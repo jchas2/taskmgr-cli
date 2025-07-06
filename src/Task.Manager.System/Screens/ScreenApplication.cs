@@ -63,7 +63,10 @@ public sealed class ScreenApplication
                         var consoleKeyInfo = Console.ReadKey(intercept: true);
                         consoleKey = consoleKeyInfo.Key;
 
-                        if (consoleKey == ConsoleKey.Escape) {
+                        bool handled = false;
+                        ownerScreen.KeyPressed(consoleKeyInfo, ref handled);
+
+                        if (handled == false && consoleKey == ConsoleKey.Escape) {
                             Debug.Assert(_ownerScreen != null);
                             
                             _ownerScreen.Close();
@@ -77,8 +80,6 @@ public sealed class ScreenApplication
                             _ownerScreen.Show();
                             continue;
                         }
-                        
-                        ownerScreen.KeyPressed(consoleKeyInfo);
                     }
 
                     // TODO: Mouse Events would be awesome.

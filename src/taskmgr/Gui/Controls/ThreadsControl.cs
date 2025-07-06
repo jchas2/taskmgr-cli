@@ -56,10 +56,8 @@ public partial class ThreadsControl : Control
         _listView.Draw();
     }
 
-    protected override void OnKeyPressed(ConsoleKeyInfo keyInfo)
-    {
-        _listView.KeyPressed(keyInfo);
-    }
+    protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled) =>
+        _listView.KeyPressed(keyInfo, ref handled);
 
     protected override void OnLoad()
     {

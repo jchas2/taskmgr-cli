@@ -15,7 +15,7 @@ public class Control
     private List<Control> _controls = [];
     
     private readonly ISystemTerminal _terminal;
-    
+
     public Control(ISystemTerminal terminal)
     {
         _terminal = terminal;
@@ -23,6 +23,8 @@ public class Control
     }
 
     public ConsoleColor BackgroundColour { get; set; } = ConsoleColor.Black;
+
+    public void Clear() => OnClear();
     
     internal void ClearControls() => _controls.Clear();
 
@@ -42,6 +44,7 @@ public class Control
     internal bool ContainsControl(Control control)
     {
         ArgumentNullException.ThrowIfNull(control, nameof(control));
+        
         return _controls.Contains(control);
     }
    
@@ -85,15 +88,23 @@ public class Control
         _controls.AddRange(controls);
     }
     
-    public void KeyPressed(ConsoleKeyInfo keyInfo) => OnKeyPressed(keyInfo);
+    public void KeyPressed(ConsoleKeyInfo keyInfo, ref bool handled) => OnKeyPressed(keyInfo, ref handled);
     
     public void Load() => OnLoad();
+    
+    protected virtual void OnClear()
+    {
+        for (int i = Y; i < Height; i++) {
+            _terminal.SetCursorPosition(X, i);
+            _terminal.WriteEmptyLineTo(Width);
+        }
+    }
 
     protected virtual void OnDraw() { }
 
     protected virtual void OnLoad() { }
 
-    protected virtual void OnKeyPressed(ConsoleKeyInfo keyInfo) { }
+    protected virtual void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled) { }
 
     protected virtual void OnResize() { }
 
@@ -108,6 +119,7 @@ public class Control
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _controls.Count, nameof(index));
+        
         _controls.RemoveAt(index);
     }
 
