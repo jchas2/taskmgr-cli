@@ -11,18 +11,21 @@ public static class ConfigBuilder
     public static Config BuildDefault()
     {
         return new Config()
-            .AddSection(BuildSection(Constants.Sections.Filter))
-            .AddSection(BuildSection(Constants.Sections.UX))
-            .AddSection(BuildSection(Constants.Sections.Stats))
-            .AddSection(BuildSection(Constants.Sections.Sort))
-            .AddSection(BuildSection(Constants.Sections.Iterations))
-            .AddSection(BuildSection(Constants.Sections.ThemeColour))
-            .AddSection(BuildSection(Constants.Sections.ThemeMono));
+            .AddConfigSection(BuildConfigSection(Constants.Sections.Filter))
+            .AddConfigSection(BuildConfigSection(Constants.Sections.UX))
+            .AddConfigSection(BuildConfigSection(Constants.Sections.Stats))
+            .AddConfigSection(BuildConfigSection(Constants.Sections.Sort))
+            .AddConfigSection(BuildConfigSection(Constants.Sections.Iterations))
+            .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeColour))
+            .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeMono));
     }
 
-    public static ConfigSection BuildSection(string name)
+    public static ConfigSection BuildConfigSection(string name)
     {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+        
         name = name.ToLower();
+        
         switch (name) {
             case Constants.Sections.Filter:
                 return new ConfigSection(Constants.Sections.Filter)
@@ -83,11 +86,11 @@ public static class ConfigBuilder
         }
     }
     
-    private static ConfigSection GetSection(string name, Config config) =>
+    private static ConfigSection GetConfigSection(string name, Config config) =>
         config.ContainsSection(name)
-            ? config.GetSection(name)
-            : config.AddSection(BuildSection(name))
-                .GetSection(name);
+            ? config.GetConfigSection(name)
+            : config.AddConfigSection(BuildConfigSection(name))
+                .GetConfigSection(name);
 
     private static void MapColours(ConfigSection section, string[,] colourMap)
     {
@@ -98,26 +101,28 @@ public static class ConfigBuilder
     
     public static void Merge(Config withConfig)
     {
+        ArgumentNullException.ThrowIfNull(withConfig, nameof(withConfig));
+        
         /* Merge any changes required from a default config to ensure withConfig is a valid Config instance */
-        var filterSection = GetSection(Constants.Sections.Filter, withConfig);
-        filterSection.AddIfMissing(Constants.Keys.Pid, "-1");
-        filterSection.AddIfMissing(Constants.Keys.UserName, string.Empty);
-        filterSection.AddIfMissing(Constants.Keys.Process, string.Empty);
+        var filterSection = GetConfigSection(Constants.Sections.Filter, withConfig)
+            .AddIfMissing(Constants.Keys.Pid, "-1")
+            .AddIfMissing(Constants.Keys.UserName, string.Empty)
+            .AddIfMissing(Constants.Keys.Process, string.Empty);
 
-        var uxSection = GetSection(Constants.Sections.UX, withConfig);
-        uxSection.AddIfMissing(Constants.Keys.Bars, "false");
-        uxSection.AddIfMissing(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour);
+        var uxSection = GetConfigSection(Constants.Sections.UX, withConfig)
+            .AddIfMissing(Constants.Keys.Bars, "false")
+            .AddIfMissing(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour);
 
-        var statsSection = GetSection(Constants.Sections.Stats, withConfig);
-        statsSection.AddIfMissing(Constants.Keys.Cols, StatsCols);
-        statsSection.AddIfMissing(Constants.Keys.NProcs, "-1");
+        var statsSection = GetConfigSection(Constants.Sections.Stats, withConfig)
+            .AddIfMissing(Constants.Keys.Cols, StatsCols)
+            .AddIfMissing(Constants.Keys.NProcs, "-1");
 
-        var sortSection = GetSection(Constants.Sections.Sort, withConfig);
-        sortSection.AddIfMissing(Constants.Keys.Col, "pid");
-        sortSection.AddIfMissing(Constants.Keys.Asc, "false");
+        var sortSection = GetConfigSection(Constants.Sections.Sort, withConfig)
+            .AddIfMissing(Constants.Keys.Col, "pid")
+            .AddIfMissing(Constants.Keys.Asc, "false");
 
-        var iterSection = GetSection(Constants.Sections.Iterations, withConfig);
-        iterSection.AddIfMissing(Constants.Keys.Limit, "0");
+        var iterSection = GetConfigSection(Constants.Sections.Iterations, withConfig)
+            .AddIfMissing(Constants.Keys.Limit, "0");
 
         string[,] colourMap = {
             { Constants.Keys.Background, "black" },
@@ -147,24 +152,24 @@ public static class ConfigBuilder
             { Constants.Keys.HeaderForeground, "white" }
         };
         
-        string defaultThemeName = uxSection.GetString(Constants.Keys.DefaultTheme, string.Empty);
+        var defaultThemeName = uxSection.GetString(Constants.Keys.DefaultTheme, string.Empty);
 
-        if (false == string.IsNullOrEmpty(defaultThemeName)) {
+        if (!string.IsNullOrWhiteSpace(defaultThemeName)) {
             switch (defaultThemeName) {
                 case Constants.Sections.ThemeColour: {
-                    var colourSection = GetSection(Constants.Sections.ThemeColour, withConfig);
+                    var colourSection = GetConfigSection(Constants.Sections.ThemeColour, withConfig);
                     MapColours(colourSection, colourMap);
                     break;
                 }
                 case Constants.Sections.ThemeMono: {
-                    var monoSection = GetSection(Constants.Sections.ThemeMono, withConfig);
+                    var monoSection = GetConfigSection(Constants.Sections.ThemeMono, withConfig);
                     MapColours(monoSection, monoMap);
                     break;
                 }
                 default: {
                     var themeSection = withConfig.ContainsSection(defaultThemeName)
-                        ? withConfig.GetSection(defaultThemeName)
-                        : BuildSection(Constants.Sections.ThemeColour);
+                        ? withConfig.GetConfigSection(defaultThemeName)
+                        : BuildConfigSection(Constants.Sections.ThemeColour);
                 
                     /* When merging a custom theme, use the default colour map for any missing keys. */
                     MapColours(themeSection, colourMap);
@@ -174,7 +179,7 @@ public static class ConfigBuilder
         }
         else {
             uxSection.AddIfMissing(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour);
-            var colourSection = GetSection(Constants.Sections.ThemeColour, withConfig);
+            var colourSection = GetConfigSection(Constants.Sections.ThemeColour, withConfig);
             MapColours(colourSection, colourMap);
         }
     }

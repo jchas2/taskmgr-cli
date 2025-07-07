@@ -9,7 +9,7 @@ public class ProcessSortCommand(MainScreen mainScreen) : AbstractCommand() {
 
     public override void Execute()
     {
-        if (false == IsEnabled) {
+        if (!IsEnabled) {
             return;
         }
 

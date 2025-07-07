@@ -7,12 +7,12 @@ public sealed class ThreadsCommand(MainScreen mainScreen) : ProcessCommand(mainS
 {
     public override void Execute()
     {
-        if (false == IsEnabled) {
+        if (!IsEnabled) {
             return;
         }
 
-        var threadsControl = MainScreen.SetActiveControl<ThreadsControl>() as ThreadsControl;
-        threadsControl!.SelectedProcessId = SelectedProcessId;
+        var threadsControl = MainScreen.SetActiveControl<ThreadsControl>();
+        threadsControl.SelectedProcessId = SelectedProcessId;
         MainScreen.Draw();
     }
 }

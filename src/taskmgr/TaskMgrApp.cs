@@ -80,7 +80,7 @@ public sealed class TaskMgrApp
             int? nprocs = context.ParseResult.GetValueForOption(nprocsOption);
             string? themeName = context.ParseResult.GetValueForOption(themeOption);
 
-            var filterSection = config.Sections.FirstOrDefault(s => 
+            var filterSection = config.ConfigSections.FirstOrDefault(s => 
                 s.Name.Equals(Constants.Sections.Filter, StringComparison.CurrentCultureIgnoreCase));
 
             if (pid.HasValue && pid.Value >= 0) {
@@ -95,7 +95,7 @@ public sealed class TaskMgrApp
                 filterSection?.Add(Constants.Keys.Process, process);
             }
 
-            var sortSection = config.Sections.FirstOrDefault(s =>
+            var sortSection = config.ConfigSections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.Sort, StringComparison.CurrentCultureIgnoreCase));
 
             if (sortColumn.HasValue) {
@@ -106,21 +106,21 @@ public sealed class TaskMgrApp
                 sortSection?.Add(Constants.Keys.Asc, sortAscending.Value.ToString());
             }
 
-            var iterationsSection = config.Sections.FirstOrDefault(s =>
+            var iterationsSection = config.ConfigSections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.Iterations, StringComparison.CurrentCultureIgnoreCase));
 
             if (limit.HasValue && limit.Value >= 0) {
                 iterationsSection?.Add(Constants.Keys.Limit, limit.Value.ToString());
             }
 
-            var statsSection = config.Sections.FirstOrDefault(s =>
+            var statsSection = config.ConfigSections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.Stats, StringComparison.CurrentCultureIgnoreCase));
 
             if (nprocs.HasValue && nprocs.Value > 0) {
                 statsSection?.Add(Constants.Keys.NProcs, nprocs.Value.ToString());
             }
 
-            var uxSection = config.Sections.FirstOrDefault(s =>
+            var uxSection = config.ConfigSections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.UX, StringComparison.CurrentCultureIgnoreCase));
 
             if (false == string.IsNullOrEmpty(themeName)) {

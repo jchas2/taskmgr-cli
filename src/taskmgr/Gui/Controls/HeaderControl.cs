@@ -18,7 +18,8 @@ public sealed class HeaderControl : Control
         ISystemTerminal terminal, 
         Theme theme) : base(terminal)
     {
-        _processor = processor;
+        _processor = processor ?? throw new ArgumentNullException(nameof(processor));
+        
         BackgroundColour = theme.Background;
         ForegroundColour = theme.Foreground;
         MenubarColour = theme.Menubar;
@@ -339,15 +340,11 @@ public sealed class HeaderControl : Control
         Height = nlines;
     }
 
-    protected override void OnLoad()
-    {
+    protected override void OnLoad() =>
         _processor.ProcessorUpdated += OnProcessorUpdated;
-    }
     
-    protected override void OnUnload()
-    {
+    protected override void OnUnload() =>
         _processor.ProcessorUpdated -= OnProcessorUpdated;
-    }
 
     private void OnProcessorUpdated(object? sender, ProcessorEventArgs e)
     {
