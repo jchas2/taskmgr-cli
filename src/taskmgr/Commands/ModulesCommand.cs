@@ -7,12 +7,12 @@ public sealed class ModulesCommand(MainScreen mainScreen) : ProcessCommand(mainS
 {
     public override void Execute()
     {
-        if (false == IsEnabled) {
+        if (!IsEnabled) {
             return;
         }
 
-        var modulesControl = MainScreen.SetActiveControl<ModulesControl>() as ModulesControl;
-        modulesControl!.SelectedProcessId = SelectedProcessId;
+        var modulesControl = MainScreen.SetActiveControl<ModulesControl>();
+        modulesControl.SelectedProcessId = SelectedProcessId;
         MainScreen.Draw();
     }
 }

@@ -4,25 +4,25 @@ namespace Task.Manager.System.Configuration;
 
 public class Config
 {
-    private IList<ConfigSection> _sections;
+    private IList<ConfigSection> _configSections;
 
     public Config()
     {
-        _sections = new List<ConfigSection>();
+        _configSections = new List<ConfigSection>();
     }
 
-    public Config AddSection(ConfigSection section)
+    public Config AddConfigSection(ConfigSection section)
     {
         if (ContainsSection(section.Name)) {
             throw new InvalidOperationException($"A section with name {section.Name} already exists.");
         }
         
-        Sections.Add(section);
+        ConfigSections.Add(section);
         return this;
     }
     
     public bool ContainsSection(string name) =>
-        _sections.Any(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
+        _configSections.Any(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
 
     public static Config? FromFile(IFileSystem fileSys, string path)
     {
@@ -41,7 +41,7 @@ public class Config
         return ParseConfig(parser);
     }
     
-    public ConfigSection GetSection(string name)
+    public ConfigSection GetConfigSection(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
 
@@ -49,13 +49,13 @@ public class Config
             throw new InvalidOperationException();
         }
 
-        return _sections.Single(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
+        return _configSections.Single(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
     }
     
-    public IList<ConfigSection> Sections
+    public IList<ConfigSection> ConfigSections
     {
-        get => _sections;
-        private set => _sections = value;
+        get => _configSections;
+        private set => _configSections = value;
     }
 
     private static void TryLoadConfig(Action action)
@@ -72,7 +72,7 @@ public class Config
     {
         var config = new Config();
         parser.Parse(); 
-        config.Sections = parser.Sections;
+        config.ConfigSections = parser.Sections;
         return config;
     }
 }

@@ -4,14 +4,12 @@ namespace Task.Manager.Configuration;
 
 public sealed class Theme
 {
-    private readonly Config _config;
-
     public Theme(Config config)
     {
-        _config = config ?? throw new ArgumentNullException(nameof(config));
+        ArgumentNullException.ThrowIfNull(config, nameof(config));
 
-        var uxSection = _config.GetSection(Constants.Sections.UX);
-        var themeSection = _config.GetSection(uxSection.GetString(Constants.Keys.DefaultTheme));
+        var uxSection = config.GetConfigSection(Constants.Sections.UX);
+        var themeSection = config.GetConfigSection(uxSection.GetString(Constants.Keys.DefaultTheme));
         
         Background = themeSection.GetColour(Constants.Keys.Background, ConsoleColor.Black);
         BackgroundHighlight = themeSection.GetColour(Constants.Keys.BackgroundHighlight, ConsoleColor.Cyan);

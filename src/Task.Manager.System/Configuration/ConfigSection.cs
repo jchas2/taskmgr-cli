@@ -25,7 +25,7 @@ public sealed class ConfigSection
         return this;
     }
 
-    public void AddIfMissing(string key, string value)
+    public ConfigSection AddIfMissing(string key, string value)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
@@ -33,6 +33,8 @@ public sealed class ConfigSection
         if (false == _keys.ContainsKey(key)) {
             Add(key, value);
         }
+
+        return this;
     }
 
     public bool Contains(string key) => _keys.ContainsKey(key);

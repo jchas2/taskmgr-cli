@@ -18,7 +18,7 @@ public class Control
 
     public Control(ISystemTerminal terminal)
     {
-        _terminal = terminal;
+        _terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
         _controlCollection = new ControlCollection(this);
     }
 

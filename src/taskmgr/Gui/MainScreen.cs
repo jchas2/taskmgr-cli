@@ -153,7 +153,7 @@ public sealed class MainScreen : Screen
         }
     }
 
-    public Control SetActiveControl<T>() where T : Control
+    public T SetActiveControl<T>() where T : Control
     {
         Debug.Assert(_activeControl != null);
         
@@ -171,7 +171,7 @@ public sealed class MainScreen : Screen
         _activeControl.Load();
         _activeControl.Resize();
 
-        return _activeControl;
+        return (T)_activeControl;
     }
     
     private void SizeControl(Control control)
