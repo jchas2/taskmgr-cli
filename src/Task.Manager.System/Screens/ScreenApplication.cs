@@ -81,8 +81,10 @@ public sealed class ScreenApplication
                             continue;
                         }
                     }
+                }
 
-                    // TODO: Mouse Events would be awesome.
+                if (Console.KeyAvailable) {
+                    continue;
                 }
 
                 // Small delay to prevent busy-wait.
