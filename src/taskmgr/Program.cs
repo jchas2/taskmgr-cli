@@ -32,7 +32,7 @@ class Program
             return;
         }
         
-        string unhandledError = $"Unhandled error: {ev.ExceptionObject.GetType().Name}";
+        var unhandledError = $"Unhandled error: {ev.ExceptionObject.GetType().Name}";
         OutputWriter.Error.WriteLine(unhandledError.ToRed());
         Debug.WriteLine(unhandledError);
     }
@@ -60,13 +60,13 @@ class Program
 #endif
         
         try {
-            var runContext = new RunContext(
+            RunContext runContext = new(
                 new FileSystem(),
                 new SystemInfo(),
                 new Processor(),
                 outputWriter: null);
 
-            var app = new TaskMgrApp(runContext);
+            TaskMgrApp app = new(runContext);
             return app.Run(args);
         }
         catch (Exception e) {

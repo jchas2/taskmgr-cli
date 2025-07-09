@@ -17,7 +17,7 @@ public partial class ProcessControl
             Theme theme) 
             : base(processInfo.FileDescription ?? string.Empty)
         {
-            Theme = theme;
+            Theme = theme ?? throw new ArgumentNullException(nameof(theme));
             Pid = processInfo.Pid;
 
             SubItems.AddRange(
@@ -47,7 +47,7 @@ public partial class ProcessControl
             SubItems[(int)Columns.Pid].Text = processInfo.Pid.ToString();
             SubItems[(int)Columns.User].Text = processInfo.UserName ?? string.Empty;
 
-            if (false == SubItems[(int)Columns.User].Text.Equals(Environment.UserName, StringComparison.OrdinalIgnoreCase)) {
+            if (!SubItems[(int)Columns.User].Text.Equals(Environment.UserName, StringComparison.OrdinalIgnoreCase)) {
                 SubItems[(int)Columns.User].ForegroundColor = ConsoleColor.DarkGray;
             }
             

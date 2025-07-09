@@ -64,13 +64,11 @@ public sealed partial class ProcessControl : Control
         
         Controls.Add(_sortView);
         Controls.Add(_processView);
-        
-        Theme = theme;
     }
 
     private void LoadSortItems()
     {
-        var columns = Enum.GetValues<Columns>()
+        IEnumerable<string> columns = Enum.GetValues<Columns>()
             .Where(c => c != Columns.Count)
             .Select(c => c.GetTitle());
         
@@ -186,7 +184,7 @@ public sealed partial class ProcessControl : Control
     public int SelectedProcessId
     {
         get {
-            var selectedSubItem = _processView.SelectedItem.SubItems[(int)Columns.Pid];
+            ListViewSubItem selectedSubItem = _processView.SelectedItem.SubItems[(int)Columns.Pid];
             
             if (int.TryParse(selectedSubItem.Text, out int pid)) {
                 return pid;
@@ -212,21 +210,19 @@ public sealed partial class ProcessControl : Control
     
     private void SortViewOnItemClicked(object? sender, ListViewItemEventArgs e)
     {
-        _processView.ColumnHeaders[(int)_sortColumn].BackgroundColour = Theme.HeaderBackground;
-        _processView.ColumnHeaders[(int)_sortColumn].ForegroundColour = Theme.HeaderForeground;
+        _processView.ColumnHeaders[(int)_sortColumn].BackgroundColour = _theme.HeaderBackground;
+        _processView.ColumnHeaders[(int)_sortColumn].ForegroundColour = _theme.HeaderForeground;
         
         _sortColumn = Enum.GetValues<Columns>().Single(c => c.GetTitle() == e.Item.Text);
         
-        _processView.ColumnHeaders[(int)_sortColumn].BackgroundColour = Theme.BackgroundHighlight;
-        _processView.ColumnHeaders[(int)_sortColumn].ForegroundColour = Theme.ForegroundHighlight;
+        _processView.ColumnHeaders[(int)_sortColumn].BackgroundColour = _theme.BackgroundHighlight;
+        _processView.ColumnHeaders[(int)_sortColumn].ForegroundColour = _theme.ForegroundHighlight;
         
         _mode = ControlMode.None;
         
         Resize();
         Draw();
     }
-
-    private Theme Theme { get; }
 
     private void UpdateListViewItems(ProcessInfo[] allProcesses, ref SystemStatistics systemStatistics)
     {
@@ -237,10 +233,10 @@ public sealed partial class ProcessControl : Control
         if (_processView.Items.Count == 0) {
             
             for (int i = 0; i < sortedProcesses.Length; i++) {
-                var item = new ProcessListViewItem(
+                ProcessListViewItem item = new(
                     ref sortedProcesses[i],
                     ref systemStatistics,
-                    Theme);
+                    _theme);
                 
                 _processView.Items.Add(item);
             }
@@ -249,7 +245,7 @@ public sealed partial class ProcessControl : Control
         }
 
         for (int i = 0; i < sortedProcesses.Length; i++) {
-            bool found = false;
+            var found = false;
             
             for (int j = 0; j < _processView.Items.Count; j++) {
                 var item = (ProcessListViewItem)_processView.Items[j];
@@ -270,10 +266,10 @@ public sealed partial class ProcessControl : Control
             }
 
             if (false == found) {
-                var item = new ProcessListViewItem(
+                ProcessListViewItem item = new(
                     ref sortedProcesses[i],
                     ref systemStatistics,
-                    Theme);
+                    _theme);
                 
                 _processView.Items.InsertAt(i, item);
             }

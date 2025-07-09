@@ -19,6 +19,7 @@ public sealed class HeaderControl : Control
         Theme theme) : base(terminal)
     {
         _processor = processor ?? throw new ArgumentNullException(nameof(processor));
+        ArgumentNullException.ThrowIfNull(theme);
         
         BackgroundColour = theme.Background;
         ForegroundColour = theme.Foreground;

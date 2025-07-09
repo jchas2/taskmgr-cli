@@ -9,7 +9,7 @@ public sealed class ProcessesCommand(MainScreen mainScreen) : AbstractCommand
 
     public override void Execute()
     {
-        MainScreen.SetActiveControl<ProcessControl>();
+        _ = MainScreen.SetActiveControl<ProcessControl>();
         MainScreen.Draw();
     }
 

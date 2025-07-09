@@ -23,10 +23,10 @@ public sealed class FooterControl : Control
         for (int i = 1; i <= (CommandText.Length / 10) - 1; i++) {
             Terminal.BackgroundColor = _theme.Background;
             Terminal.ForegroundColor = _theme.Foreground;
-            string funcKey = $"F{i} ";
+            var funcKey = $"F{i} ";
             Terminal.Write(funcKey);
             nchars += funcKey.Length;
-            string slice = CommandText.Substring(i * 10, 10);
+            var slice = CommandText.Substring(i * 10, 10);
             Terminal.BackgroundColor = _theme.BackgroundHighlight;
             Terminal.ForegroundColor = _theme.ForegroundHighlight;
             Terminal.Write(slice);
