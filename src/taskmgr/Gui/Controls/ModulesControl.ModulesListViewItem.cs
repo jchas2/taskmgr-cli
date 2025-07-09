@@ -11,17 +11,15 @@ public partial class ModulesControl
         public ModuleListViewItem(ModuleInfo moduleInfo, Theme theme)
             : base(moduleInfo.ModuleName ?? string.Empty)
         {
-            Theme = theme;
-
+            ArgumentNullException.ThrowIfNull(theme);
+            
             SubItems.AddRange(
                 new ListViewSubItem(this, moduleInfo.FileName));
             
             for (int i = 0; i < (int)Columns.Count; i++) {
-                SubItems[i].BackgroundColor = Theme.Background;
-                SubItems[i].ForegroundColor = Theme.Foreground;
+                SubItems[i].BackgroundColor = theme.Background;
+                SubItems[i].ForegroundColor = theme.Foreground;
             }
         }
-        
-        private Theme Theme { get; }
     }
 }

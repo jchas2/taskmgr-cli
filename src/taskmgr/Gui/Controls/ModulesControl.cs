@@ -30,8 +30,6 @@ public partial class ModulesControl : Control
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("FILENAME"));
         
         Controls.Add(_listView);
-        
-        Theme = theme;
     }
 
     private void LoadModuleInfos()
@@ -43,7 +41,7 @@ public partial class ModulesControl : Control
             .ToList();
         
         foreach (var moduleInfo in modules) {
-            var item = new ModuleListViewItem(moduleInfo, Theme);
+            var item = new ModuleListViewItem(moduleInfo, _theme);
             _listView.Items.Add(item);
         }
     }
@@ -85,8 +83,8 @@ public partial class ModulesControl : Control
         }
 
         for (int i = 0; i < (int)Columns.Count; i++) {
-            _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
-            _listView.ColumnHeaders[i].ForegroundColour = Theme.HeaderForeground;
+            _listView.ColumnHeaders[i].BackgroundColour = _theme.HeaderBackground;
+            _listView.ColumnHeaders[i].ForegroundColour = _theme.HeaderForeground;
         }
         
         _listView.Resize();
@@ -97,6 +95,4 @@ public partial class ModulesControl : Control
         get => _selectedProcessId;
         set => _selectedProcessId = value;
     }
-
-    private Theme Theme { get; }
 }

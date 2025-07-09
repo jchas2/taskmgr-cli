@@ -11,7 +11,7 @@ public partial class ThreadsControl
         public ThreadListViewItem(ThreadInfo threadInfo, Theme theme)
             : base(threadInfo.ThreadId.ToString())
         {
-            Theme = theme;
+            ArgumentNullException.ThrowIfNull(theme, nameof(theme));
             
             SubItems.AddRange(
                 new ListViewSubItem(this, threadInfo.ThreadState),
@@ -19,11 +19,9 @@ public partial class ThreadsControl
                 new ListViewSubItem(this, $"{threadInfo.Priority}"));
             
             for (int i = 0; i < (int)Columns.Count; i++) {
-                SubItems[i].BackgroundColor = Theme.Background;
-                SubItems[i].ForegroundColor = Theme.Foreground;
+                SubItems[i].BackgroundColor = theme.Background;
+                SubItems[i].ForegroundColor = theme.Foreground;
             }
         }
-        
-        private Theme Theme { get; }
     }
 }

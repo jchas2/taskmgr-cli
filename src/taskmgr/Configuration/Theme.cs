@@ -8,8 +8,8 @@ public sealed class Theme
     {
         ArgumentNullException.ThrowIfNull(config, nameof(config));
 
-        var uxSection = config.GetConfigSection(Constants.Sections.UX);
-        var themeSection = config.GetConfigSection(uxSection.GetString(Constants.Keys.DefaultTheme));
+        ConfigSection uxSection = config.GetConfigSection(Constants.Sections.UX);
+        ConfigSection themeSection = config.GetConfigSection(uxSection.GetString(Constants.Keys.DefaultTheme));
         
         Background = themeSection.GetColour(Constants.Keys.Background, ConsoleColor.Black);
         BackgroundHighlight = themeSection.GetColour(Constants.Keys.BackgroundHighlight, ConsoleColor.Cyan);

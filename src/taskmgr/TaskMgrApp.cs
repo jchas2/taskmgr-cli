@@ -25,35 +25,35 @@ public sealed class TaskMgrApp
     
     private RootCommand InitRootCommand(Config config)
     {
-        var pidOption = new Option<int?>(
+        Option<int?> pidOption = new(
             name: "--pid",
             description: "Monitor the given PID.");
-        var usernameOption = new Option<string>(
+        Option<string> usernameOption = new(
             "--username", 
             "Monitor processes for the given username.");
-        var processOption = new Option<string>(
+        Option<string> processOption = new(
             "--process", 
             "Monitor processes matching or partially matching the given process name.");
-        var sortOption = new Option<Statistics?>(
+        Option<Statistics?> sortOption = new(
             name: "--sort",
             description: "Sort the process display by sorting on the statistics column in descending order.");
-        var ascendingOption = new Option<bool?>(
+        Option<bool?> ascendingOption = new(
             name: "--ascending", 
             description: "Sort the statistics column in ascending order.");
-        var limitOption = new Option<int?>(
+        Option<int?> limitOption = new(
             name: "--limit",
             description: "Limit the number of iterations to execute before exiting.");
-        var nprocsOption = new Option<int?>(
+        Option<int?> nprocsOption = new(
             name: "--nprocs",
             description: "Only display up to nprocs processes.");
-        var themeOption = new Option<string>(
+        Option<string> themeOption = new(
             name: "--theme",
             description: "Load a theme from the config file. Default themes are \"colour\" and \"mono\".");
-        var debugOption = new Option<bool?>(
+        Option<bool?> debugOption = new(
             name: "--debug",
             description: "Pause execution on startup until a debugger is attached to the process.");
         
-        var rootCommand = new RootCommand("Task Manager for the command line.") {
+        RootCommand rootCommand = new("Task Manager for the command line.") {
             pidOption,
             usernameOption,
             processOption,
@@ -80,22 +80,22 @@ public sealed class TaskMgrApp
             int? nprocs = context.ParseResult.GetValueForOption(nprocsOption);
             string? themeName = context.ParseResult.GetValueForOption(themeOption);
 
-            var filterSection = config.ConfigSections.FirstOrDefault(s => 
+            ConfigSection? filterSection = config.ConfigSections.FirstOrDefault(s => 
                 s.Name.Equals(Constants.Sections.Filter, StringComparison.CurrentCultureIgnoreCase));
 
             if (pid.HasValue && pid.Value >= 0) {
                 filterSection?.Add(Constants.Keys.Pid, pid.Value.ToString());
             }
 
-            if (false == string.IsNullOrWhiteSpace(userName)) {
+            if (!string.IsNullOrWhiteSpace(userName)) {
                 filterSection?.Add(Constants.Keys.UserName, userName);
             }
 
-            if (false == string.IsNullOrWhiteSpace(process)) {
+            if (!string.IsNullOrWhiteSpace(process)) {
                 filterSection?.Add(Constants.Keys.Process, process);
             }
 
-            var sortSection = config.ConfigSections.FirstOrDefault(s =>
+            ConfigSection? sortSection = config.ConfigSections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.Sort, StringComparison.CurrentCultureIgnoreCase));
 
             if (sortColumn.HasValue) {
@@ -106,24 +106,24 @@ public sealed class TaskMgrApp
                 sortSection?.Add(Constants.Keys.Asc, sortAscending.Value.ToString());
             }
 
-            var iterationsSection = config.ConfigSections.FirstOrDefault(s =>
+            ConfigSection? iterationsSection = config.ConfigSections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.Iterations, StringComparison.CurrentCultureIgnoreCase));
 
             if (limit.HasValue && limit.Value >= 0) {
                 iterationsSection?.Add(Constants.Keys.Limit, limit.Value.ToString());
             }
 
-            var statsSection = config.ConfigSections.FirstOrDefault(s =>
+            ConfigSection? statsSection = config.ConfigSections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.Stats, StringComparison.CurrentCultureIgnoreCase));
 
             if (nprocs.HasValue && nprocs.Value > 0) {
                 statsSection?.Add(Constants.Keys.NProcs, nprocs.Value.ToString());
             }
 
-            var uxSection = config.ConfigSections.FirstOrDefault(s =>
+            ConfigSection? uxSection = config.ConfigSections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.UX, StringComparison.CurrentCultureIgnoreCase));
 
-            if (false == string.IsNullOrEmpty(themeName)) {
+            if (!string.IsNullOrWhiteSpace(themeName)) {
                 uxSection?.Add(Constants.Keys.DefaultTheme, themeName);                
             }
 
@@ -137,7 +137,7 @@ public sealed class TaskMgrApp
              * ConfigBuilder.
              */
             ConfigBuilder.Merge(config);
-            var theme = new Theme(config);
+            Theme theme = new(config);
             
             RunCommand(
                 _runContext,
@@ -153,16 +153,16 @@ public sealed class TaskMgrApp
         Config config, 
         Theme theme)
     {
-        var terminal = new SystemTerminal();
+        SystemTerminal terminal = new();
         
-        var mainScreen = new MainScreen(
+        MainScreen mainScreen = new(
             runContext, 
             terminal, 
             theme, 
             config);
 
-        var helpScreen = new HelpScreen(terminal);
-        var setupScreen = new SetupScreen(terminal);
+        HelpScreen helpScreen = new(terminal);
+        SetupScreen setupScreen = new(terminal);
         
         ScreenApplication.RegisterScreen(mainScreen);
         ScreenApplication.RegisterScreen(helpScreen);
@@ -181,20 +181,19 @@ public sealed class TaskMgrApp
             return -1;
         }
 #endif
-
-        bool ownsMutex = true;
+        var ownsMutex = true;
 
         try {
             _mutex = new Mutex(initiallyOwned: false, name: MutexId, out ownsMutex);
 
-            if (false == ownsMutex) {
+            if (!ownsMutex) {
                 _runContext.OutputWriter.WriteLine("Another instance of app is already running.".ToRed());
                 return -1;
             }
 
             Config? config = null;
 
-            if (TryGetConfigurationPath(out string? configPath) && false == string.IsNullOrEmpty(configPath)) {
+            if (TryGetConfigurationPath(out string? configPath) && !string.IsNullOrEmpty(configPath)) {
                 string configFile = Path.Combine(configPath, ConfigFile);
                 if (_runContext.FileSystem.Exists(configFile)) {
                     TryGetConfigurationFromFile(configFile, out config);
@@ -203,7 +202,7 @@ public sealed class TaskMgrApp
 
             config ??= ConfigBuilder.BuildDefault();
 
-            var rootCommand = InitRootCommand(config);
+            RootCommand rootCommand = InitRootCommand(config);
             int exitCode = rootCommand.Invoke(args);
 
             return exitCode;

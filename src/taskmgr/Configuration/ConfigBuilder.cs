@@ -104,24 +104,24 @@ public static class ConfigBuilder
         ArgumentNullException.ThrowIfNull(withConfig, nameof(withConfig));
         
         /* Merge any changes required from a default config to ensure withConfig is a valid Config instance */
-        var filterSection = GetConfigSection(Constants.Sections.Filter, withConfig)
+        ConfigSection filterSection = GetConfigSection(Constants.Sections.Filter, withConfig)
             .AddIfMissing(Constants.Keys.Pid, "-1")
             .AddIfMissing(Constants.Keys.UserName, string.Empty)
             .AddIfMissing(Constants.Keys.Process, string.Empty);
 
-        var uxSection = GetConfigSection(Constants.Sections.UX, withConfig)
+        ConfigSection uxSection = GetConfigSection(Constants.Sections.UX, withConfig)
             .AddIfMissing(Constants.Keys.Bars, "false")
             .AddIfMissing(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour);
 
-        var statsSection = GetConfigSection(Constants.Sections.Stats, withConfig)
+        ConfigSection statsSection = GetConfigSection(Constants.Sections.Stats, withConfig)
             .AddIfMissing(Constants.Keys.Cols, StatsCols)
             .AddIfMissing(Constants.Keys.NProcs, "-1");
 
-        var sortSection = GetConfigSection(Constants.Sections.Sort, withConfig)
+        ConfigSection sortSection = GetConfigSection(Constants.Sections.Sort, withConfig)
             .AddIfMissing(Constants.Keys.Col, "pid")
             .AddIfMissing(Constants.Keys.Asc, "false");
 
-        var iterSection = GetConfigSection(Constants.Sections.Iterations, withConfig)
+        ConfigSection iterSection = GetConfigSection(Constants.Sections.Iterations, withConfig)
             .AddIfMissing(Constants.Keys.Limit, "0");
 
         string[,] colourMap = {
@@ -152,22 +152,22 @@ public static class ConfigBuilder
             { Constants.Keys.HeaderForeground, "white" }
         };
         
-        var defaultThemeName = uxSection.GetString(Constants.Keys.DefaultTheme, string.Empty);
+        string defaultThemeName = uxSection.GetString(Constants.Keys.DefaultTheme, string.Empty);
 
         if (!string.IsNullOrWhiteSpace(defaultThemeName)) {
             switch (defaultThemeName) {
                 case Constants.Sections.ThemeColour: {
-                    var colourSection = GetConfigSection(Constants.Sections.ThemeColour, withConfig);
+                    ConfigSection colourSection = GetConfigSection(Constants.Sections.ThemeColour, withConfig);
                     MapColours(colourSection, colourMap);
                     break;
                 }
                 case Constants.Sections.ThemeMono: {
-                    var monoSection = GetConfigSection(Constants.Sections.ThemeMono, withConfig);
+                    ConfigSection monoSection = GetConfigSection(Constants.Sections.ThemeMono, withConfig);
                     MapColours(monoSection, monoMap);
                     break;
                 }
                 default: {
-                    var themeSection = withConfig.ContainsSection(defaultThemeName)
+                    ConfigSection themeSection = withConfig.ContainsSection(defaultThemeName)
                         ? withConfig.GetConfigSection(defaultThemeName)
                         : BuildConfigSection(Constants.Sections.ThemeColour);
                 
@@ -179,7 +179,7 @@ public static class ConfigBuilder
         }
         else {
             uxSection.AddIfMissing(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour);
-            var colourSection = GetConfigSection(Constants.Sections.ThemeColour, withConfig);
+            ConfigSection colourSection = GetConfigSection(Constants.Sections.ThemeColour, withConfig);
             MapColours(colourSection, colourMap);
         }
     }

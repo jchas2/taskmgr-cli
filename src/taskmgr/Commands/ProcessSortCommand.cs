@@ -3,8 +3,8 @@ using Task.Manager.Gui.Controls;
 
 namespace Task.Manager.Commands;
 
-public class ProcessSortCommand(MainScreen mainScreen) : AbstractCommand() {
-    
+public class ProcessSortCommand(MainScreen mainScreen) : AbstractCommand() 
+{
     public MainScreen MainScreen { get; } = mainScreen;
 
     public override void Execute()

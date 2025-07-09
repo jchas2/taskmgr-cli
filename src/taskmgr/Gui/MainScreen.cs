@@ -13,6 +13,7 @@ public sealed class MainScreen : Screen
 {
     private readonly RunContext _runContext;
     private readonly Theme _theme;
+    private readonly Config _config;
     
     private readonly ProcessControl _processControl;
     private readonly ModulesControl _modulesControl;
@@ -35,6 +36,7 @@ public sealed class MainScreen : Screen
     {
         _runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
+        _config = config ?? throw new ArgumentNullException(nameof(config));
 
         _commandMap = new Dictionary<Type, AbstractCommand>() {
             [typeof(HelpCommand)] = new HelpCommand(),
@@ -95,7 +97,7 @@ public sealed class MainScreen : Screen
             return;
         }
         
-        var activeControl = GetActiveControl;
+        Control? activeControl = GetActiveControl;
 
         if (keyInfo.Key == ConsoleKey.Escape && activeControl != _processControl) {
             SetActiveControl<ProcessControl>();
@@ -133,7 +135,7 @@ public sealed class MainScreen : Screen
         _headerControl.Width = Width;
         _headerControl.Resize();
         
-        foreach (var control in Controls) {
+        foreach (Control control in Controls) {
             SizeControl(control);            
         }
 
@@ -148,7 +150,7 @@ public sealed class MainScreen : Screen
     {
         _runContext.Processor.Stop();
 
-        foreach (var control in Controls) {
+        foreach (Control control in Controls) {
             control.Unload();
         }
     }
@@ -157,7 +159,7 @@ public sealed class MainScreen : Screen
     {
         Debug.Assert(_activeControl != null);
         
-        var nextControl = Controls.ToList().SingleOrDefault(c => c.GetType() == typeof(T));
+        Control? nextControl = Controls.ToList().SingleOrDefault(c => c.GetType() == typeof(T));
         
         if (nextControl == null) {
             throw new InvalidOperationException();

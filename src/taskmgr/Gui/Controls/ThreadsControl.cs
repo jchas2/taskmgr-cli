@@ -31,20 +31,18 @@ public partial class ThreadsControl : Control
         _listView.ColumnHeaders.Add(new ListViewColumnHeader("PRI"));
         
         Controls.Add(_listView);
-        
-        Theme = theme;
     }
     
     private void LoadThreadInfos()
     {
         _listView.Items.Clear();
 
-        var threads = ThreadInfo.GetThreads(SelectedProcessId)
+        List<ThreadInfo> threads = ThreadInfo.GetThreads(SelectedProcessId)
             .OrderBy(m => m.ThreadId)
             .ToList();
         
         foreach (var threadInfo in threads) {
-            var item = new ThreadListViewItem(threadInfo, Theme);
+            ThreadListViewItem item = new(threadInfo, _theme);
             _listView.Items.Add(item);
         }
     }
@@ -77,8 +75,8 @@ public partial class ThreadsControl : Control
         _listView.ColumnHeaders[(int)Columns.Priority].Width = ColumnPriorityWidth;
 
         for (int i = 0; i < (int)Columns.Count; i++) {
-            _listView.ColumnHeaders[i].BackgroundColour = Theme.HeaderBackground;
-            _listView.ColumnHeaders[i].ForegroundColour = Theme.HeaderForeground;
+            _listView.ColumnHeaders[i].BackgroundColour = _theme.HeaderBackground;
+            _listView.ColumnHeaders[i].ForegroundColour = _theme.HeaderForeground;
         }
         
         _listView.Resize();
@@ -89,6 +87,4 @@ public partial class ThreadsControl : Control
         get => _selectedProcessId;
         set => _selectedProcessId = value;
     }
-
-    private Theme Theme { get; }
 }
