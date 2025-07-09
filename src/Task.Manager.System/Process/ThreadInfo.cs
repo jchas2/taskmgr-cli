@@ -11,12 +11,12 @@ public sealed class ThreadInfo
     
     public static List<ThreadInfo> GetThreads(int pid)
     {
-        if (false == ProcessUtils.TryGetProcessByPid(pid, out SysDiag::Process? process) ||
+        if (!ProcessUtils.TryGetProcessByPid(pid, out SysDiag::Process? process) ||
             process == null) {
             return [];
         }
 
-        if (false == GetThreadsInternal(process, out var threadInfos)) {
+        if (!GetThreadsInternal(process, out var threadInfos)) {
             return [];
         }
         
@@ -28,15 +28,14 @@ public sealed class ThreadInfo
         threadInfos = new List<ThreadInfo>();
         
         foreach (SysDiag::ProcessThread thread in process.Threads) {
-            var threadInfo = new ThreadInfo();
-            threadInfo.ThreadId = thread.Id;
-            threadInfo.ThreadState = $"{thread.ThreadState}";
-            
-            threadInfo.Reason = thread.ThreadState == SysDiag.ThreadState.Wait
-                ? $"{thread.WaitReason}"
-                : string.Empty;
-
-            threadInfo.Priority = thread.CurrentPriority;
+            ThreadInfo threadInfo = new() {
+                ThreadId = thread.Id,
+                ThreadState = $"{thread.ThreadState}",
+                Reason = thread.ThreadState == SysDiag.ThreadState.Wait
+                    ? $"{thread.WaitReason}"
+                    : string.Empty,
+                Priority = thread.CurrentPriority
+            };
             
             threadInfos.Add(threadInfo);
         }

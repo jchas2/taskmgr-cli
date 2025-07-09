@@ -10,12 +10,12 @@ public sealed partial class ModuleInfo
 
     public static List<ModuleInfo> GetModules(int pid)
     {
-        if (false == ProcessUtils.TryGetProcessByPid(pid, out SysDiag::Process? process) ||
+        if (!ProcessUtils.TryGetProcessByPid(pid, out SysDiag::Process? process) ||
             process == null) {
             return [];
         }
         
-        if (false == GetModulesInternal(process, out var moduleInfos)) {
+        if (!GetModulesInternal(process, out var moduleInfos)) {
             return [];
         }
         

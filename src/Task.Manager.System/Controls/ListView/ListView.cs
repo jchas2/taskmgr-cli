@@ -51,12 +51,14 @@ public class ListView : Control
     internal bool Contains(ListViewColumnHeader columnHeader)
     {
         ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
+        
         return _columnHeaders.Contains(columnHeader);
     }
     
     internal bool Contains(ListViewItem item)
     {
         ArgumentNullException.ThrowIfNull(item, nameof(item));
+        
         return _items.Contains(item);
     }
     

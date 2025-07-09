@@ -6,10 +6,8 @@ public class Config
 {
     private IList<ConfigSection> _configSections;
 
-    public Config()
-    {
+    public Config() =>
         _configSections = new List<ConfigSection>();
-    }
 
     public Config AddConfigSection(ConfigSection section)
     {
@@ -29,7 +27,7 @@ public class Config
         ArgumentNullException.ThrowIfNull(fileSys);
         ArgumentNullException.ThrowIfNull(path);
 
-        var parser = new ConfigParser(fileSys, path);
+        ConfigParser parser = new(fileSys, path);
         return ParseConfig(parser);
     }
 
@@ -37,7 +35,7 @@ public class Config
     {
         ArgumentNullException.ThrowIfNull(str);
 
-        var parser = new ConfigParser(str);
+        ConfigParser parser = new(str);
         return ParseConfig(parser);
     }
     
@@ -45,7 +43,7 @@ public class Config
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        if (false == ContainsSection(name)) {
+        if (!ContainsSection(name)) {
             throw new InvalidOperationException();
         }
 
@@ -70,7 +68,7 @@ public class Config
     
     private static Config ParseConfig(ConfigParser parser)
     {
-        var config = new Config();
+        Config config = new();
         parser.Parse(); 
         config.ConfigSections = parser.Sections;
         return config;

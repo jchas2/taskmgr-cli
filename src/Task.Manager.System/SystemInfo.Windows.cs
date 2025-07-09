@@ -16,24 +16,24 @@ public partial class SystemInfo
 #if __WIN32__
     private static bool GetCpuInfoInternal(ref SystemStatistics systemStatistics)
     {
-        const string REG_PATH = @"HARDWARE\DESCRIPTION\System\CentralProcessor\0\";
-        const string REG_KEY_PROCESSOR_NAME = "ProcessorNameString";
-        const string REG_KEY_FREQUENCY_MHZ = "~Mhz";
+        const string RegPath = @"HARDWARE\DESCRIPTION\System\CentralProcessor\0\";
+        const string RegKeyProcessorName = "ProcessorNameString";
+        const string RegKeyFrequencyMhz = "~Mhz";
         
         systemStatistics.CpuCores = (ulong)Environment.ProcessorCount;
         systemStatistics.CpuFrequency = 0;
         systemStatistics.CpuName = string.Empty;
 
-        var key = Registry.LocalMachine.OpenSubKey(REG_PATH);
+        RegistryKey? key = Registry.LocalMachine.OpenSubKey(RegPath);
 #if DEBUG
-        Debug.Assert(null != key, $"Failed OpenSubKey() {REG_PATH}");
+        Debug.Assert(null != key, $"Failed OpenSubKey() {RegPath}");
 #endif
         if (null == key) {
             return false;
         }
         
         /* REG_SZ */
-        var processorName = key.GetValue(REG_KEY_PROCESSOR_NAME);
+        object? processorName = key.GetValue(RegKeyProcessorName);
         if (null == processorName) {
             return false;
         }
@@ -41,12 +41,12 @@ public partial class SystemInfo
         systemStatistics.CpuName = processorName.ToString() ?? string.Empty;    
 
         /* Reg DWORD */
-        var frequency = key.GetValue(REG_KEY_FREQUENCY_MHZ);
+        object? frequency = key.GetValue(RegKeyFrequencyMhz);
         if (null == frequency) {
             return false;
         }
 
-        if (false == Int32.TryParse(frequency.ToString() ?? "0", out int frequencyInt32)) {
+        if (!int.TryParse(frequency.ToString() ?? "0", out int frequencyInt32)) {
             return false;
         }
         
@@ -60,7 +60,7 @@ public partial class SystemInfo
         MinWinBase.FILETIME lpKernelFileTime;
         MinWinBase.FILETIME lpUserFileTime;
 
-        if (false == ProcessThreadsApi.GetSystemTimes(
+        if (!ProcessThreadsApi.GetSystemTimes(
             &lpIdleFileTime,
             &lpKernelFileTime,
             &lpUserFileTime)) {
@@ -89,7 +89,7 @@ public partial class SystemInfo
 
         SysInfoApi.MEMORYSTATUSEX memoryStatus = new();
         
-        if (false == SysInfoApi.GlobalMemoryStatusEx(&memoryStatus)) {
+        if (!SysInfoApi.GlobalMemoryStatusEx(&memoryStatus)) {
 #if DEBUG
             int error = Marshal.GetLastWin32Error();
             Debug.Assert(error == 0, $"Failed GlobalMemoryStatusEx(): {Marshal.GetPInvokeErrorMessage(error)}");
@@ -113,7 +113,7 @@ public partial class SystemInfo
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             using var identity = WindowsIdentity.GetCurrent();
-            var principal = new WindowsPrincipal(identity);
+            WindowsPrincipal principal = new(identity);
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
 

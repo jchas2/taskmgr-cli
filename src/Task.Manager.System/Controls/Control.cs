@@ -110,7 +110,7 @@ public class Control
 
     protected virtual void OnUnload()
     {
-        foreach (var control in Controls) {
+        foreach (Control control in Controls) {
             control.Unload();
         }
     }

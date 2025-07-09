@@ -8,9 +8,8 @@ public static class ConfigBuilder
 {
     private const string StatsCols = "pid, process, user, pri, cpu, mem, virt, thrd, disk";
     
-    public static Config BuildDefault()
-    {
-        return new Config()
+    public static Config BuildDefault() =>
+        new Config()
             .AddConfigSection(BuildConfigSection(Constants.Sections.Filter))
             .AddConfigSection(BuildConfigSection(Constants.Sections.UX))
             .AddConfigSection(BuildConfigSection(Constants.Sections.Stats))
@@ -18,7 +17,6 @@ public static class ConfigBuilder
             .AddConfigSection(BuildConfigSection(Constants.Sections.Iterations))
             .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeColour))
             .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeMono));
-    }
 
     public static ConfigSection BuildConfigSection(string name)
     {

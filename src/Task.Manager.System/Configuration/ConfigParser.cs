@@ -25,7 +25,7 @@ public class ConfigParser : IDisposable
         ArgumentNullException.ThrowIfNull(fileSys);
         ArgumentNullException.ThrowIfNull(path);
 
-        if (false == fileSys.Exists(path)) {
+        if (!fileSys.Exists(path)) {
             throw new FileNotFoundException(path);
         }
 
@@ -44,16 +44,16 @@ public class ConfigParser : IDisposable
         bool inComment = false;
         ConfigSection? section = null;
 
-        for (;;) {
-            int ch = _reader.Read();
+        while (true) {
+            int character = _reader.Read();
 
-            if (ch == EndOfFile) {
+            if (character == EndOfFile) {
                 break;
             }
 
-            char c = (char)ch;
+            char ch = (char)character;
 
-            if (c == '\n') {
+            if (ch == '\n') {
                 inComment = false;
                 continue;
             }
@@ -62,28 +62,28 @@ public class ConfigParser : IDisposable
                 continue;
             }
             
-            if (char.IsWhiteSpace(c)) {
+            if (char.IsWhiteSpace(ch)) {
                 continue;
             }
 
-            if (c == '#' || c == ';') {
+            if (ch == '#' || ch == ';') {
                 inComment = true;
                 continue;
             }
 
-            if (c == '[') {
+            if (ch == '[') {
                 section = new ConfigSection();
                 ParseSection(ref section);
                 _sections.Add(section);
                 continue;
             }
 
-            if (false == char.IsLetter(c)) {
+            if (false == char.IsLetter(ch)) {
                 break;
             }
 
             if (section != null) {
-                ParseKey(ref section, c);
+                ParseKey(ref section, ch);
                 continue;
             }
 
@@ -95,103 +95,102 @@ public class ConfigParser : IDisposable
     
     private void ParseSection(ref ConfigSection section)
     {
-        var buf = new StringBuilder(InitialStringSize);
+        StringBuilder buffer = new(InitialStringSize);
         
-        for (;;) {
-            int ch = _reader.Read();
-            char c = (char)ch;
+        while (true) {
+            int character = _reader.Read();
+            char ch = (char)character;
             
-            if (ch == EndOfFile) {
-                buf.Append(c);
-                throw new ConfigParseException($"End-of-file found reading section name {buf} before closing ']'.");
+            if (character == EndOfFile) {
+                buffer.Append(ch);
+                throw new ConfigParseException($"End-of-file found reading section name {buffer} before closing ']'.");
             }
 
-            if (c == ']') {
+            if (ch == ']') {
                 break;
             }
 
-            if (char.IsWhiteSpace(c)) {
-                buf.Append(c);
-                throw new ConfigParseException($"Unexpected white space char in section name {buf}.");
+            if (char.IsWhiteSpace(ch)) {
+                buffer.Append(ch);
+                throw new ConfigParseException($"Unexpected white space char in section name {buffer}.");
             }
 
-            if (false == (char.IsLetterOrDigit(c) || c == '-')) {
-                buf.Append(c);
-                throw new ConfigParseException($"Unexpected char in section name {buf}. Must be alpha-numeric.");
+            if (!(char.IsLetterOrDigit(ch) || ch == '-')) {
+                buffer.Append(ch);
+                throw new ConfigParseException($"Unexpected char in section name {buffer}. Must be alpha-numeric.");
             }
 
-            buf.Append(c);
+            buffer.Append(ch);
         }
 
-        if (buf.Length == 0) {
+        if (buffer.Length == 0) {
             throw new ConfigParseException("Section name cannot be empty.");
         }
         
-        section.Name = buf.ToString();
+        section.Name = buffer.ToString();
     }
 
     private void ParseKey(ref ConfigSection section, char initChar)
     {
-        var keyBuf = new StringBuilder(InitialStringSize);
-        keyBuf.Append(initChar);
+        StringBuilder keyBuffer = new(InitialStringSize);
+        keyBuffer.Append(initChar);
 
-        char c;
+        char ch;
         
-        for (;;) {
-            var ch = _reader.Read();
-            c = (char)ch;
+        while (true) {
+            int character = _reader.Read();
+            ch = (char)character;
             
-            if (ch == EndOfFile) {
-                keyBuf.Append(c);
-                throw new ConfigParseException($"End-of-file found reading key name {keyBuf}.");
+            if (character == EndOfFile) {
+                keyBuffer.Append(ch);
+                throw new ConfigParseException($"End-of-file found reading key name {keyBuffer}.");
             }
             
-            if (false == (char.IsLetterOrDigit(c) || c == '-')) {
+            if (!(char.IsLetterOrDigit(ch) || ch == '-')) {
                 break;
             }
 
-            keyBuf.Append(c);
+            keyBuffer.Append(ch);
         }
 
-        while (c == ' ' || c == '\t') {
-            c = (char)(_reader.Read());
+        while (ch == ' ' || ch == '\t') {
+            ch = (char)(_reader.Read());
         }
 
-        if (c != '=') {
-            throw new ConfigParseException($"Expected '=' after key {keyBuf}.");
+        if (ch != '=') {
+            throw new ConfigParseException($"Expected '=' after key {keyBuffer}.");
         }
 
         /* Keys are mandatory, values are not. */
-        if (keyBuf.Length == 0) {
+        if (keyBuffer.Length == 0) {
             throw new ConfigParseException("Key name cannot be empty.");
         }
 
-        var valBuf = new StringBuilder(InitialStringSize);
-        ParseValue(ref valBuf);
+        StringBuilder valueBuffer = new(InitialStringSize);
+        ParseValue(ref valueBuffer);
 
-        string key = keyBuf.ToString().ToLower();
-        string val = valBuf.ToString();
+        string key = keyBuffer.ToString().ToLower();
+        string val = valueBuffer.ToString();
 
         if (false == section.Contains(key)) {
             section.Add(key, val);
         }
     }
 
-    private void ParseValue(ref StringBuilder valBuf)
+    private void ParseValue(ref StringBuilder valueBuffer)
     {
         bool inComment = false;
-        int ch;
-        
-        for (;;) {
-            ch = _reader.Read();
 
-            if (ch == EndOfFile) {
+        while (true) {
+            int character = _reader.Read();
+
+            if (character == EndOfFile) {
                 return;
             }
             
-            char c = (char)ch;
+            char ch = (char)character;
             
-            if (c == '\r' || c == '\n') {
+            if (ch == '\r' || ch == '\n') {
                 return;
             }
 
@@ -199,17 +198,17 @@ public class ConfigParser : IDisposable
                 continue;
             }
             
-            if (char.IsWhiteSpace(c)) {
-                valBuf.Append(c);
+            if (char.IsWhiteSpace(ch)) {
+                valueBuffer.Append(ch);
                 continue;
             }
 
-            if (c == '#' || c == ';') {
+            if (ch == '#' || ch == ';') {
                 inComment = true;
                 continue;
             }
 
-            valBuf.Append(c);
+            valueBuffer.Append(ch);
         }
     }
 
