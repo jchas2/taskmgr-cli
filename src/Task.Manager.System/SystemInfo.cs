@@ -27,13 +27,13 @@ public partial class SystemInfo : ISystemInfo
 
     private IEnumerable<IPAddress> GetIpAddresses(NetworkInterfaceType networkInterfaceType)
     {
-        var activeNics = NetworkInterface
+        List<NetworkInterface> activeNics = NetworkInterface
             .GetAllNetworkInterfaces()
             .Where(nic => nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType == networkInterfaceType)
             .ToList();
 
-        foreach (var nic in activeNics) {
-            foreach (var ipInfo in nic.GetIPProperties().UnicastAddresses) {
+        foreach (NetworkInterface nic in activeNics) {
+            foreach (UnicastIPAddressInformation ipInfo in nic.GetIPProperties().UnicastAddresses) {
                 if (ipInfo.Address.AddressFamily == AddressFamily.InterNetwork) {
                     yield return ipInfo.Address;
                 }
@@ -50,7 +50,7 @@ public partial class SystemInfo : ISystemInfo
         
         bool result = GetCpuInfoInternal(ref systemStatistics);
 
-        var ip = GetPreferredIpAddress();
+        IPAddress? ip = GetPreferredIpAddress();
         
         /* With no Nic in an operational status the ip returned can be null. */
         systemStatistics.PrivateIPv4Address = ip == null 

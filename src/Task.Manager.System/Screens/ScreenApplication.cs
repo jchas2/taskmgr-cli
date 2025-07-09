@@ -25,7 +25,7 @@ public sealed class ScreenApplication
                     }
 
                     if (_screenStack.Count > 0) {
-                        var currentScreen = _screenStack.Peek();
+                        Screen currentScreen = _screenStack.Peek();
                         currentScreen.Close();
                     }
 
@@ -47,7 +47,7 @@ public sealed class ScreenApplication
             while (consoleKey != ConsoleKey.F10) {
 
                 lock (_lock) {
-                    var ownerScreen = _screenStack.Peek();
+                    Screen ownerScreen = _screenStack.Peek();
 
                     // Resize Events.
                     if (screenWidth != Console.WindowWidth || screenHeight != Console.WindowHeight) {
@@ -60,17 +60,16 @@ public sealed class ScreenApplication
 
                     // Key Events.
                     if (Console.KeyAvailable) {
-                        var consoleKeyInfo = Console.ReadKey(intercept: true);
+                        ConsoleKeyInfo consoleKeyInfo = Console.ReadKey(intercept: true);
                         consoleKey = consoleKeyInfo.Key;
-
-                        bool handled = false;
+                        var handled = false;
                         ownerScreen.KeyPressed(consoleKeyInfo, ref handled);
 
-                        if (handled == false && consoleKey == ConsoleKey.Escape) {
+                        if (!handled && consoleKey == ConsoleKey.Escape) {
                             Debug.Assert(_ownerScreen != null);
                             
                             _ownerScreen.Close();
-                            _screenStack.Pop();
+                            _ = _screenStack.Pop();
 
                             if (_screenStack.Count == 0) {
                                 break;
@@ -92,7 +91,7 @@ public sealed class ScreenApplication
             }
 
             while (_screenStack.Count > 0) {
-                var screen = _screenStack.Pop();
+                Screen screen = _screenStack.Pop();
                 screen.Close();
             }
         }
@@ -119,7 +118,7 @@ public sealed class ScreenApplication
             throw new InvalidOperationException("Screen App is already running.");
         }
         
-        if (false == _registeredScreens.ContainsKey(screen.GetType())) {
+        if (!_registeredScreens.ContainsKey(screen.GetType())) {
             throw new InvalidOperationException($"Screen {screen.GetType()} is not registered.");
         }
         
@@ -129,11 +128,11 @@ public sealed class ScreenApplication
 
     public static void ShowScreen<T>() where T : Screen
     {
-        if (false == _registeredScreens.ContainsKey(typeof(T))) {
+        if (!_registeredScreens.ContainsKey(typeof(T))) {
             throw new InvalidOperationException($"Screen {typeof(T)} is not registered.");
         }
         
-        var screen = (T)_registeredScreens[typeof(T)];
+        Screen screen = (T)_registeredScreens[typeof(T)];
         
         _applicationContext.OwnerScreen = screen;
     }

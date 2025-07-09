@@ -4,10 +4,8 @@ namespace Task.Manager.System;
 
 public partial class SystemTerminal : ISystemTerminal
 {
-    public SystemTerminal()
-    {
+    public SystemTerminal() =>
         Console.OutputEncoding = Encoding.UTF8;
-    }
 
     public ConsoleColor BackgroundColor
     {
@@ -53,12 +51,8 @@ public partial class SystemTerminal : ISystemTerminal
     public void Write(string message) => Console.Write(message);
     public void WriteEmptyLine() => WriteEmptyLineTo(Console.WindowWidth);
 
-    public void WriteEmptyLineTo(int x)
-    {
-        for (int i = 0; i < x; i++) {
-            Write(' ');
-        }
-    }
+    public void WriteEmptyLineTo(int x) =>
+        Write(new string(' ', x));
     
     public void WriteLine(char ch) => Console.WriteLine(ch);
     public void WriteLine(string message) => Console.WriteLine(message);   

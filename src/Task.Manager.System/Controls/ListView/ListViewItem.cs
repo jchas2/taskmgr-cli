@@ -36,6 +36,7 @@ public class ListViewItem
 
         for (int i = 0; i < items.Length; i++) {
             ArgumentNullException.ThrowIfNull(items[i], nameof(items));
+            
             _subItems.Add(new ListViewSubItem(this, items[i]));
         }
         
@@ -58,6 +59,7 @@ public class ListViewItem
 
         for (int i = 0; i < subItems.Length; i++) {
             ArgumentNullException.ThrowIfNull(subItems[i], nameof(subItems));
+            
             subItems[i].Owner = this;
             _subItems.Add(subItems[i]);
         }
@@ -82,6 +84,7 @@ public class ListViewItem
     internal bool Contains(ListViewSubItem subItem)
     {
         ArgumentNullException.ThrowIfNull(subItem, nameof(subItem));
+        
         return _subItems.Contains(subItem);
     }
 
@@ -91,6 +94,7 @@ public class ListViewItem
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _subItems.Count, nameof(index));
+        
         return _subItems[index];
     }
     
@@ -110,6 +114,7 @@ public class ListViewItem
     internal void InsertSubItems(ListViewSubItem[] subItems)
     {
         ArgumentNullException.ThrowIfNull(subItems, nameof(subItems));
+        
         _subItems.AddRange(subItems);
     }
 

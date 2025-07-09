@@ -41,7 +41,7 @@ public partial class Processor : IProcessor
     private bool GetProcessTimes(in int pid, ref ProcessTimeInfo ptInfo)
     {
         try {
-            var proc = SysDiag::Process.GetProcessById(pid);
+            SysDiag::Process proc = SysDiag::Process.GetProcessById(pid);
             TryMapProcessTimeInfo(proc, ref ptInfo);
             return true;
         }
@@ -58,7 +58,7 @@ public partial class Processor : IProcessor
     {
         systemTimes = new SystemTimes();
 
-        if (false == _systemInfo.GetCpuTimes(ref systemTimes)) {
+        if (!_systemInfo.GetCpuTimes(ref systemTimes)) {
             systemTimes.Idle = 0;
             systemTimes.Kernel = 0;
             systemTimes.User = 0;
@@ -79,7 +79,7 @@ public partial class Processor : IProcessor
 
     private void RunInternal(CancellationToken cancellationToken)
     {
-        while (false == cancellationToken.IsCancellationRequested) {
+        while (!cancellationToken.IsCancellationRequested) {
             SysDiag::Process[] procs = SysDiag::Process.GetProcesses();
             Array.Clear(_allProcesses);
 
@@ -102,22 +102,22 @@ public partial class Processor : IProcessor
                 }
 #endif
                 /* Skip any process that generates an "Access Denied" Exception. */
-                if (false == TryGetProcessHandle(procs[index], out _)) {
+                if (!TryGetProcessHandle(procs[index], out _)) {
                     delta++;
                     continue;
                 }
 
-                var prevProcTimes = new ProcessTimeInfo();
+                ProcessTimeInfo prevProcTimes = new();
 
-                if (false == TryMapProcessTimeInfo(procs[index], ref prevProcTimes)) {
+                if (!TryMapProcessTimeInfo(procs[index], ref prevProcTimes)) {
                     delta++;
                     continue;
                 }
 
-                if (false == _processMap.TryGetValue(procs[index].Id, out ProcessInfo procInfo)) {
+                if (!_processMap.TryGetValue(procs[index].Id, out ProcessInfo procInfo)) {
                     procInfo = new ProcessInfo();
 
-                    if (false == TryMapProcessInfo(procs[index], ref procInfo)) {
+                    if (!TryMapProcessInfo(procs[index], ref procInfo)) {
                         delta++;
                         continue;
                     }
@@ -125,15 +125,15 @@ public partial class Processor : IProcessor
                     _processMap.Add(procInfo.Pid, procInfo);
                 }
 
-                if (false == TryGetProcessStartTime(procs[index], out DateTime startTime)) {
+                if (!TryGetProcessStartTime(procs[index], out DateTime startTime)) {
                     delta++;
                     continue;
                 }
 
                 /* Pid has been reallocated to new process. */
-                if (false == procInfo.StartTime.Equals(startTime)) {
+                if (!procInfo.StartTime.Equals(startTime)) {
 
-                    if (false == TryMapProcessInfo(procs[index], ref procInfo)) {
+                    if (!TryMapProcessInfo(procs[index], ref procInfo)) {
                         delta++;
                         continue;
                     }
@@ -171,7 +171,7 @@ public partial class Processor : IProcessor
             Thread.Sleep(UpdateTimeInMs);
             GetSystemTimes(out SystemTimes currSysTimes);
             
-            var sysTimesDeltas = new SystemTimes {
+            SystemTimes sysTimesDeltas = new() {
                 Idle = currSysTimes.Idle - prevSysTimes.Idle,
                 Kernel = currSysTimes.Kernel - prevSysTimes.Kernel,
                 User = currSysTimes.User - prevSysTimes.User
@@ -185,7 +185,7 @@ public partial class Processor : IProcessor
             _systemInfo.GetSystemMemory(ref _systemStatistics);
 
             long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User;
-            var currProcTimes = new ProcessTimeInfo();
+            ProcessTimeInfo currProcTimes = new();
 
             for (int i = 0; i < _allProcesses.Length; i++) {
                 
@@ -195,7 +195,7 @@ public partial class Processor : IProcessor
 
                 currProcTimes.Clear();
 
-                if (false == GetProcessTimes(_allProcesses[i].Pid, ref currProcTimes)) {
+                if (!GetProcessTimes(_allProcesses[i].Pid, ref currProcTimes)) {
                     continue;
                 }
 
@@ -239,7 +239,7 @@ public partial class Processor : IProcessor
                     length: _allProcesses.Length);
                 
                 // Signal listeners processes and stats updated.
-                var eventArgs = new ProcessorEventArgs(_allProcessesCopy, _systemStatistics);
+                ProcessorEventArgs eventArgs = new(_allProcessesCopy, _systemStatistics);
                 ProcessorUpdated?.Invoke(this, eventArgs);
             }
         }

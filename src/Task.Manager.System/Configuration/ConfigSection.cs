@@ -30,7 +30,7 @@ public sealed class ConfigSection
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
 
-        if (false == _keys.ContainsKey(key)) {
+        if (!_keys.ContainsKey(key)) {
             Add(key, value);
         }
 
@@ -46,7 +46,7 @@ public sealed class ConfigSection
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(defaultValue);
         
-        if (false == Contains(key)) {
+        if (!Contains(key)) {
             return defaultValue;
         }
 

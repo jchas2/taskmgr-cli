@@ -12,8 +12,8 @@ namespace Task.Manager.System.Process;
 public partial class Processor : IProcessor
 {
 #if __WIN32__    
-    private const string DEFAULT_USER = "SYSTEM";
-    private const string SERVICE_HOST = "svchost.exe";
+    private const string DefaultUser = "SYSTEM";
+    private const string ServiceHost = "svchost.exe";
     private static Dictionary<string, string> _userMap = new();
 
     private string GetProcessCommandLine(global::System.Diagnostics.Process process)
@@ -36,11 +36,11 @@ public partial class Processor : IProcessor
                 return process.ProcessName;
             }
 
-            if (processPath.EndsWith(SERVICE_HOST, StringComparison.CurrentCultureIgnoreCase)) {
+            if (processPath.EndsWith(ServiceHost, StringComparison.CurrentCultureIgnoreCase)) {
                 return GetProcessWin32ServiceName(process);
             }
-            
-            var versionInfo = FileVersionInfo.GetVersionInfo(processPath);
+
+            FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(processPath);
             
             return string.IsNullOrWhiteSpace(versionInfo.FileDescription) 
                 ? process.ProcessName 
@@ -53,22 +53,22 @@ public partial class Processor : IProcessor
     
     private unsafe bool GetProcessTokenSid(SafeProcessHandle processHandle, out SecurityIdentifier sid)
     {
-        bool result = false;
-        const int BUF_LENGTH = 256;
-        const int TOKEN_USER = 1;
+        var result = false;
+        const int BufferLength = 256;
+        const int TokenUser = 1;
         
         sid = new SecurityIdentifier(WellKnownSidType.NullSid, null);
 
         try {
-            byte[] buffer = new byte[BUF_LENGTH];
+            byte[] buffer = new byte[BufferLength];
             fixed (byte* tokenInfo = &buffer[0]) {
-                uint bufLength = BUF_LENGTH;
+                uint bufLength = BufferLength;
 
                 result = SecurityBaseApi.GetTokenInformation(
                     processHandle,
-                    TOKEN_USER,
+                    TokenUser,
                     (uint*)tokenInfo,
-                    BUF_LENGTH,
+                    BufferLength,
                     &bufLength);
 
                 if (result) {
@@ -90,7 +90,7 @@ public partial class Processor : IProcessor
     }
     
     
-    private string GetProcessUserName(global::System.Diagnostics.Process process)
+    private string GetProcessUserName(SysDiag::Process process)
     {
         try {
             if (ProcessThreadsApi.OpenProcessToken(
@@ -99,8 +99,8 @@ public partial class Processor : IProcessor
                 out var tokenHandle)) {
 
                 if (GetProcessTokenSid(tokenHandle, out SecurityIdentifier sid)) {
-                    var identityRef = sid.Translate(typeof(NTAccount));
-                    string userName = identityRef.ToString();
+                    IdentityReference identityRef = sid.Translate(typeof(NTAccount));
+                    var userName = identityRef.ToString();
 
                     if (_userMap.ContainsKey(userName)) {
                         return _userMap[userName];
@@ -108,7 +108,7 @@ public partial class Processor : IProcessor
                     
                     int domainIndex = userName.IndexOf('\\');
                     if (domainIndex != -1) {
-                        string abbrevUserName = userName.Substring(domainIndex + 1);
+                        var abbrevUserName = userName.Substring(domainIndex + 1);
                         _userMap.Add(userName, abbrevUserName);
                     }
                     
@@ -120,7 +120,7 @@ public partial class Processor : IProcessor
             Trace.WriteLine(e);
         }
         
-        return DEFAULT_USER;
+        return DefaultUser;
     }
 
     private string GetProcessWin32ServiceName(SysDiag::Process process)

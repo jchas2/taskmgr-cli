@@ -12,9 +12,11 @@ public partial class ModuleInfo
         moduleInfos = new List<ModuleInfo>();
 
         foreach (SysDiag::ProcessModule module in process.Modules) {
-            var moduleInfo = new ModuleInfo();
-            moduleInfo.ModuleName = module.ModuleName;
-            moduleInfo.FileName = module.FileName;
+            ModuleInfo moduleInfo = new() {
+                ModuleName = module.ModuleName,
+                FileName = module.FileName
+            };
+            
             moduleInfos.Add(moduleInfo);
         }
         
