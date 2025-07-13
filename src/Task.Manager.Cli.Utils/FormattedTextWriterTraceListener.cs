@@ -19,7 +19,8 @@ public class FormattedTextWriterTraceListener(string fileName) : TextWriterTrace
     public static void Initialise()
     {
         string fileName = UseNextFileName();
-        var traceListener = new FormattedTextWriterTraceListener(fileName);
+        FormattedTextWriterTraceListener traceListener = new(fileName);
+        
         Trace.Listeners.Add(traceListener);
         Trace.AutoFlush = true;
     }
@@ -27,13 +28,13 @@ public class FormattedTextWriterTraceListener(string fileName) : TextWriterTrace
     public static string UseNextFileName(string prefix = "debug", string extension = "txt")
     {
         /* Use a timestamp format that sorts chronologically: "yyyyMMdd_HHmmss_fff" */
-        string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
+        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
         return $"{prefix}_{timestamp}.{extension}";
     }
 
     private string FormatMessage(string? message)
     {
-        string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+        var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
         return $"[{timestamp}] [Thread-{Thread.CurrentThread.ManagedThreadId}] {message}";
     }
 }

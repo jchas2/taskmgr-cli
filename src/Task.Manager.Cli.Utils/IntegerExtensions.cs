@@ -6,7 +6,7 @@ public static class IntegerExtensions
     
     public static string ToFormattedByteSize(this long num)
     {
-        string[] byteFormatters = { "B", "KB", "MB", "GB", "TB" };
+        string[] byteFormatters = ["B", "KB", "MB", "GB", "TB"];
         int index = 0;
         double count = num;
 

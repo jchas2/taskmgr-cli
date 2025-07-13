@@ -51,8 +51,13 @@ public partial class SystemTerminal : ISystemTerminal
     public void Write(string message) => Console.Write(message);
     public void WriteEmptyLine() => WriteEmptyLineTo(Console.WindowWidth);
 
-    public void WriteEmptyLineTo(int x) =>
+    public void WriteEmptyLineTo(int x)
+    {
+        if (x <= 0) {
+            return;
+        }
         Write(new string(' ', x));
+    }
     
     public void WriteLine(char ch) => Console.WriteLine(ch);
     public void WriteLine(string message) => Console.WriteLine(message);   

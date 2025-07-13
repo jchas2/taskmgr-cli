@@ -147,9 +147,13 @@ public class ListView : Control
                 break;
             }
 
+            int columnHeaderFormatWidth = _columnHeaders[i].Width > 0 
+                ? _columnHeaders[i].Width - 1
+                : _columnHeaders[i].Width;
+            
             string formatStr = _columnHeaders[i].RightAligned 
-                ? "{0," + _columnHeaders[i].Width.ToString() + "}"
-                : "{0,-" + _columnHeaders[i].Width.ToString() + "}";
+                ? "{0," + columnHeaderFormatWidth.ToString() + "}"
+                : "{0,-" + columnHeaderFormatWidth.ToString() + "}";
 
             ConsoleColor foreground = _columnHeaders[i].ForegroundColour ?? HeaderForegroundColour;
             ConsoleColor background = _columnHeaders[i].BackgroundColour ?? HeaderBackgroundColour;
@@ -157,7 +161,7 @@ public class ListView : Control
             _buffer.Append((string.Format(formatStr, _columnHeaders[i].Text) + ' ')
                 .ToColour(foreground, background));
             
-            c+= _columnHeaders[i].Width + 1;
+            c+= _columnHeaders[i].Width;
         }
         
         _terminal.Write(_buffer.ToString());
@@ -192,9 +196,13 @@ public class ListView : Control
                 break;
             }
             
+            int columnFormatWidth = columnWidth > 0 
+                ? columnWidth - 1
+                : columnWidth;
+
             string formatStr = rightAligned 
-                ? "{0," + columnWidth.ToString() + "}"
-                : "{0,-" + columnWidth.ToString() + "}";
+                ? "{0," + columnFormatWidth.ToString() + "}"
+                : "{0,-" + columnFormatWidth.ToString() + "}";
 
             ConsoleColor foregroundColour = highlight
                 ? ForegroundHighlightColour
@@ -205,7 +213,7 @@ public class ListView : Control
                 : subItem.BackgroundColor;
 
             if (subItem.Text.Length > columnWidth) {
-                _buffer.Append((string.Format(formatStr, subItem.Text.Substring(0, columnWidth)) + ' ')
+                _buffer.Append((string.Format(formatStr, subItem.Text.Substring(0, columnWidth - 1)) + ' ')
                     .ToColour(foregroundColour, backgroundColour));
             }
             else {
@@ -213,7 +221,7 @@ public class ListView : Control
                     .ToColour(foregroundColour, backgroundColour));
             }
             
-            c += columnWidth + 1;
+            c += columnWidth;
         }
 
         _terminal.Write(_buffer.ToString());

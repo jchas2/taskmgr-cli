@@ -149,16 +149,16 @@ public sealed partial class ProcessControl : Control
         _processView.ColumnHeaders[(int)Columns.Memory].RightAligned = true;
 
         int total =
-            ColumnProcessWidth + ColumnMargin +
-            ColumnPidWidth + ColumnMargin +
-            ColumnUserWidth + ColumnMargin +
-            ColumnPriorityWidth + ColumnMargin +
-            ColumnCpuWidth + ColumnMargin +
-            ColumnThreadsWidth + ColumnMargin +
-            ColumnMemoryWidth + ColumnMargin;
+            ColumnProcessWidth +
+            ColumnPidWidth + 
+            ColumnUserWidth + 
+            ColumnPriorityWidth + 
+            ColumnCpuWidth + 
+            ColumnThreadsWidth +
+            ColumnMemoryWidth;
 
-        _processView.ColumnHeaders[(int)Columns.CommandLine].Width = total + ColumnCommandlineWidth + ColumnMargin < _processView.Width
-            ? _processView.ColumnHeaders[(int)Columns.CommandLine].Width = _processView.Width - (total + ColumnMargin)
+        _processView.ColumnHeaders[(int)Columns.CommandLine].Width = total + ColumnCommandlineWidth < _processView.Width
+            ? _processView.ColumnHeaders[(int)Columns.CommandLine].Width = _processView.Width - total
             : _processView.ColumnHeaders[(int)Columns.CommandLine].Width = ColumnCommandlineWidth; 
         
         _processView.Resize();
