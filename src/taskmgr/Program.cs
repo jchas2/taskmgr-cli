@@ -44,7 +44,7 @@ class Program
             Environment.Exit(UnhandledExceptionExitCode);
         };
 
-        using TerminalUTF8Encoder _ = new();
+        using TerminalUtf8Encoder _ = new();
         Console.OutputEncoding = Encoding.UTF8;
         
         if (args.Any(arg => arg.Equals("--debug", StringComparison.CurrentCultureIgnoreCase))) {

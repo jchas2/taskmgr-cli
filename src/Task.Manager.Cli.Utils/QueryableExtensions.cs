@@ -18,7 +18,7 @@ public static class QueryableExtensions
 
         var entityType = typeof(TSource);
 
-        var propertyInfo = entityType.GetProperty(
+        PropertyInfo? propertyInfo = entityType.GetProperty(
             propertyName, 
             BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
 
@@ -26,14 +26,14 @@ public static class QueryableExtensions
             throw new InvalidOperationException($"Property '{propertyName}' not found on type '{entityType.Name}'.");
         }
 
-        var parameter = Expression.Parameter(entityType, "p");
-        var propertyAccess = Expression.MakeMemberAccess(parameter, propertyInfo);
-        var orderByExp = Expression.Lambda(propertyAccess, parameter);
+        ParameterExpression parameter = Expression.Parameter(entityType, "p");
+        MemberExpression propertyAccess = Expression.MakeMemberAccess(parameter, propertyInfo);
+        LambdaExpression orderByExp = Expression.Lambda(propertyAccess, parameter);
 
-        string methodName = isDescending ? "OrderByDescending" : "OrderBy";
+        var methodName = isDescending ? "OrderByDescending" : "OrderBy";
 
         // Find the generic OrderBy/OrderByDescending method via reflection.
-        var resultExp = Expression.Call(
+        MethodCallExpression resultExp = Expression.Call(
             typeof(Queryable), 
             methodName,
             [entityType, propertyInfo.PropertyType], 

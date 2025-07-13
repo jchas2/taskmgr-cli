@@ -3,12 +3,12 @@ using System.Text;
 
 namespace Task.Manager.Cli.Utils;
 
-public sealed class TerminalUTF8Encoder : IDisposable
+public sealed class TerminalUtf8Encoder : IDisposable
 {
     private Encoding? _origOutputEncoding;
     private Encoding? _origInputEncoding;
 
-    public TerminalUTF8Encoder()
+    public TerminalUtf8Encoder()
     {
         UseTryCatch(() => {
             _origOutputEncoding = Console.OutputEncoding;
