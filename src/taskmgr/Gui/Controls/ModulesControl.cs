@@ -18,16 +18,19 @@ public partial class ModulesControl : Control
         : base(terminal)
     {
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
+
+        _listView = new ListView(terminal) {
+            BackgroundHighlightColour = _theme.BackgroundHighlight,
+            ForegroundHighlightColour = _theme.ForegroundHighlight,
+            BackgroundColour = _theme.Background,
+            ForegroundColour = _theme.Foreground,
+            HeaderBackgroundColour = _theme.HeaderBackground,
+            HeaderForegroundColour = _theme.HeaderForeground
+        };
         
-        _listView = new ListView(terminal);
-        _listView.BackgroundHighlightColour = _theme.BackgroundHighlight;
-        _listView.ForegroundHighlightColour = _theme.ForegroundHighlight;
-        _listView.BackgroundColour = _theme.Background;
-        _listView.ForegroundColour = _theme.Foreground;
-        _listView.HeaderBackgroundColour = _theme.HeaderBackground;
-        _listView.HeaderForegroundColour = _theme.HeaderForeground;
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("MODULE"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("FILENAME"));
+        _listView.ColumnHeaders
+            .Add(new ListViewColumnHeader("MODULE"))
+            .Add(new ListViewColumnHeader("FILENAME"));
         
         Controls.Add(_listView);
     }

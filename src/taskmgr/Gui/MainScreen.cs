@@ -61,9 +61,10 @@ public sealed class MainScreen : Screen
         _threadsControl = new ThreadsControl(terminal, _theme);
         _footerControl = new FooterControl(terminal, _theme);
 
-        Controls.Add(_processControl);
-        Controls.Add(_modulesControl);
-        Controls.Add(_threadsControl);
+        Controls
+            .Add(_processControl)
+            .Add(_modulesControl)
+            .Add(_threadsControl);
     }
 
     public Control? GetActiveControl => _activeControl;

@@ -17,18 +17,21 @@ public partial class ThreadsControl : Control
         : base(terminal)
     {
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
+
+        _listView = new ListView(terminal) {
+            BackgroundHighlightColour = _theme.BackgroundHighlight,
+            ForegroundHighlightColour = _theme.ForegroundHighlight,
+            BackgroundColour = _theme.Background,
+            ForegroundColour = _theme.Foreground,
+            HeaderBackgroundColour = _theme.HeaderBackground,
+            HeaderForegroundColour = _theme.HeaderForeground
+        };                                                  
         
-        _listView = new ListView(terminal);
-        _listView.BackgroundHighlightColour = _theme.BackgroundHighlight;
-        _listView.ForegroundHighlightColour = _theme.ForegroundHighlight;
-        _listView.BackgroundColour = _theme.Background;
-        _listView.ForegroundColour = _theme.Foreground;
-        _listView.HeaderBackgroundColour = _theme.HeaderBackground;
-        _listView.HeaderForegroundColour = _theme.HeaderForeground;
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("THREAD ID"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("STATE"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("REASON"));
-        _listView.ColumnHeaders.Add(new ListViewColumnHeader("PRI"));
+        _listView.ColumnHeaders
+            .Add(new ListViewColumnHeader("THREAD ID"))
+            .Add(new ListViewColumnHeader("STATE"))
+            .Add(new ListViewColumnHeader("REASON"))
+            .Add(new ListViewColumnHeader("PRI"));
         
         Controls.Add(_listView);
     }
