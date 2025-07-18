@@ -32,38 +32,45 @@ public sealed partial class ProcessControl : Control
     {
         _processor = processor ?? throw new ArgumentNullException(nameof(processor));
         _theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        
-        _sortView = new ListView(terminal);
-        _sortView.BackgroundHighlightColour = theme.BackgroundHighlight;
-        _sortView.ForegroundHighlightColour = theme.ForegroundHighlight;
-        _sortView.BackgroundColour = theme.Background;
-        _sortView.ForegroundColour = theme.Foreground;
-        _sortView.HeaderBackgroundColour = theme.HeaderBackground;
-        _sortView.HeaderForegroundColour = theme.HeaderForeground;
+
+        _sortView = new ListView(terminal) {
+            BackgroundHighlightColour = theme.BackgroundHighlight,
+            ForegroundHighlightColour = theme.ForegroundHighlight,
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground,
+            HeaderBackgroundColour = theme.HeaderBackground,
+            HeaderForegroundColour = theme.HeaderForeground,
+            Visible = _mode == ControlMode.SortSelection
+        };
+
         _sortView.ColumnHeaders.Add(new ListViewColumnHeader("SORT BY"));
-        _sortView.Visible = _mode == ControlMode.SortSelection;
+
+        _processView = new ListView(terminal) {
+            BackgroundHighlightColour = _theme.BackgroundHighlight,
+            ForegroundHighlightColour = _theme.ForegroundHighlight,
+            BackgroundColour = _theme.Background,
+            ForegroundColour = _theme.Foreground,
+            HeaderBackgroundColour = _theme.HeaderBackground,
+            HeaderForegroundColour = _theme.HeaderForeground,
+            Visible = true
+        };
         
-        _processView = new ListView(terminal);
-        _processView.BackgroundHighlightColour = _theme.BackgroundHighlight;
-        _processView.ForegroundHighlightColour = _theme.ForegroundHighlight;
-        _processView.BackgroundColour = _theme.Background;
-        _processView.ForegroundColour = _theme.Foreground;
-        _processView.HeaderBackgroundColour = _theme.HeaderBackground;
-        _processView.HeaderForegroundColour = _theme.HeaderForeground;
-        _processView.ColumnHeaders.Add(new ListViewColumnHeader(Columns.Process.GetTitle()));
-        _processView.ColumnHeaders.Add(new ListViewColumnHeader(Columns.Pid.GetTitle()));
-        _processView.ColumnHeaders.Add(new ListViewColumnHeader(Columns.User.GetTitle()));
-        _processView.ColumnHeaders.Add(new ListViewColumnHeader(Columns.Priority.GetTitle()));
-        _processView.ColumnHeaders.Add(new ListViewColumnHeader(Columns.Cpu.GetTitle()));
-        _processView.ColumnHeaders.Add(new ListViewColumnHeader(Columns.Threads.GetTitle()));
-        _processView.ColumnHeaders.Add(new ListViewColumnHeader(Columns.Memory.GetTitle()));
-        _processView.ColumnHeaders.Add(new ListViewColumnHeader(Columns.CommandLine.GetTitle()));
+        _processView.ColumnHeaders
+            .Add(new ListViewColumnHeader(Columns.Process.GetTitle()))
+            .Add(new ListViewColumnHeader(Columns.Pid.GetTitle()))
+            .Add(new ListViewColumnHeader(Columns.User.GetTitle()))
+            .Add(new ListViewColumnHeader(Columns.Priority.GetTitle()))
+            .Add(new ListViewColumnHeader(Columns.Cpu.GetTitle()))
+            .Add(new ListViewColumnHeader(Columns.Threads.GetTitle()))
+            .Add(new ListViewColumnHeader(Columns.Memory.GetTitle()))
+            .Add(new ListViewColumnHeader(Columns.CommandLine.GetTitle()));
+        
         _processView.ColumnHeaders[(int)_sortColumn].BackgroundColour = _theme.BackgroundHighlight;
         _processView.ColumnHeaders[(int)_sortColumn].ForegroundColour = _theme.ForegroundHighlight;
-        _processView.Visible = true;
         
-        Controls.Add(_sortView);
-        Controls.Add(_processView);
+        Controls
+            .Add(_sortView)
+            .Add(_processView);
     }
 
     private void LoadSortItems()

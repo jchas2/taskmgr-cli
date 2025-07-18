@@ -9,11 +9,13 @@ public class ListViewColumnHeaderCollection : IEnumerable<ListViewColumnHeader>
     public ListViewColumnHeaderCollection(ListView owner) =>
         _owner = owner ?? throw new ArgumentNullException(nameof(owner));
     
-    public void Add(ListViewColumnHeader columnHeader)
+    public ListViewColumnHeaderCollection Add(ListViewColumnHeader columnHeader)
     {
         ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
         
         _owner.InsertColumnHeaders([columnHeader]);
+
+        return this;
     }
 
     public void AddRange(params ListViewColumnHeader[] columnHeaders)

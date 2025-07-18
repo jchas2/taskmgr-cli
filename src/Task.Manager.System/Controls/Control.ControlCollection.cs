@@ -9,11 +9,13 @@ public class ControlCollection : IEnumerable<Control>
     public ControlCollection(Control owner) =>
         _owner = owner ?? throw new ArgumentNullException(nameof(owner));
     
-    public void Add(Control control)
+    public ControlCollection Add(Control control)
     {
         ArgumentNullException.ThrowIfNull(control, nameof(control));
         
         _owner.InsertControls([control]);
+
+        return this;
     }
 
     public void AddRange(params Control[] controls)
