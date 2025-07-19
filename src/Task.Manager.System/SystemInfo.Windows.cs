@@ -64,10 +64,7 @@ public partial class SystemInfo
             &lpIdleFileTime,
             &lpKernelFileTime,
             &lpUserFileTime)) {
-#if DEBUG
-            int error = Marshal.GetLastWin32Error();
-            Debug.Assert(error == 0, $"Failed GetSystemTimes(): {Marshal.GetPInvokeErrorMessage(error)}");
-#endif
+            Win32ErrorHelpers.AssertOnLastError(nameof(ProcessThreadsApi.GetSystemTimes));
             return false;
         }
 
@@ -90,10 +87,7 @@ public partial class SystemInfo
         SysInfoApi.MEMORYSTATUSEX memoryStatus = new();
         
         if (!SysInfoApi.GlobalMemoryStatusEx(&memoryStatus)) {
-#if DEBUG
-            int error = Marshal.GetLastWin32Error();
-            Debug.Assert(error == 0, $"Failed GlobalMemoryStatusEx(): {Marshal.GetPInvokeErrorMessage(error)}");
-#endif
+            Win32ErrorHelpers.AssertOnLastError(nameof(SysInfoApi.GlobalMemoryStatusEx));
             return false;
         }
 

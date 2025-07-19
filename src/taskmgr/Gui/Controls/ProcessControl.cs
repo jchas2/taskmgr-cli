@@ -62,6 +62,7 @@ public sealed partial class ProcessControl : Control
             .Add(new ListViewColumnHeader(Columns.Priority.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Cpu.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Threads.GetTitle()))
+            .Add(new ListViewColumnHeader(Columns.Handles.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Memory.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.CommandLine.GetTitle()));
         
@@ -152,6 +153,8 @@ public sealed partial class ProcessControl : Control
         _processView.ColumnHeaders[(int)Columns.Cpu].RightAligned = true;
         _processView.ColumnHeaders[(int)Columns.Threads].Width = ColumnThreadsWidth;
         _processView.ColumnHeaders[(int)Columns.Threads].RightAligned = true;
+        _processView.ColumnHeaders[(int)Columns.Handles].Width = ColumnHandlesWidth;
+        _processView.ColumnHeaders[(int)Columns.Handles].RightAligned = true;
         _processView.ColumnHeaders[(int)Columns.Memory].Width = ColumnMemoryWidth;
         _processView.ColumnHeaders[(int)Columns.Memory].RightAligned = true;
 
@@ -162,6 +165,7 @@ public sealed partial class ProcessControl : Control
             ColumnPriorityWidth + 
             ColumnCpuWidth + 
             ColumnThreadsWidth +
+            ColumnHandlesWidth +
             ColumnMemoryWidth;
 
         _processView.ColumnHeaders[(int)Columns.CommandLine].Width = total + ColumnCommandlineWidth < _processView.Width

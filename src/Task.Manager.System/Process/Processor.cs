@@ -303,6 +303,7 @@ public partial class Processor : IProcessor
             procInfo.CmdLine = GetProcessCommandLine(process);
             procInfo.StartTime = process.StartTime;
             procInfo.ThreadCount = process.Threads.Count;
+            procInfo.HandleCount = process.HandleCount;
             procInfo.BasePriority = process.BasePriority;
             procInfo.ParentPid = 0;
             return true;

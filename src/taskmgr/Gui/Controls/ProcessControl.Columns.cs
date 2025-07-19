@@ -10,6 +10,7 @@ public partial class ProcessControl
     internal const int ColumnPriorityWidth = 4;
     internal const int ColumnCpuWidth = 7;
     internal const int ColumnThreadsWidth = 7;
+    internal const int ColumnHandlesWidth = 8;
     internal const int ColumnMemoryWidth = 10;
     internal const int ColumnCommandlineWidth = 32;
 
@@ -35,6 +36,9 @@ public partial class ProcessControl
         [ColumnTitle("THRDS")]
         [ColumnProperty("ThreadCount")]
         Threads,
+        [ColumnTitle("HANDLES")]
+        [ColumnProperty("HandleCount")]
+        Handles,
         [ColumnTitle("MEM")]
         [ColumnProperty("UsedMemory")]
         Memory,
