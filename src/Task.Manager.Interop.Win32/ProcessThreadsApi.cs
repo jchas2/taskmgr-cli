@@ -3,8 +3,6 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Task.Manager.Interop.Win32;
 
-// Following declarations are found in the platform sdk header file ProcessThreadsApi.h
-
 public static class ProcessThreadsApi
 {
     [DllImport(Libraries.Kernel32, SetLastError = true)]

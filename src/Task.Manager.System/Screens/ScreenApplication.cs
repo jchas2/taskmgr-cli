@@ -77,6 +77,7 @@ public sealed class ScreenApplication
                             
                             _ownerScreen = _screenStack.Peek();
                             _ownerScreen.Show();
+                            
                             continue;
                         }
                     }

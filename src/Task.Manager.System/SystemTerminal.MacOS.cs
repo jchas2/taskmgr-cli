@@ -12,5 +12,10 @@ public partial class SystemTerminal : ISystemTerminal
         get => true;
         set { }
     }
+    
+    private void EnableAnsiTerminalCodesInternal()
+    {
+        
+    }
 #endif
 }

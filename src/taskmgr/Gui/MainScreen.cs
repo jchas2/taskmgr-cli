@@ -5,6 +5,7 @@ using Task.Manager.Gui.Controls;
 using Task.Manager.System;
 using Task.Manager.System.Configuration;
 using Task.Manager.System.Controls;
+using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Screens;
 
 namespace Task.Manager.Gui;
@@ -14,7 +15,8 @@ public sealed class MainScreen : Screen
     private readonly RunContext _runContext;
     private readonly Theme _theme;
     private readonly Config _config;
-    
+
+    private readonly ListView _menuView;
     private readonly ProcessControl _processControl;
     private readonly ModulesControl _modulesControl;
     private readonly ThreadsControl _threadsControl;
@@ -47,6 +49,18 @@ public sealed class MainScreen : Screen
             [typeof(ProcessSortCommand)] = new ProcessSortCommand(this)
         };
 
+        _menuView = new ListView(terminal) {
+            BackgroundHighlightColour = theme.BackgroundHighlight,
+            ForegroundHighlightColour = theme.ForegroundHighlight,
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground,
+            HeaderBackgroundColour = theme.HeaderBackground,
+            HeaderForegroundColour = theme.HeaderForeground,
+            Visible = true
+        };
+        
+        _menuView.ColumnHeaders.Add(new ListViewColumnHeader("MENU"));
+
         _headerControl = new HeaderControl(
             _runContext.Processor,
             terminal,
@@ -74,10 +88,14 @@ public sealed class MainScreen : Screen
     protected override void OnDraw()
     {
         Debug.Assert(_activeControl != null);
+
+        Terminal.CursorVisible = false;
         
         _headerControl.Draw();
         _activeControl.Draw();
         _footerControl.Draw();
+        
+        Terminal.CursorVisible = true;
     }
 
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)

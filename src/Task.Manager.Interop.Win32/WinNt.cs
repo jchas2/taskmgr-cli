@@ -2,9 +2,7 @@
 
 namespace Task.Manager.Interop.Win32;
 
-// Following declarations are found in the platform sdk header file WinNt.h
-
-public class WinNt
+public static class WinNt
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public unsafe struct SID_AND_ATTRIBUTES
