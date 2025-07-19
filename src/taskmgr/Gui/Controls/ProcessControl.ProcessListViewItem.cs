@@ -26,6 +26,7 @@ public partial class ProcessControl
                 new ListViewSubItem(this, processInfo.BasePriority.ToString()),
                 new ListViewSubItem(this, processInfo.CpuTimePercent.ToString(CultureInfo.InvariantCulture)),
                 new ListViewSubItem(this, processInfo.ThreadCount.ToString()),
+                new ListViewSubItem(this, processInfo.HandleCount.ToString()),
                 new ListViewSubItem(this, processInfo.UsedMemory.ToString()),
                 new ListViewSubItem(this, processInfo.CmdLine ?? string.Empty));
 
@@ -73,6 +74,7 @@ public partial class ProcessControl
             }
             
             SubItems[(int)Columns.Threads].Text = processInfo.ThreadCount.ToString();
+            SubItems[(int)Columns.Handles].Text = processInfo.HandleCount.ToString();
             SubItems[(int)Columns.Memory].Text = processInfo.UsedMemory.ToFormattedByteSize();
 
             double memRatio = (double)processInfo.UsedMemory / (double)systemStatistics.TotalPhysical;
