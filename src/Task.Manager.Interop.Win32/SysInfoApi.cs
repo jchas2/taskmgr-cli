@@ -2,8 +2,6 @@
 
 namespace Task.Manager.Interop.Win32;
 
-// Following declarations are found in the platform sdk header file SysInfoApi.h
-
 public static unsafe class SysInfoApi
 {
     [StructLayout(LayoutKind.Sequential)]

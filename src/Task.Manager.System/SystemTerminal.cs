@@ -4,8 +4,11 @@ namespace Task.Manager.System;
 
 public partial class SystemTerminal : ISystemTerminal
 {
-    public SystemTerminal() =>
+    public SystemTerminal()
+    {
         Console.OutputEncoding = Encoding.UTF8;
+        EnableAnsiTerminalCodesInternal();
+    }
 
     public ConsoleColor BackgroundColor
     {
@@ -31,6 +34,8 @@ public partial class SystemTerminal : ISystemTerminal
         set => CursorVisibleInternal = value;
     }
 
+    public void EnableAnsiTerminalCodes() => EnableAnsiTerminalCodesInternal();
+    
     public ConsoleColor ForegroundColor
     {
         get => Console.ForegroundColor;

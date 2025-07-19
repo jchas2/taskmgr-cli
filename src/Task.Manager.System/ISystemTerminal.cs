@@ -6,6 +6,7 @@ public interface ISystemTerminal
     int CursorLeft { get; set; }
     int CursorTop { get; set; }
     bool CursorVisible { get; set; }
+    void EnableAnsiTerminalCodes(); 
     ConsoleColor ForegroundColor { get; set; }
     bool KeyAvailable { get; }
     TextWriter StdError { get; }
