@@ -4,6 +4,17 @@ namespace Task.Manager.Interop.Win32;
 
 public static class WinNt
 {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct IO_COUNTERS
+    {
+        public ulong ReadOperationCount;
+        public ulong WriteOperationCount;
+        public ulong OtherOperationCount;
+        public ulong ReadTransferCount;
+        public ulong WriteTransferCount;
+        public ulong OtherTransferCount;
+    }
+    
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public unsafe struct SID_AND_ATTRIBUTES
     {
@@ -16,4 +27,7 @@ public static class WinNt
     {
         public SID_AND_ATTRIBUTES sidAndAttributes;
     }
+    
+    [DllImport(Libraries.Kernel32, SetLastError = true)]
+    public static extern bool GetProcessIoCounters(IntPtr hProcess, out IO_COUNTERS counters);
 }

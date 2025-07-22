@@ -38,11 +38,23 @@ public partial class Processor : IProcessor
         _isWindows = OperatingSystem.IsWindows();
     }
     
+    private ulong GetProcessIoOperations(in int pid)
+    {
+        if (!ProcessUtils.TryGetProcessByPid(pid, out SysDiag::Process? process)) {
+            return 0;
+        }
+        
+        return GetProcessIoOperations(process!);
+    }
+    
     private bool GetProcessTimes(in int pid, ref ProcessTimeInfo ptInfo)
     {
         try {
-            SysDiag::Process proc = SysDiag::Process.GetProcessById(pid);
-            TryMapProcessTimeInfo(proc, ref ptInfo);
+            if (!ProcessUtils.TryGetProcessByPid(pid, out SysDiag::Process? process)) {
+                return false;
+            }
+            
+            TryMapProcessTimeInfo(process!, ref ptInfo);
             return true;
         }
         catch (ArgumentException) {
@@ -142,7 +154,7 @@ public partial class Processor : IProcessor
                 }
 
                 procInfo.UsedMemory = procs[index].WorkingSet64;
-                procInfo.DiskOperations = 0;
+                procInfo.DiskOperations = GetProcessIoOperations(procs[index]) ;
                 procInfo.DiskUsage = 0;
                 procInfo.CpuTimePercent = 0.0;
                 procInfo.CpuUserTimePercent = 0.0;
@@ -216,6 +228,12 @@ public partial class Processor : IProcessor
                 
                 _systemStatistics.CpuPercentUserTime += _allProcesses[i].CpuUserTimePercent;
                 _systemStatistics.CpuPercentKernelTime += _allProcesses[i].CpuKernelTimePercent;
+                
+                ulong prevDiskOperations = _allProcesses[i].DiskOperations;
+                
+                _allProcesses[i].DiskOperations = GetProcessIoOperations(_allProcesses[i].Pid);
+                _allProcesses[i].DiskUsage = (long)((double)(_allProcesses[i].DiskOperations - prevDiskOperations) *
+                                                    (1000 / (double)UpdateTimeInMs));
             }
             
             _ghostProcessCount = delta;
@@ -303,7 +321,7 @@ public partial class Processor : IProcessor
             procInfo.CmdLine = GetProcessCommandLine(process);
             procInfo.StartTime = process.StartTime;
             procInfo.ThreadCount = process.Threads.Count;
-            procInfo.HandleCount = process.HandleCount;
+            procInfo.HandleCount = ProcessUtils.GetHandleCount(process);
             procInfo.BasePriority = process.BasePriority;
             procInfo.ParentPid = 0;
             return true;
