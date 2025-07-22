@@ -9,7 +9,7 @@ public struct ProcessInfo
     public int Pid { get; set; }
     //public IntPtr? Handle { get; set; }
     public int ThreadCount { get; set; }
-    public int HandleCount { get; set; }
+    public uint HandleCount { get; set; }
     public long BasePriority { get; set; }
     public int ParentPid { get; set; }
     public DateTime StartTime { get; set; }
@@ -20,7 +20,7 @@ public struct ProcessInfo
     public string? CmdLine { get; set; }
     
      public long DiskUsage { get; set; }
-    public long DiskOperations { get; set; }
+    public ulong DiskOperations { get; set; }
 
     public long UsedMemory { get; set; }
 

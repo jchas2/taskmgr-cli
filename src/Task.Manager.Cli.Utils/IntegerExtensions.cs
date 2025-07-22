@@ -17,4 +17,13 @@ public static class IntegerExtensions
 
         return $"{count:0.#} {byteFormatters[index]}";
     }
+
+    public static string ToFormattedMbpsFromBytes(this long num)
+    {
+        double mbps = ToMbpsFromBytes(num);
+        return string.Format("{0,5:####0.0} MB/s", mbps);
+    }
+    
+    public static double ToMbpsFromBytes(this long num) =>
+         Math.Ceiling((double)num / 1000000.0 * 10.0) / 10.0;
 }

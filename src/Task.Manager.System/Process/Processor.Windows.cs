@@ -26,7 +26,24 @@ public partial class Processor : IProcessor
             return process.ProcessName;
         } 
     }
-    
+
+    private ulong GetProcessIoOperations(in SysDiag::Process process)
+    {
+        try {
+            WinNt.IO_COUNTERS counters = new();
+
+            if (!WinNt.GetProcessIoCounters(process.Handle, out counters)) {
+                Win32ErrorHelpers.AssertOnLastError(nameof(WinNt.GetProcessIoCounters));
+                return 0;
+            }
+
+            return counters.ReadTransferCount + counters.WriteTransferCount;
+        }
+        catch {
+            return 0;
+        }
+    }
+   
     private string GetProcessProductName(SysDiag::Process process)
     {
         try {

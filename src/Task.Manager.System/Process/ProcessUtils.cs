@@ -1,9 +1,12 @@
+using Task.Manager.Interop.Win32;
 using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
 
-public static class ProcessUtils
+public static partial class ProcessUtils
 {
+    public static uint GetHandleCount(SysDiag::Process process) => GetHandleCountInternal(process);
+    
     public static bool TryGetProcessByPid(int pid, out SysDiag::Process? process)
     {
         try {

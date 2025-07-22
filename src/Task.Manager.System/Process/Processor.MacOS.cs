@@ -19,6 +19,11 @@ public partial class Processor : IProcessor
         }
     }
 
+    private ulong GetProcessIoOperations(in SysDiag::Process process)
+    {
+        return 0;
+    }
+
     private static unsafe ProcInfo.proc_taskallinfo? GetProcessInfoById(int pid)
     {
         int size = sizeof(ProcInfo.proc_taskallinfo);

@@ -62,8 +62,8 @@ public sealed partial class ProcessControl : Control
             .Add(new ListViewColumnHeader(Columns.Priority.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Cpu.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Threads.GetTitle()))
-            .Add(new ListViewColumnHeader(Columns.Handles.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Memory.GetTitle()))
+            .Add(new ListViewColumnHeader(Columns.Disk.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.CommandLine.GetTitle()));
         
         _processView.ColumnHeaders[(int)_sortColumn].BackgroundColour = _theme.BackgroundHighlight;
@@ -153,20 +153,20 @@ public sealed partial class ProcessControl : Control
         _processView.ColumnHeaders[(int)Columns.Cpu].RightAligned = true;
         _processView.ColumnHeaders[(int)Columns.Threads].Width = ColumnThreadsWidth;
         _processView.ColumnHeaders[(int)Columns.Threads].RightAligned = true;
-        _processView.ColumnHeaders[(int)Columns.Handles].Width = ColumnHandlesWidth;
-        _processView.ColumnHeaders[(int)Columns.Handles].RightAligned = true;
         _processView.ColumnHeaders[(int)Columns.Memory].Width = ColumnMemoryWidth;
         _processView.ColumnHeaders[(int)Columns.Memory].RightAligned = true;
+        _processView.ColumnHeaders[(int)Columns.Disk].Width = ColumnDiskWidth;
+        _processView.ColumnHeaders[(int)Columns.Disk].RightAligned = true;
 
         int total =
             ColumnProcessWidth +
-            ColumnPidWidth + 
-            ColumnUserWidth + 
-            ColumnPriorityWidth + 
-            ColumnCpuWidth + 
+            ColumnPidWidth +
+            ColumnUserWidth +
+            ColumnPriorityWidth +
+            ColumnCpuWidth +
             ColumnThreadsWidth +
-            ColumnHandlesWidth +
-            ColumnMemoryWidth;
+            ColumnMemoryWidth +
+            ColumnDiskWidth;
 
         _processView.ColumnHeaders[(int)Columns.CommandLine].Width = total + ColumnCommandlineWidth < _processView.Width
             ? _processView.ColumnHeaders[(int)Columns.CommandLine].Width = _processView.Width - total

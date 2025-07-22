@@ -26,8 +26,8 @@ public partial class ProcessControl
                 new ListViewSubItem(this, processInfo.BasePriority.ToString()),
                 new ListViewSubItem(this, processInfo.CpuTimePercent.ToString(CultureInfo.InvariantCulture)),
                 new ListViewSubItem(this, processInfo.ThreadCount.ToString()),
-                new ListViewSubItem(this, processInfo.HandleCount.ToString()),
                 new ListViewSubItem(this, processInfo.UsedMemory.ToString()),
+                new ListViewSubItem(this, processInfo.DiskUsage.ToString()),
                 new ListViewSubItem(this, processInfo.CmdLine ?? string.Empty));
 
             UpdateItem(ref processInfo, ref systemStatistics);
@@ -74,7 +74,6 @@ public partial class ProcessControl
             }
             
             SubItems[(int)Columns.Threads].Text = processInfo.ThreadCount.ToString();
-            SubItems[(int)Columns.Handles].Text = processInfo.HandleCount.ToString();
             SubItems[(int)Columns.Memory].Text = processInfo.UsedMemory.ToFormattedByteSize();
 
             double memRatio = (double)processInfo.UsedMemory / (double)systemStatistics.TotalPhysical;
@@ -91,7 +90,25 @@ public partial class ProcessControl
                 SubItems[(int)Columns.Memory].ForegroundColor = Theme.Foreground;
                 SubItems[(int)Columns.Memory].BackgroundColor = Theme.RangeHighBackground;
             }
+
+            SubItems[(int)Columns.Disk].Text = processInfo.DiskUsage.ToFormattedMbpsFromBytes();
+            double mbps = processInfo.DiskUsage.ToMbpsFromBytes(); 
             
+            if (mbps > 1.0) {
+                if (mbps < 10.0) {
+                    SubItems[(int)Columns.Disk].ForegroundColor = Theme.Foreground;
+                    SubItems[(int)Columns.Disk].BackgroundColor = Theme.RangeLowBackground;
+                }
+                else if (mbps < 100.0) {
+                    SubItems[(int)Columns.Disk].ForegroundColor = Theme.Foreground;
+                    SubItems[(int)Columns.Disk].BackgroundColor = Theme.RangeMidBackground;
+                }
+                else {
+                    SubItems[(int)Columns.Disk].ForegroundColor = Theme.Foreground;
+                    SubItems[(int)Columns.Disk].BackgroundColor = Theme.RangeHighBackground;
+                }
+            }
+
             SubItems[(int)Columns.CommandLine].Text = processInfo.CmdLine ?? string.Empty;
         }
     }
