@@ -11,7 +11,8 @@ public sealed class HeaderControl : Control
 {
     private readonly IProcessor _processor;
     private SystemStatistics _systemStatistics = new();
-    private const int MetreWidth = 32;
+    private double _maxMbps = 0;
+    private const int MetreWidth = 48;
 
     public HeaderControl(
         IProcessor processor, 
@@ -120,10 +121,8 @@ public sealed class HeaderControl : Control
         Terminal.BackgroundColor = colour;
         Terminal.ForegroundColor = currForegroundColour;
 
-        if (inverseBars >= label.Length) {
-            Terminal.Write(label);
-            nchars += label.Length;
-        }
+        Terminal.Write(label);
+        nchars += label.Length;
 
         for (int i = nchars; i < inverseBars; i++) {
             Terminal.Write(' ');
@@ -215,6 +214,20 @@ public sealed class HeaderControl : Control
         var virColour = virRatio < 0.5 ? ConsoleColor.DarkGreen
             : virRatio < 0.75 ? ConsoleColor.DarkYellow
             : ConsoleColor.Red;
+        
+        double mbps = _systemStatistics.DiskUsage.ToMbpsFromBytes();
+
+        if (mbps > _maxMbps) {
+            _maxMbps = mbps;
+        }
+
+        double mbpsRatio = _maxMbps > 0
+            ? mbps / _maxMbps
+            : 0;
+
+        ConsoleColor mbpsColour = mbps < 10.0 ? ConsoleColor.DarkGreen 
+            : mbps < 100.0 ? ConsoleColor.DarkYellow
+            : ConsoleColor.Red;
 
         Terminal.Write("Cpu ");
 
@@ -240,6 +253,11 @@ public sealed class HeaderControl : Control
             "  Virt:    ",
             virRatio.ToString("000.0%"),
             virColour);
+
+        nchars += DrawColumnLabelValue(
+            "  Disk:    ",
+            string.Format("{0,5:####0.0} MB/s", mbps),
+            mbpsColour);
         
         Terminal.WriteEmptyLineTo(Width - nchars - 4);
         
@@ -266,6 +284,11 @@ public sealed class HeaderControl : Control
             "  Total: ",
             ((double)(_systemStatistics.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
+        
+        nchars += DrawColumnLabelValue(
+            "  Peak:    ",
+            string.Format("{0,5:####0.0} MB/s", _maxMbps),
+            mbpsColour);
         
         Terminal.WriteEmptyLineTo(Width - nchars - 4);
 
@@ -296,11 +319,13 @@ public sealed class HeaderControl : Control
         Terminal.WriteEmptyLineTo(Width - nchars - 4);
 
         nlines++;
-        nchars = 4 + 1 + MetreWidth + 1;
 
-        Terminal.WriteEmptyLineTo(nchars);
-
-        nlines++;
+        Terminal.Write("Dsk ");
+        
+        nchars = DrawPercentageBar(
+            string.Empty,
+            mbpsRatio,
+            mbpsColour);
         
         nchars += DrawColumnLabelValue(
             "  Idle:    ",
@@ -317,7 +342,7 @@ public sealed class HeaderControl : Control
             ((double)(_systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
             ForegroundColour);
         
-        Terminal.WriteEmptyLineTo(Width - nchars);
+        Terminal.WriteEmptyLineTo(Width - nchars - 4);
         
         nlines++;
         

@@ -19,7 +19,7 @@ public struct ProcessInfo
     public string? UserName { get; set; }
     public string? CmdLine { get; set; }
     
-     public long DiskUsage { get; set; }
+    public long DiskUsage { get; set; }
     public ulong DiskOperations { get; set; }
 
     public long UsedMemory { get; set; }
