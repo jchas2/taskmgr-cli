@@ -28,6 +28,9 @@ public struct SystemStatistics()
     public string PublicIPv4Address { get; set; } = string.Empty;
     public string PrivateIPv4Address { get; set; } = string.Empty;
     
+    /* Disk */
+    public long DiskUsage { get; set; } = 0;
+    
     /* Processes */
     public int ProcessCount { get; set; } = 0;
     public int GhostProcessCount { get; set; } = 0;

@@ -192,6 +192,7 @@ public partial class Processor : IProcessor
             _systemStatistics.CpuPercentIdleTime = 0.0;
             _systemStatistics.CpuPercentUserTime = 0.0;
             _systemStatistics.CpuPercentKernelTime = 0.0;
+            _systemStatistics.DiskUsage = 0;
 
             _systemInfo.GetSystemInfo(ref _systemStatistics);
             _systemInfo.GetSystemMemory(ref _systemStatistics);
@@ -232,8 +233,13 @@ public partial class Processor : IProcessor
                 ulong prevDiskOperations = _allProcesses[i].DiskOperations;
                 
                 _allProcesses[i].DiskOperations = GetProcessIoOperations(_allProcesses[i].Pid);
-                _allProcesses[i].DiskUsage = (long)((double)(_allProcesses[i].DiskOperations - prevDiskOperations) *
-                                                    (1000 / (double)UpdateTimeInMs));
+                
+                ulong currDiskOperations = _allProcesses[i].DiskOperations;
+
+                _allProcesses[i].DiskUsage = 
+                    (long)((double)(currDiskOperations - prevDiskOperations) * (1000.0 / (double)UpdateTimeInMs));
+                
+                _systemStatistics.DiskUsage += _allProcesses[i].DiskUsage;
             }
             
             _ghostProcessCount = delta;
