@@ -15,6 +15,17 @@ public sealed class FooterControl : Control
 
     protected override void OnDraw()
     {
+        try {
+            Control.DrawingLockAcquire();
+            OnDrawInternal();
+        }
+        finally {
+            Control.DrawingLockRelease();
+        }
+    }
+    
+    private void OnDrawInternal()
+    {
         using TerminalColourRestorer _ = new();
         
         Terminal.SetCursorPosition(left: X, top: Y);
