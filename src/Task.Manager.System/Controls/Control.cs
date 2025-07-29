@@ -13,6 +13,9 @@ public class Control
 
     /* The container holding the List<T> for rendering. We don't expose it via a public api. */
     private List<Control> _controls = [];
+
+    private static readonly object _drawingLock = new();
+    private static int _drawingLocksAcquired = 0;
     
     private readonly ISystemTerminal _terminal;
 
@@ -22,6 +25,24 @@ public class Control
         _controlCollection = new ControlCollection(this);
     }
 
+    public static void DrawingLockAcquire()
+    {
+        _drawingLocksAcquired++;
+        
+        Monitor.Enter(_drawingLock);
+    }
+
+    public static void DrawingLockRelease()
+    {
+        if (_drawingLocksAcquired == 0) {
+            return;
+        }
+        
+        _drawingLocksAcquired--;
+        
+        Monitor.Exit(_drawingLock);
+    }
+    
     public ConsoleColor BackgroundColour { get; set; } = ConsoleColor.Black;
 
     public void Clear() => OnClear();

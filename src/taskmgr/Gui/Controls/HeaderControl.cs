@@ -151,6 +151,17 @@ public sealed class HeaderControl : Control
 
     protected override void OnDraw()
     {
+        try {
+            Control.DrawingLockAcquire();
+            OnDrawInternal();
+        }
+        finally {
+            Control.DrawingLockRelease();
+        }
+    }
+
+    private void OnDrawInternal()
+    {
         using TerminalColourRestorer _ = new();
 
         int nlines = 0;

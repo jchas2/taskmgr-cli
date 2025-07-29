@@ -18,7 +18,6 @@ public sealed partial class ProcessControl : Control
 
     private ProcessInfo[] _allProcesses = [];
     private SystemStatistics _systemStatistics;
-    private Lock _lock = new();
     private ControlMode _mode = ControlMode.None;
     private Columns _sortColumn = Columns.Cpu;
 
@@ -85,32 +84,42 @@ public sealed partial class ProcessControl : Control
             _sortView.Items.Add(new ListViewItem(column));
         }
     }
-    
+
     protected override void OnDraw()
     {
-        lock (_lock) {
+        try {
+            Control.DrawingLockAcquire();
+            
             if (_sortView.Items.Count == 0) {
                 LoadSortItems();
             }
-            
+        
             UpdateListViewItems(_allProcesses, ref _systemStatistics);
-            
+        
             _sortView.Visible = _mode == ControlMode.SortSelection;
             _sortView.Draw();
             _processView.Draw();
+        }
+        finally {
+            Control.DrawingLockRelease();
         }
     }
 
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
     {
-        lock (_lock) {
+        try {
+            Control.DrawingLockAcquire();
+            
             Control? targetControl = _mode switch {
                 ControlMode.None => _processView,
                 ControlMode.SortSelection => _sortView,
                 _ => null
             };
-            
+
             targetControl?.KeyPressed(keyInfo, ref handled);
+        }
+        finally {
+            Control.DrawingLockRelease();
         }
     }
 
