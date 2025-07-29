@@ -11,7 +11,7 @@ public partial class ProcessControl
     internal const int ColumnCpuWidth = 7;
     internal const int ColumnThreadsWidth = 7;
     internal const int ColumnMemoryWidth = 10;
-    internal const int ColumnDiskWidth = 10;
+    internal const int ColumnDiskWidth = 12;
     internal const int ColumnCommandlineWidth = 32;
 
     internal const int ColumnMargin = 1;    
