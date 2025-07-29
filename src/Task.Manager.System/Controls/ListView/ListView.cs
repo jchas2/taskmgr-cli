@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics;
+using System.Drawing;
 using System.Text;
 using Task.Manager.Cli.Utils;
 
@@ -158,9 +159,15 @@ public class ListView : Control
             ConsoleColor foreground = _columnHeaders[i].ForegroundColour ?? HeaderForegroundColour;
             ConsoleColor background = _columnHeaders[i].BackgroundColour ?? HeaderBackgroundColour;
 
-            _buffer.Append((string.Format(formatStr, _columnHeaders[i].Text) + ' ')
-                .ToColour(foreground, background));
-            
+            if (_columnHeaders[i].Text.Length > _columnHeaders[i].Width) {
+                _buffer.Append((string.Format(formatStr, _columnHeaders[i].Text.Substring(0, _columnHeaders[i].Width - 1)) + ' ')
+                    .ToColour(foreground, background));
+            }
+            else {
+                _buffer.Append((string.Format(formatStr, _columnHeaders[i].Text) + ' ')
+                    .ToColour(foreground, background));
+            }
+
             c+= _columnHeaders[i].Width;
         }
         
@@ -180,10 +187,10 @@ public class ListView : Control
 
         /* TODO: Will look into span<T> + stackalloc char[] to fast build strings */
         int c = 0;
-        
+
         for (int i = 0; i < item.SubItemCount; i++) {
             var subItem = item.SubItems[i];
-            
+
             bool rightAligned = false;
             int columnWidth = DefaultColumnWidth;
 
@@ -195,19 +202,19 @@ public class ListView : Control
             if (c + columnWidth > _viewPort.Bounds.Width) {
                 break;
             }
-            
-            int columnFormatWidth = columnWidth > 0 
+
+            int columnFormatWidth = columnWidth > 0
                 ? columnWidth - 1
                 : columnWidth;
 
-            string formatStr = rightAligned 
+            string formatStr = rightAligned
                 ? "{0," + columnFormatWidth.ToString() + "}"
                 : "{0,-" + columnFormatWidth.ToString() + "}";
 
             ConsoleColor foregroundColour = highlight
                 ? ForegroundHighlightColour
                 : subItem.ForegroundColor;
-            
+
             ConsoleColor backgroundColour = highlight
                 ? BackgroundHighlightColour
                 : subItem.BackgroundColor;
@@ -220,7 +227,7 @@ public class ListView : Control
                 _buffer.Append((string.Format(formatStr, subItem.Text) + ' ')
                     .ToColour(foregroundColour, backgroundColour));
             }
-            
+
             c += columnWidth;
         }
 
@@ -228,7 +235,7 @@ public class ListView : Control
         _terminal.BackgroundColor = item.SubItems[item.SubItemCount - 1].BackgroundColor;
         _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width - c);
     }
-    
+
     private void DrawItems()
     {
         _viewPort.Height = _viewPort.Bounds.Height;
@@ -257,7 +264,7 @@ public class ListView : Control
 
         for (int i = n; i < Height - 1; i++) {
             _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y + i);
-            _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width + 1);
+            _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width);
         }
     }
 

@@ -23,6 +23,7 @@ public sealed partial class ProcessControl : Control
     private Columns _sortColumn = Columns.Cpu;
 
     private const int SortControlWidth = 20;
+    private const int ControlGutter = 1;
     
     public ProcessControl(
         IProcessor processor, 
@@ -135,8 +136,8 @@ public sealed partial class ProcessControl : Control
         int pWidth = Width;
         
         if (_mode == ControlMode.SortSelection) {
-            pX = _sortView.X + _sortView.Width + 2;
-            pWidth = Width - (_sortView.Width + 2);
+            pX = _sortView.X + _sortView.Width + ControlGutter;
+            pWidth = Width - (_sortView.Width + ControlGutter);
         }
 
         _processView.X = pX;
