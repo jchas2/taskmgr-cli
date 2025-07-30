@@ -128,7 +128,7 @@ public sealed partial class ProcessControl : Control
         _sortView.Load();
         _processView.Load();
         
-        _sortView.ItemClicked += SortViewOnItemClicked;
+        _sortView.ItemSelected += SortViewOnItemSelected;
         _processor.ProcessorUpdated += ProcessorOnProcessorUpdated;
     }
     
@@ -190,7 +190,7 @@ public sealed partial class ProcessControl : Control
         _sortView.Unload();
         _processView.Unload();
         
-        _sortView.ItemClicked -= SortViewOnItemClicked;
+        _sortView.ItemSelected -= SortViewOnItemSelected;
         _processor.ProcessorUpdated -= ProcessorOnProcessorUpdated;
     }
     
@@ -229,7 +229,7 @@ public sealed partial class ProcessControl : Control
         Draw();
     }
     
-    private void SortViewOnItemClicked(object? sender, ListViewItemEventArgs e)
+    private void SortViewOnItemSelected(object? sender, ListViewItemEventArgs e)
     {
         _processView.ColumnHeaders[(int)_sortColumn].BackgroundColour = _theme.HeaderBackground;
         _processView.ColumnHeaders[(int)_sortColumn].ForegroundColour = _theme.HeaderForeground;

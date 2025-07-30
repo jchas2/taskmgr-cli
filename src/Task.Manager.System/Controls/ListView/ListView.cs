@@ -30,6 +30,7 @@ public class ListView : Control
     private const int DefaultHeaderWidth = 80;
 
     public event EventHandler<ListViewItemEventArgs>? ItemClicked;
+    public event EventHandler<ListViewItemEventArgs>? ItemSelected;
 
     public ListView(ISystemTerminal terminal)
         : base(terminal)
@@ -363,7 +364,10 @@ public class ListView : Control
 
     protected void OnItemClicked(ListViewItem item) =>
         ItemClicked?.Invoke(this, new ListViewItemEventArgs(item));
-    
+
+    protected void OnItemSelected(ListViewItem item) =>
+        ItemSelected?.Invoke(this, new ListViewItemEventArgs(item));
+
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
     {
         switch (keyInfo.Key) {
@@ -391,7 +395,7 @@ public class ListView : Control
             case ConsoleKey.Enter: {
                 
                 if (SelectedIndex != -1) {
-                    OnItemClicked(SelectedItem);
+                    OnItemSelected(SelectedItem);
                 }
                 
                 handled = true;
