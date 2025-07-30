@@ -1,10 +1,10 @@
-using Task.Manager.Configuration;
+﻿using Task.Manager.Configuration;
 using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
 
 namespace Task.Manager.Gui.Controls;
 
-public partial class ThreadsControl
+public partial class ProcessInfoControl
 {
     private class ThreadListViewItem : ListViewItem
     {
@@ -18,7 +18,7 @@ public partial class ThreadsControl
                 new ListViewSubItem(this, threadInfo.Reason),
                 new ListViewSubItem(this, $"{threadInfo.Priority}"));
             
-            for (int i = 0; i < (int)Columns.Count; i++) {
+            for (int i = 0; i < (int)ThreadColumns.Count; i++) {
                 SubItems[i].BackgroundColor = theme.Background;
                 SubItems[i].ForegroundColor = theme.Foreground;
             }
