@@ -113,7 +113,7 @@ public partial class ProcessInfoControl : Control
             _handlesView
         });
 
-        _focusedControl = _menuView;
+        _focusedControl = _modulesView;
     }
 
     private void LoadProcessInfo()
