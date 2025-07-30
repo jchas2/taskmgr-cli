@@ -1,10 +1,10 @@
-using Task.Manager.Configuration;
+﻿using Task.Manager.Configuration;
 using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
 
 namespace Task.Manager.Gui.Controls;
 
-public partial class ModulesControl
+public partial class ProcessInfoControl
 {
     private class ModuleListViewItem : ListViewItem
     {
@@ -16,7 +16,7 @@ public partial class ModulesControl
             SubItems.AddRange(
                 new ListViewSubItem(this, moduleInfo.FileName));
             
-            for (int i = 0; i < (int)Columns.Count; i++) {
+            for (int i = 0; i < (int)ModuleColumns.Count; i++) {
                 SubItems[i].BackgroundColor = theme.Background;
                 SubItems[i].ForegroundColor = theme.Foreground;
             }

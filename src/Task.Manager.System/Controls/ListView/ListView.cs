@@ -380,6 +380,10 @@ public class ListView : Control
                 else {
                     RedrawItem();
                 }
+
+                if (SelectedIndex != -1) {
+                    OnItemClicked(SelectedItem);
+                }
                 
                 handled = true;
                 break;
@@ -436,8 +440,17 @@ public class ListView : Control
             RemoveAt(index);
         }
     }
-    
-    public int SelectedIndex => _viewPort.SelectedIndex;
+
+    public int SelectedIndex
+    {
+        get => _viewPort.SelectedIndex;
+        set {
+            ArgumentOutOfRangeException.ThrowIfNegative(value, nameof(value));
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(value, _items.Count, nameof(value));
+
+            _viewPort.SelectedIndex = value;
+        }
+    }
     
     public ListViewItem SelectedItem => _items[SelectedIndex];
 }

@@ -18,8 +18,7 @@ public sealed class MainScreen : Screen
 
     private readonly ListView _menuView;
     private readonly ProcessControl _processControl;
-    private readonly ModulesControl _modulesControl;
-    private readonly ThreadsControl _threadsControl;
+    private readonly ProcessInfoControl _processInfoControl;
     private readonly HeaderControl _headerControl;
     private readonly FooterControl _footerControl;
     private Control? _activeControl;
@@ -43,10 +42,8 @@ public sealed class MainScreen : Screen
         _commandMap = new Dictionary<Type, AbstractCommand>() {
             [typeof(HelpCommand)] = new HelpCommand(),
             [typeof(SetupCommand)] = new SetupCommand(),
-            [typeof(ProcessesCommand)] = new ProcessesCommand(this),
-            [typeof(ModulesCommand)] = new ModulesCommand(this),
-            [typeof(ThreadsCommand)] = new ThreadsCommand(this),
-            [typeof(ProcessSortCommand)] = new ProcessSortCommand(this)
+            [typeof(ProcessSortCommand)] = new ProcessSortCommand(this),
+            [typeof(ProcessInfoCommand)] = new ProcessInfoCommand(this)
         };
 
         _menuView = new ListView(terminal) {
@@ -71,14 +68,12 @@ public sealed class MainScreen : Screen
             terminal, 
             _theme);
         
-        _modulesControl = new ModulesControl(terminal, _theme);
-        _threadsControl = new ThreadsControl(terminal, _theme);
+        _processInfoControl = new ProcessInfoControl(terminal, _theme);
         _footerControl = new FooterControl(terminal, _theme);
 
         Controls
             .Add(_processControl)
-            .Add(_modulesControl)
-            .Add(_threadsControl);
+            .Add(_processInfoControl);
     }
 
     public Control? GetActiveControl => _activeControl;
@@ -103,10 +98,8 @@ public sealed class MainScreen : Screen
         AbstractCommand? command = keyInfo.Key switch {
             ConsoleKey.F1 => GetCommandInstance<HelpCommand>(),
             ConsoleKey.F2 => GetCommandInstance<SetupCommand>(),
-            ConsoleKey.F3 => GetCommandInstance<ProcessesCommand>(),
-            ConsoleKey.F4 => GetCommandInstance<ModulesCommand>(),
-            ConsoleKey.F5 => GetCommandInstance<ThreadsCommand>(),
-            ConsoleKey.F6 => GetCommandInstance<ProcessSortCommand>(),
+            ConsoleKey.F3 => GetCommandInstance<ProcessSortCommand>(),
+            ConsoleKey.F4 => GetCommandInstance<ProcessInfoCommand>(),
             _ => null
         };
 

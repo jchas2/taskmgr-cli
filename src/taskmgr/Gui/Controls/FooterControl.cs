@@ -9,7 +9,7 @@ namespace Task.Manager.Gui.Controls;
 public sealed class FooterControl : Control
 {
     private readonly Theme _theme;
-    private const string CommandText = "          Help      Setup     Processes Modules   Threads   Sort      ";
+    private const string CommandText = "          Help      Setup     Sort      Proc Info ";
 
     public FooterControl(ISystemTerminal terminal, Theme theme) : base(terminal) => _theme = theme;
 
