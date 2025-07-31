@@ -7,7 +7,7 @@ public static partial class ProcessUtils
 #if __APPLE__
     public static uint GetHandleCountInternal(SysDiag::Process process)
     {
-        return process.HandleCount;
+        return (uint)process.HandleCount;
     }
 #endif
 }
