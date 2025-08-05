@@ -221,7 +221,7 @@ public partial class ProcessInfoControl : Control
         Clear();
         
         _processInfoView.X = X;
-        _processInfoView.Y = Y;
+        _processInfoView.Y = Y + 1;
         _processInfoView.Width = Width;
         _processInfoView.Height = ProcessInfoViewHeight;
         _processInfoView.ColumnHeaders[(int)InfoColumns.Key].Width = ColumnInfoKeyWidth;
@@ -230,7 +230,7 @@ public partial class ProcessInfoControl : Control
         
         _menuView.X = X;
         _menuView.Y = _processInfoView.Y + _processInfoView.Height + ControlGutter;
-        _menuView.Height = Height - (ProcessInfoViewHeight + ControlGutter);
+        _menuView.Height = Height - (ProcessInfoViewHeight + 1 + ControlGutter);
         _menuView.Width = MenuViewWidth;
         _menuView.ColumnHeaders[0].Width = MenuViewWidth;
         _menuView.Resize();

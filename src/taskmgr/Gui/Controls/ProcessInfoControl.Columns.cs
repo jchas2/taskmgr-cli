@@ -2,7 +2,7 @@
 
 public partial class ProcessInfoControl
 {
-    internal const int ColumnInfoKeyWidth = 20;
+    internal const int ColumnInfoKeyWidth = 14;
     internal const int ColumnInfoValueWidth = 60;
  
     private enum InfoColumns

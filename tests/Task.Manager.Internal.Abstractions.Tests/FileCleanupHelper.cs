@@ -25,9 +25,7 @@ public sealed class FileCleanupHelper : IDisposable
 
                     Directory.Delete(dir, recursive: true);
                 }
-                catch (DirectoryNotFoundException) {
-                        
-                }
+                catch (DirectoryNotFoundException) { }
             }
             catch { }
         }
@@ -37,6 +35,7 @@ public sealed class FileCleanupHelper : IDisposable
     {
         lock (_lock) {
             string tempDirectory = Path.Combine(Path.GetTempPath(), $"{memberName}-{Guid.NewGuid()}");
+            Directory.CreateDirectory(tempDirectory);
             _tempDirs.Add(tempDirectory);
             return tempDirectory;
         }

@@ -26,5 +26,4 @@ public sealed class IntegerExtensionsTests
         string value = num.ToFormattedByteSize();
         Assert.Equal(expected, value);
     }
-
 }
