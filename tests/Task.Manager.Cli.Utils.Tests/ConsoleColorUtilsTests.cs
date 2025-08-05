@@ -1,6 +1,6 @@
 namespace Task.Manager.Cli.Utils.Tests;
 
-public sealed class When_Using_ConsoleColorUtils
+public sealed class ConsoleColorUtilsTests
 {
     public static TheoryData<string, ConsoleColor> ColourData()
         => new()

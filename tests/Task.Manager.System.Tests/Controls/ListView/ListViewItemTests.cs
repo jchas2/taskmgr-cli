@@ -4,7 +4,7 @@ using Task.Manager.System.Controls.ListView;
 
 namespace Task.Manager.Tests.Controls;
 
-public sealed class When_Using_ListViewItem
+public sealed class ListViewItemTests
 {
     private readonly Mock<ISystemTerminal> _terminalMock = new();
     
