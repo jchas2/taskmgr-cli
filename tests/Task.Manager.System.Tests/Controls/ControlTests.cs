@@ -2,7 +2,7 @@
 
 namespace Task.Manager.System.Tests.Controls;
 
-public class When_Using_Control
+public class ControlTests
 {
     private static readonly SystemTerminal SystemTerminalSingleton = new SystemTerminal();
     

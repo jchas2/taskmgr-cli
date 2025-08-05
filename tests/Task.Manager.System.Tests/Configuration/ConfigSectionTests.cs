@@ -2,7 +2,7 @@
 
 namespace Task.Manager.System.Tests.Configuration;
 
-public class When_Using_ConfigSection
+public class ConfigSectionTests
 {
     [Fact]
     public void Should_Add_Section_With_Strings()

@@ -3,7 +3,7 @@ using Task.Manager.Cli.Utils;
 
 namespace Task.Manager.System.Tests;
 
-public sealed class When_Using_SystemTerminal
+public sealed class SystemTerminalTests
 {
     [Fact]
     public void Should_Set_Streams()

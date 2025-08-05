@@ -2,7 +2,7 @@
 
 namespace Task.Manager.System.Tests.Configuration;
 
-public sealed class When_Using_ConfigParser
+public sealed class ConfigParserTests
 {
     private static string MinConfigFile => @"
 [section1]

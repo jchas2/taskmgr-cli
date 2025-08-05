@@ -19,6 +19,12 @@ public class Config
         return this;
     }
     
+    public IList<ConfigSection> ConfigSections
+    {
+        get => _configSections;
+        private set => _configSections = value;
+    }
+
     public bool ContainsSection(string name) =>
         _configSections.Any(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
 
@@ -50,12 +56,14 @@ public class Config
         return _configSections.Single(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
     }
     
-    public IList<ConfigSection> ConfigSections
+    private static Config ParseConfig(ConfigParser parser)
     {
-        get => _configSections;
-        private set => _configSections = value;
+        Config config = new();
+        parser.Parse(); 
+        config.ConfigSections = parser.Sections;
+        return config;
     }
-
+    
     private static void TryLoadConfig(Action action)
     {
         try {
@@ -64,13 +72,5 @@ public class Config
         catch (Exception e) {
             throw new ConfigLoadException(e.Message, e);
         }
-    }
-    
-    private static Config ParseConfig(ConfigParser parser)
-    {
-        Config config = new();
-        parser.Parse(); 
-        config.ConfigSections = parser.Sections;
-        return config;
     }
 }

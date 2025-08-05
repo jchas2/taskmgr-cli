@@ -3,11 +3,11 @@ using Xunit.Abstractions;
 
 namespace Task.Manager.System.Tests;
 
-public sealed class When_Using_SystemInfo
+public sealed class SystemInfoTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
     
-    public When_Using_SystemInfo(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
+    public SystemInfoTests(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
     
     [Fact]
     public void Should_Get_Cpu_Times()

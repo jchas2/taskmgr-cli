@@ -4,7 +4,7 @@ using Task.Manager.System.Process;
 
 namespace Task.Manager.System.Tests.Process;
 
-public sealed class When_Using_ProcessTimeInfo
+public sealed class ProcessTimeInfoTests
 {
     [Fact]
     public void Should_Clear_All_Properties()

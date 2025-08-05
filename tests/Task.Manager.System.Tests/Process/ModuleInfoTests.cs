@@ -3,7 +3,7 @@ using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Tests.Process;
 
-public sealed class When_Using_ModuleInfo
+public sealed class ModuleInfoTests
 {
     [Fact]
     public void Should_Return_Modules_For_Current_Process()
