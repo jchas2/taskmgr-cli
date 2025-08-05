@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Task.Manager.Configuration;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
@@ -37,6 +38,9 @@ public partial class ProcessInfoControl : Control
             ForegroundColour = theme.Foreground,
             HeaderBackgroundColour = theme.HeaderBackground,
             HeaderForegroundColour = theme.HeaderForeground,
+            EnableScroll = false,
+            EnableRowSelect = false,
+            ShowColumnHeaders = false,
             Visible = true
         };
 
@@ -56,7 +60,7 @@ public partial class ProcessInfoControl : Control
 
         _menuView.ColumnHeaders.Add(new ListViewColumnHeader("SELECT"));
 
-        _modulesView = new ListView(terminal) {
+        _threadsView = new ListView(terminal) {
             BackgroundHighlightColour = theme.BackgroundHighlight,
             ForegroundHighlightColour = theme.ForegroundHighlight,
             BackgroundColour = theme.Background,
@@ -66,11 +70,13 @@ public partial class ProcessInfoControl : Control
             Visible = true
         };
 
-        _modulesView.ColumnHeaders
-            .Add(new ListViewColumnHeader("MODULE"))
-            .Add(new ListViewColumnHeader("PATH"));
-
-        _threadsView = new ListView(terminal) {
+        _threadsView.ColumnHeaders
+            .Add(new ListViewColumnHeader("THREAD ID"))
+            .Add(new ListViewColumnHeader("STATE"))
+            .Add(new ListViewColumnHeader("REASON"))
+            .Add(new ListViewColumnHeader("PRI"));
+        
+        _modulesView = new ListView(terminal) {
             BackgroundHighlightColour = theme.BackgroundHighlight,
             ForegroundHighlightColour = theme.ForegroundHighlight,
             BackgroundColour = theme.Background,
@@ -80,11 +86,9 @@ public partial class ProcessInfoControl : Control
             Visible = false
         };
 
-        _threadsView.ColumnHeaders
-            .Add(new ListViewColumnHeader("THREAD ID"))
-            .Add(new ListViewColumnHeader("STATE"))
-            .Add(new ListViewColumnHeader("REASON"))
-            .Add(new ListViewColumnHeader("PRI"));
+        _modulesView.ColumnHeaders
+            .Add(new ListViewColumnHeader("MODULE"))
+            .Add(new ListViewColumnHeader("PATH"));
 
         _handlesView = new ListView(terminal) {
             BackgroundHighlightColour = theme.BackgroundHighlight,
@@ -113,31 +117,9 @@ public partial class ProcessInfoControl : Control
             _handlesView
         });
 
-        _focusedControl = _modulesView;
+        _focusedControl = _threadsView;
     }
 
-    private void LoadProcessInfo()
-    {
-        ListViewItem infoItem = new(new string[] { "KEY", "VALUE" });
-        _processInfoView.Items.Add(infoItem);
-        
-        var modules = ModuleInfo.GetModules(SelectedProcessId)
-            .OrderBy(m => m.ModuleName)
-            .ToList();
-        
-        foreach (var moduleInfo in modules) {
-            _modulesView.Items.Add(new ModuleListViewItem(moduleInfo, _theme));
-        }
-        
-        List<ThreadInfo> threads = ThreadInfo.GetThreads(SelectedProcessId)
-            .OrderBy(m => m.ThreadId)
-            .ToList();
-        
-        foreach (var threadInfo in threads) {
-            _threadsView.Items.Add(new ThreadListViewItem(threadInfo, _theme));
-        }
-    }
-    
     private void MenuViewOnItemClicked(object? sender, ListViewItemEventArgs e)
     {
         _tabControls.ForEach(ctrl => ctrl.Visible = false);
@@ -155,7 +137,7 @@ public partial class ProcessInfoControl : Control
             Control.DrawingLockAcquire();
 
             if (_processInfoView.Items.Count == 0) {
-                LoadProcessInfo();
+                TryLoadProcessInfo();
             }
             
             _processInfoView.Draw();
@@ -182,6 +164,7 @@ public partial class ProcessInfoControl : Control
                 case ConsoleKey.PageDown:
                     _focusedControl.KeyPressed(keyInfo, ref handled);
                     break;
+                
                 case ConsoleKey.LeftArrow:
                     _focusedControl = _menuView;
                     
@@ -198,6 +181,7 @@ public partial class ProcessInfoControl : Control
                     ListViewItemEventArgs e = new(_menuView.SelectedItem);
                     MenuViewOnItemClicked(this, e);
                     break;
+                
                 case ConsoleKey.RightArrow:
                     _focusedControl = activeControl;
                     
@@ -221,8 +205,8 @@ public partial class ProcessInfoControl : Control
 
     protected override void OnLoad()
     {
-        _menuView.Items.Add(new MenuListViewItem(_modulesView, "MODULES"));
         _menuView.Items.Add(new MenuListViewItem(_threadsView, "THREADS"));
+        _menuView.Items.Add(new MenuListViewItem(_modulesView, "MODULES"));
         _menuView.Items.Add(new MenuListViewItem(_handlesView, "HANDLES"));
 
         foreach (Control control in Controls) {
@@ -291,5 +275,43 @@ public partial class ProcessInfoControl : Control
     {
         get => _selectedProcessId;
         set => _selectedProcessId = value;
+    }
+    
+    private void TryLoadProcessInfo()
+    {
+        try {
+            if (!ProcessUtils.TryGetProcessByPid(SelectedProcessId, out Process? process)) {
+                _processInfoView.Items.Clear();
+                return;
+            }
+
+            _processInfoView.Items.Add(new(["Pid:", process!.Id.ToString()]) );
+            _processInfoView.Items.Add(new(["File:", process!.MainModule!.ModuleName]) );
+            _processInfoView.Items.Add(new(["Description:", ""]) );
+            _processInfoView.Items.Add(new(["Path:", ProcessUtils.GetProcessCommandLine(process)]) );
+            _processInfoView.Items.Add(new(["User:", ProcessUtils.GetProcessUserName(process)]) );
+            _processInfoView.Items.Add(new(["Version:", ""]) );
+            _processInfoView.Items.Add(new(["Size:", ""]) );
+            _processInfoView.Items.Add(new(["", ""]) );
+
+            var modules = ModuleInfo.GetModules(SelectedProcessId)
+                .OrderBy(m => m.ModuleName)
+                .ToList();
+
+            foreach (var moduleInfo in modules) {
+                _modulesView.Items.Add(new ModuleListViewItem(moduleInfo, _theme));
+            }
+
+            List<ThreadInfo> threads = ThreadInfo.GetThreads(SelectedProcessId)
+                .OrderBy(m => m.ThreadId)
+                .ToList();
+
+            foreach (var threadInfo in threads) {
+                _threadsView.Items.Add(new ThreadListViewItem(threadInfo, _theme));
+            }
+        }
+        catch (Exception ex) {
+            _processInfoView.Items.Add(new(new string[] { "Error:", ex.Message }));
+        }
     }
 }

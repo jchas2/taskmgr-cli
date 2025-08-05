@@ -38,15 +38,6 @@ public partial class Processor : IProcessor
         _isWindows = OperatingSystem.IsWindows();
     }
     
-    private ulong GetProcessIoOperations(in int pid)
-    {
-        if (!ProcessUtils.TryGetProcessByPid(pid, out SysDiag::Process? process)) {
-            return 0;
-        }
-        
-        return GetProcessIoOperations(process!);
-    }
-    
     private bool GetProcessTimes(in int pid, ref ProcessTimeInfo ptInfo)
     {
         try {
@@ -154,7 +145,7 @@ public partial class Processor : IProcessor
                 }
 
                 procInfo.UsedMemory = procs[index].WorkingSet64;
-                procInfo.DiskOperations = GetProcessIoOperations(procs[index]) ;
+                procInfo.DiskOperations = ProcessUtils.GetProcessIoOperations(procs[index]) ;
                 procInfo.DiskUsage = 0;
                 procInfo.CpuTimePercent = 0.0;
                 procInfo.CpuUserTimePercent = 0.0;
@@ -232,7 +223,7 @@ public partial class Processor : IProcessor
                 
                 ulong prevDiskOperations = _allProcesses[i].DiskOperations;
                 
-                _allProcesses[i].DiskOperations = GetProcessIoOperations(_allProcesses[i].Pid);
+                _allProcesses[i].DiskOperations = ProcessUtils.GetProcessIoOperations(_allProcesses[i].Pid);
                 
                 ulong currDiskOperations = _allProcesses[i].DiskOperations;
 
@@ -322,9 +313,9 @@ public partial class Processor : IProcessor
             procInfo.Pid = process.Id;
             procInfo.ParentPid = 0;
             procInfo.ExeName = process.ProcessName;
-            procInfo.FileDescription = GetProcessProductName(process);
-            procInfo.UserName = GetProcessUserName(process);
-            procInfo.CmdLine = GetProcessCommandLine(process);
+            procInfo.FileDescription = ProcessUtils.GetProcessProductName(process);
+            procInfo.UserName = ProcessUtils.GetProcessUserName(process);
+            procInfo.CmdLine = ProcessUtils.GetProcessCommandLine(process);
             procInfo.StartTime = process.StartTime;
             procInfo.ThreadCount = process.Threads.Count;
             procInfo.HandleCount = ProcessUtils.GetHandleCount(process);

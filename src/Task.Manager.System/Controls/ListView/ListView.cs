@@ -20,7 +20,7 @@ public class ListView : Control
     private List<ListViewItem> _items = [];
 
     private ViewPort _viewPort = new();
-    
+
     private ISystemTerminal _terminal;
     
     /* Buffer for working with strings when writing out terminal content */
@@ -38,6 +38,10 @@ public class ListView : Control
         _terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
         _itemCollection = new ListViewItemCollection(this);
         _columnHeaderCollection = new ListViewColumnHeaderCollection(this);
+
+        EnableRowSelect = true;
+        EnableScroll = true;
+        ShowColumnHeaders = true; 
     }
     
     public ConsoleColor BackgroundHighlightColour { get; set; } = ConsoleColor.White;
@@ -213,11 +217,15 @@ public class ListView : Control
                 : "{0,-" + columnFormatWidth.ToString() + "}";
 
             ConsoleColor foregroundColour = highlight
-                ? ForegroundHighlightColour
+                ? EnableRowSelect
+                    ? ForegroundHighlightColour
+                    : subItem.ForegroundColor
                 : subItem.ForegroundColor;
 
             ConsoleColor backgroundColour = highlight
-                ? BackgroundHighlightColour
+                ? EnableRowSelect
+                    ? BackgroundHighlightColour
+                    : subItem.BackgroundColor
                 : subItem.BackgroundColor;
 
             if (subItem.Text.Length > columnWidth) {
@@ -269,6 +277,10 @@ public class ListView : Control
         }
     }
 
+    public bool EnableRowSelect { get; set; }
+    
+    public bool EnableScroll { get; set; }
+    
     public ConsoleColor ForegroundHighlightColour { get; set; } = ConsoleColor.Cyan;
 
     internal ListViewColumnHeader GetColumnHeaderByIndex(int index)
@@ -356,9 +368,16 @@ public class ListView : Control
     {
         // Bounds is the scrollable region for the ListViewItems. The value 1
         // is added to make room for the header.
-        _viewPort.Bounds = new Rectangle(X, Y + 1, Width, Height);
+        int y = ShowColumnHeaders 
+            ? Y + 1 
+            : Y;
         
-        DrawHeader();
+        _viewPort.Bounds = new Rectangle(X, y, Width, Height);
+
+        if (ShowColumnHeaders) {
+            DrawHeader();
+        }
+        
         DrawItems();
     }
 
@@ -375,6 +394,10 @@ public class ListView : Control
             case ConsoleKey.DownArrow:
             case ConsoleKey.PageUp:
             case ConsoleKey.PageDown: {
+                if (!EnableScroll) {
+                    return;
+                }
+                
                 DoScroll(keyInfo.Key, out bool redrawAllItems);
 
                 if (redrawAllItems) {
@@ -457,4 +480,6 @@ public class ListView : Control
     }
     
     public ListViewItem SelectedItem => _items[SelectedIndex];
+    
+    public bool ShowColumnHeaders { get; set; }
 }
