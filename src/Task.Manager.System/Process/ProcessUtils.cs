@@ -5,6 +5,16 @@ namespace Task.Manager.System.Process;
 
 public static partial class ProcessUtils
 {
+    public static bool EndTask(int pid, int timeOutMilliseconds)
+    {
+        if (!TryGetProcessByPid(pid, out SysDiag::Process? process) || process == null) {
+            return false;
+        }
+        
+        process.Kill(entireProcessTree: true);
+        return process.WaitForExit(timeOutMilliseconds);
+    }
+    
     public static uint GetHandleCount(SysDiag::Process process) => GetHandleCountInternal(process);
     
     public static bool TryGetProcessByPid(int pid, out SysDiag::Process? process)

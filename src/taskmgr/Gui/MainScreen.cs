@@ -43,7 +43,8 @@ public sealed class MainScreen : Screen
             [typeof(HelpCommand)] = new HelpCommand(),
             [typeof(SetupCommand)] = new SetupCommand(),
             [typeof(ProcessSortCommand)] = new ProcessSortCommand(this),
-            [typeof(ProcessInfoCommand)] = new ProcessInfoCommand(this)
+            [typeof(ProcessInfoCommand)] = new ProcessInfoCommand(this),
+            [typeof(EndTaskCommand)] = new EndTaskCommand(this)
         };
 
         _menuView = new ListView(terminal) {
@@ -100,6 +101,7 @@ public sealed class MainScreen : Screen
             ConsoleKey.F2 => GetCommandInstance<SetupCommand>(),
             ConsoleKey.F3 => GetCommandInstance<ProcessSortCommand>(),
             ConsoleKey.F4 => GetCommandInstance<ProcessInfoCommand>(),
+            ConsoleKey.F5 => GetCommandInstance<EndTaskCommand>(),
             _ => null
         };
 
