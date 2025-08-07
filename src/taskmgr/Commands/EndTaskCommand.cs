@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Task.Manager.Gui;
 using Task.Manager.Gui.Controls;
+using Task.Manager.System.Controls.MessageBox;
 using Task.Manager.System.Process;
 
 namespace Task.Manager.Commands;
@@ -16,10 +17,11 @@ public sealed class EndTaskCommand(MainScreen mainScreen) : ProcessCommand(mainS
         }
 
         int selectedProcessId = SelectedProcessId;
-        bool result = ProcessUtils.EndTask(selectedProcessId, EndTaskTimeout);
         
-        if (!result) {
-            Trace.WriteLine($"End task {selectedProcessId} did not terminate within timeout of {EndTaskTimeout}");
-        }
+        MainScreen.ShowMessageBox(
+            "End Task",
+            $"Force Task termination with Pid {selectedProcessId}\n\nAre you sure you want to continue?",
+            MessageBoxButtons.OkCancel,
+            () => ProcessUtils.EndTask(selectedProcessId, EndTaskTimeout));
     }
 }

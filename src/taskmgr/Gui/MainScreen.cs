@@ -96,6 +96,12 @@ public sealed class MainScreen : Screen
 
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
     {
+        base.OnKeyPressed(keyInfo, ref handled);
+        
+        if (handled) {
+            return;
+        }
+        
         AbstractCommand? command = keyInfo.Key switch {
             ConsoleKey.F1 => GetCommandInstance<HelpCommand>(),
             ConsoleKey.F2 => GetCommandInstance<SetupCommand>(),
@@ -136,10 +142,7 @@ public sealed class MainScreen : Screen
     
     protected override void OnResize()
     {
-        X = 0;
-        Y = 0;
-        Height = Terminal.WindowHeight;
-        Width = Terminal.WindowWidth;
+        base.OnResize();
         
         Clear();
         

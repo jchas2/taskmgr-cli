@@ -17,12 +17,4 @@ public class SetupScreen : Screen
     protected override void OnLoad()
     {
     }
-
-    protected override void OnResize()
-    {
-        X = 0;
-        Y = 0;
-        Width = Terminal.WindowWidth;
-        Height = Terminal.WindowHeight;
-    }
 }
