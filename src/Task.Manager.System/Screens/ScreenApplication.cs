@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Task.Manager.System.Controls.MessageBox;
 
 namespace Task.Manager.System.Screens;
 
@@ -31,11 +32,22 @@ public sealed class ScreenApplication
 
                     _screenStack.Push(value);
                     _ownerScreen = value;
+                    
+                    FitScreenToConsole(_ownerScreen);
+                    
                     _ownerScreen.Show();
                 }
             }
         }
 
+        private void FitScreenToConsole(Screen screen)
+        {
+            screen.X = 0;
+            screen.Y = 0;
+            screen.Width = Console.WindowWidth;
+            screen.Height = Console.WindowHeight;
+        }
+        
         public void RunApplicationLoop()
         {
             var consoleKey = ConsoleKey.None;
@@ -51,6 +63,7 @@ public sealed class ScreenApplication
 
                     // Resize Events.
                     if (screenWidth != Console.WindowWidth || screenHeight != Console.WindowHeight) {
+                        FitScreenToConsole(ownerScreen);
                         ownerScreen.Resize();
                         ownerScreen.Draw();
                         screenWidth = Console.WindowWidth;
@@ -101,7 +114,7 @@ public sealed class ScreenApplication
     private static readonly Dictionary<Type, Screen> _registeredScreens = new();
     private static readonly ScreenApplicationContext _applicationContext = new();
     private static int _invocationCount = 0;
-    
+
     public static void RegisterScreen(Screen screen)
     {
         if (_registeredScreens.ContainsKey(screen.GetType())) {

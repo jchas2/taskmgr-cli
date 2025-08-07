@@ -1,4 +1,5 @@
-﻿using Task.Manager.System;
+﻿using Task.Manager.Cli.Utils;
+using Task.Manager.System;
 
 namespace Task.Manager.System.Controls;
 
@@ -25,14 +26,20 @@ public class Control
         _controlCollection = new ControlCollection(this);
     }
 
-    public static void DrawingLockAcquire()
+    public ConsoleColor BackgroundColour { get; set; } = ConsoleColor.Black;
+
+    public void Clear() => OnClear();
+    
+    internal void ClearControls() => _controls.Clear();
+
+    protected static void DrawingLockAcquire()
     {
         _drawingLocksAcquired++;
         
         Monitor.Enter(_drawingLock);
     }
 
-    public static void DrawingLockRelease()
+    protected static void DrawingLockRelease()
     {
         if (_drawingLocksAcquired == 0) {
             return;
@@ -42,18 +49,28 @@ public class Control
         
         Monitor.Exit(_drawingLock);
     }
-    
-    public ConsoleColor BackgroundColour { get; set; } = ConsoleColor.Black;
 
-    public void Clear() => OnClear();
-    
-    internal void ClearControls() => _controls.Clear();
+    protected void DrawRectangle(
+        int x, 
+        int y, 
+        int width, 
+        int height, 
+        ConsoleColor colour)
+    {
+        using TerminalColourRestorer _ = new();
+        Terminal.BackgroundColor = colour;
+        
+        for (int i = y; i < y + height; i++) {
+            _terminal.SetCursorPosition(x, i);
+            _terminal.WriteEmptyLineTo(width);
+        }
+    }
 
     public void Unload() => OnUnload();
     
     public void Draw()
     {
-        if (Visible) {
+        if (RedrawEnabled && Visible) {
             OnDraw();
         }
     }
@@ -113,13 +130,13 @@ public class Control
     
     public void Load() => OnLoad();
     
-    protected virtual void OnClear()
-    {
-        for (int i = Y; i < Height; i++) {
-            _terminal.SetCursorPosition(X, i);
-            _terminal.WriteEmptyLineTo(Width);
-        }
-    }
+    protected virtual void OnClear() =>
+        DrawRectangle(
+            X, 
+            Y, 
+            Width, 
+            Height, 
+            BackgroundColour);
 
     protected virtual void OnDraw() { }
 
@@ -135,6 +152,8 @@ public class Control
             control.Unload();
         }
     }
+
+    internal static bool RedrawEnabled { get; set; } = true;
     
     internal void RemoveControlAt(int index)
     {
