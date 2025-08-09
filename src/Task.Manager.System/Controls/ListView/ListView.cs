@@ -47,8 +47,12 @@ public class ListView : Control
     public ConsoleColor BackgroundHighlightColour { get; set; } = ConsoleColor.White;
 
     internal void ClearColumnHeaders() => _columnHeaders.Clear();
-    
-    internal void ClearItems() => _items.Clear();
+
+    internal void ClearItems()
+    {
+        _items.Clear();
+        _viewPort.Reset();
+    }
 
     internal int ColumnHeaderCount => _columnHeaders.Count;
 
@@ -389,6 +393,10 @@ public class ListView : Control
 
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
     {
+        if (Items.Count == 0) {
+            return;
+        }
+        
         switch (keyInfo.Key) {
             case ConsoleKey.UpArrow:
             case ConsoleKey.DownArrow:
@@ -409,7 +417,7 @@ public class ListView : Control
                 }
 
                 if (SelectedIndex != -1) {
-                    OnItemClicked(SelectedItem);
+                    OnItemClicked(SelectedItem!);
                 }
                 
                 handled = true;
@@ -418,7 +426,7 @@ public class ListView : Control
             case ConsoleKey.Enter: {
                 
                 if (SelectedIndex != -1) {
-                    OnItemSelected(SelectedItem);
+                    OnItemSelected(SelectedItem!);
                 }
                 
                 handled = true;
@@ -478,8 +486,17 @@ public class ListView : Control
             _viewPort.SelectedIndex = value;
         }
     }
-    
-    public ListViewItem SelectedItem => _items[SelectedIndex];
+
+    public ListViewItem? SelectedItem
+    {
+        get {
+            if (_items.Count == 0) {
+                return null;
+            }
+            
+            return _items[SelectedIndex];
+        }
+    } 
     
     public bool ShowColumnHeaders { get; set; }
 }

@@ -2,7 +2,7 @@
 
 namespace Task.Manager.System.Controls.ListView;
 
-public class ViewPort
+public sealed class ViewPort
 {
     public int CurrentIndex { get; set; } = 0;
     public int SelectedIndex { get; set; } = 0;
@@ -10,5 +10,14 @@ public class ViewPort
     public int RowCount { get; set; } = 0;
     public int Height { get; set; } = 0;
     public Rectangle Bounds { get; set; } = new Rectangle();
-}
 
+    public void Reset()
+    {
+        CurrentIndex = 0;
+        SelectedIndex = 0;
+        PreviousSelectedIndex = 0;
+        RowCount = 0;
+        Height = 0;
+        Bounds = new Rectangle();
+    }
+}

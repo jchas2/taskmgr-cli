@@ -1,7 +1,4 @@
-﻿using System.Linq.Expressions;
-using Microsoft.Win32.SafeHandles;
-using System.Runtime.CompilerServices;
-using Task.Manager.Interop.Mach;
+﻿using System.Runtime.CompilerServices;
 using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
@@ -12,10 +9,11 @@ public partial class Processor : IProcessor
     
     private readonly ISystemInfo _systemInfo;
     private SystemStatistics _systemStatistics;
-    private ProcessInfo[] _allProcesses;
-    private ProcessInfo[] _allProcessesCopy;
+    private List<ProcessInfo> _allProcesses;
+    private List<ProcessInfo> _allProcessesCopy;
     private readonly Dictionary<int, ProcessInfo> _processMap;
     private Thread? _workerThread;
+    private Thread? _monitorThread;
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly Lock _lock;
     private readonly bool _isWindows = false;
@@ -31,8 +29,8 @@ public partial class Processor : IProcessor
     {
         _systemInfo = new SystemInfo();
         _systemStatistics = new SystemStatistics();
-        _allProcesses = new ProcessInfo[InitialBufferSize];
-        _allProcessesCopy = [];
+        _allProcesses = new List<ProcessInfo>(InitialBufferSize);
+        _allProcessesCopy = new List<ProcessInfo>(InitialBufferSize);
         _processMap = new Dictionary<int, ProcessInfo>();
         _lock = new Lock();
         _isWindows = OperatingSystem.IsWindows();
@@ -78,17 +76,20 @@ public partial class Processor : IProcessor
 
         _workerThread = new Thread(() => RunInternal(_cancellationTokenSource.Token));
         _workerThread.Start();
+        
+        _monitorThread = new Thread(() => RunMonitorInternal(_cancellationTokenSource.Token));
+        _monitorThread.Start();
     }
 
     private void RunInternal(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested) {
             SysDiag::Process[] procs = SysDiag::Process.GetProcesses();
-            Array.Clear(_allProcesses);
 
             int delta = 0;
             int index = 0;
 
+            _allProcesses.Clear();
             _processCount = 0;
             _threadCount = 0;
 
@@ -117,10 +118,10 @@ public partial class Processor : IProcessor
                     continue;
                 }
 
-                if (!_processMap.TryGetValue(procs[index].Id, out ProcessInfo procInfo)) {
+                if (!_processMap.TryGetValue(procs[index].Id, out ProcessInfo? procInfo)) {
                     procInfo = new ProcessInfo();
 
-                    if (!TryMapProcessInfo(procs[index], ref procInfo)) {
+                    if (!TryMapProcessInfo(procs[index], procInfo)) {
                         delta++;
                         continue;
                     }
@@ -136,7 +137,7 @@ public partial class Processor : IProcessor
                 /* Pid has been reallocated to new process. */
                 if (!procInfo.StartTime.Equals(startTime)) {
 
-                    if (!TryMapProcessInfo(procs[index], ref procInfo)) {
+                    if (!TryMapProcessInfo(procs[index], procInfo)) {
                         delta++;
                         continue;
                     }
@@ -155,11 +156,7 @@ public partial class Processor : IProcessor
                 procInfo.CurrCpuKernelTime = 0;
                 procInfo.CurrCpuUserTime = 0;
 
-                if (index == _allProcesses.Length) {
-                    Array.Resize(ref _allProcesses, _allProcesses.Length * 2);
-                }
-
-                _allProcesses[index - delta] = procInfo;
+                _allProcesses.Add(procInfo);
                 _processCount++;
                 _threadCount += procs[index].Threads.Count;
             }
@@ -168,8 +165,6 @@ public partial class Processor : IProcessor
                 return;
             }
 
-            Array.Resize(ref _allProcesses, index - delta);
-            
             GetSystemTimes(out SystemTimes prevSysTimes);
             Thread.Sleep(UpdateTimeInMs);
             GetSystemTimes(out SystemTimes currSysTimes);
@@ -191,7 +186,7 @@ public partial class Processor : IProcessor
             long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User;
             ProcessTimeInfo currProcTimes = new();
 
-            for (int i = 0; i < _allProcesses.Length; i++) {
+            for (int i = 0; i < _allProcesses.Count; i++) {
                 
                 if (cancellationToken.IsCancellationRequested) {
                     return;
@@ -240,37 +235,46 @@ public partial class Processor : IProcessor
             _systemStatistics.ThreadCount = _threadCount;
             _systemStatistics.GhostProcessCount = _ghostProcessCount;
 
-            // TODO: Not needed anymore as i'm using a synchronous dispatch of event handlers. 
-            // Look into async dispatch of handlers so this thread does not wait for draw operations to 
-            // complete.
             lock (_lock) {
-                Array.Resize(ref _allProcessesCopy, _allProcesses.Length);
+                _allProcessesCopy.Clear();
 
-                Array.Copy(
-                    sourceArray: _allProcesses,
-                    sourceIndex: 0,
-                    destinationArray: _allProcessesCopy,
-                    destinationIndex: 0,
-                    length: _allProcesses.Length);
-                
-                // Signal listeners processes and stats updated.
+                for (int i = 0; i < _allProcesses.Count; i++) {
+                    _allProcessesCopy.Add(new ProcessInfo(_allProcesses[i]));
+                }
+            }
+        }
+    }
+
+    private void RunMonitorInternal(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested) {
+            lock (_lock) {
                 ProcessorEventArgs eventArgs = new(_allProcessesCopy, _systemStatistics);
                 ProcessorUpdated?.Invoke(this, eventArgs);
             }
+            
+            Thread.Sleep(UpdateTimeInMs);
         }
     }
 
     public void Stop()
     {
         _cancellationTokenSource?.Cancel();
-        
-        if (_workerThread != null) {
-            while (_workerThread.IsAlive) {
-                Thread.Sleep(100);
+
+        List<Thread?> threads = new() { _workerThread, _monitorThread };
+
+        for (int i = 0; i < threads.Count; i++) {
+            Thread? thread = threads[i];
+
+            if (thread != null) {
+                
+                while (thread.IsAlive) {
+                    Thread.Sleep(100);
+                }
+                
+                thread = null;
             }
         }
-        
-        _workerThread = null;
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -307,7 +311,7 @@ public partial class Processor : IProcessor
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool TryMapProcessInfo(SysDiag::Process process, ref ProcessInfo procInfo)
+    private bool TryMapProcessInfo(SysDiag::Process process, ProcessInfo procInfo)
     {
         try {
             procInfo.Pid = process.Id;
@@ -320,7 +324,6 @@ public partial class Processor : IProcessor
             procInfo.ThreadCount = process.Threads.Count;
             procInfo.HandleCount = ProcessUtils.GetHandleCount(process);
             procInfo.BasePriority = process.BasePriority;
-            procInfo.ParentPid = 0;
             return true;
         }
 #pragma warning disable CS0168 // The variable is declared but never used

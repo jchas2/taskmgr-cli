@@ -17,7 +17,7 @@ public partial class ProcessControl
     internal enum Columns
     {
         [ColumnTitle("PROCESS")]
-        [ColumnProperty("ExeName")]
+        [ColumnProperty("FileDescription")]
         Process = 0,
         [ColumnTitle("PID")]
         [ColumnProperty("Pid")]
