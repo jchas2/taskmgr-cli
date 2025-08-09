@@ -2,7 +2,7 @@
 
 namespace Task.Manager.System.Controls.MessageBox;
 
-public class MessageBox : Control
+public sealed class MessageBox : Control
 {
     private const int MinWidth = 40;
     private const int MinHeight = 11;

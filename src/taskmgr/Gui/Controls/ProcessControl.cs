@@ -74,6 +74,8 @@ public sealed partial class ProcessControl : Control
             .Add(_processView);
     }
 
+    public string FilterText { private get; set; } = string.Empty;
+    
     private void LoadSortItems()
     {
         IEnumerable<string> columns = Enum.GetValues<Columns>()
@@ -248,8 +250,31 @@ public sealed partial class ProcessControl : Control
     private void UpdateListViewItems(ProcessInfo[] allProcesses, ref SystemStatistics systemStatistics)
     {
         var sortedProcesses = allProcesses.AsQueryable()
+            .Where(p => FilterText == string.Empty || 
+                        p.ExeName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
+                        p.CmdLine.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
+                        p.UserName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase))
             .DynamicOrderBy(_sortColumn.GetProperty(), isDescending: true)
             .ToArray();
+
+        if (sortedProcesses.Length == 0) {
+            _processView.Items.Clear();
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(FilterText)) {
+            _processView.Items.Clear();
+            
+            for (int i = 0; i < sortedProcesses.Length; i++) {
+                ProcessListViewItem item = new(
+                    ref sortedProcesses[i],
+                    ref systemStatistics,
+                    _theme);
+                
+                _processView.Items.Add(item);
+            }
+            return;
+        }
         
         if (_processView.Items.Count == 0) {
             
@@ -261,7 +286,6 @@ public sealed partial class ProcessControl : Control
                 
                 _processView.Items.Add(item);
             }
-            
             return;
         }
 

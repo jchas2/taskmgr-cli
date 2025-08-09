@@ -153,7 +153,7 @@ public class Control
         }
     }
 
-    internal static bool RedrawEnabled { get; set; } = true;
+    public static bool RedrawEnabled { get; set; } = true;
     
     internal void RemoveControlAt(int index)
     {

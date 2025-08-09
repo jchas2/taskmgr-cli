@@ -15,9 +15,9 @@ public struct ProcessInfo
     public DateTime StartTime { get; set; }
 
     public string ExeName { get; set; } = string.Empty;
-    public string? FileDescription { get; set; }
-    public string? UserName { get; set; }
-    public string? CmdLine { get; set; }
+    public string FileDescription { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
+    public string CmdLine { get; set; } = string.Empty;
     
     public long DiskUsage { get; set; }
     public ulong DiskOperations { get; set; }
