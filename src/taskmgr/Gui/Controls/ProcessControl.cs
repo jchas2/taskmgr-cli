@@ -16,13 +16,15 @@ public sealed partial class ProcessControl : Control
     private readonly ListView _sortView;
     private readonly ListView _processView;
 
-    private ProcessInfo[] _allProcesses = [];
+    private List<ProcessInfo> _allProcesses = [];
     private SystemStatistics _systemStatistics;
     private ControlMode _mode = ControlMode.None;
     private Columns _sortColumn = Columns.Cpu;
 
     private const int SortControlWidth = 20;
     private const int ControlGutter = 1;
+
+    private const int InvalidSelectedItemIndex = -1;
     
     public ProcessControl(
         IProcessor processor, 
@@ -207,13 +209,17 @@ public sealed partial class ProcessControl : Control
     public int SelectedProcessId
     {
         get {
+            if (_processView.SelectedItem == null) {
+                return InvalidSelectedItemIndex;
+            }
+            
             ListViewSubItem selectedSubItem = _processView.SelectedItem.SubItems[(int)Columns.Pid];
             
             if (int.TryParse(selectedSubItem.Text, out int pid)) {
                 return pid;
             }
             
-            return -1;
+            return InvalidSelectedItemIndex;
         }
     }
 
@@ -247,72 +253,87 @@ public sealed partial class ProcessControl : Control
         Draw();
     }
 
-    private void UpdateListViewItems(ProcessInfo[] allProcesses, ref SystemStatistics systemStatistics)
+    private void UpdateListViewItems(List<ProcessInfo> allProcesses, ref SystemStatistics systemStatistics)
     {
-        var sortedProcesses = allProcesses.AsQueryable()
-            .Where(p => FilterText == string.Empty || 
-                        p.ExeName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
-                        p.CmdLine.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
-                        p.UserName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase))
-            .DynamicOrderBy(_sortColumn.GetProperty(), isDescending: true)
-            .ToArray();
+        List<ProcessInfo> sortedProcesses = FilterText == string.Empty
+            ? allProcesses.AsQueryable()
+                .DynamicOrderBy(_sortColumn.GetProperty(), isDescending: true)
+                .ToList()
+            : allProcesses.AsQueryable()
+                .Where(p => p.ExeName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
+                            p.FileDescription.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
+                            p.CmdLine.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
+                            p.UserName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase))
+                .DynamicOrderBy(_sortColumn.GetProperty(), isDescending: true)
+                .ToList();
 
-        if (sortedProcesses.Length == 0) {
+        if (sortedProcesses.Count == 0) {
             _processView.Items.Clear();
-            return;
-        }
-
-        if (!string.IsNullOrEmpty(FilterText)) {
-            _processView.Items.Clear();
-            
-            for (int i = 0; i < sortedProcesses.Length; i++) {
-                ProcessListViewItem item = new(
-                    ref sortedProcesses[i],
-                    ref systemStatistics,
-                    _theme);
-                
-                _processView.Items.Add(item);
-            }
             return;
         }
         
-        if (_processView.Items.Count == 0) {
+        // if (!string.IsNullOrEmpty(FilterText) || _processView.Items.Count == 0) {
+        //     int selectedIndex = _processView.SelectedIndex;
+        //     _processView.Items.Clear();
+        //     
+        //     for (int i = 0; i < sortedProcesses.Count; i++) {
+        //         ProcessListViewItem item = new(
+        //             sortedProcesses[i],
+        //             ref systemStatistics,
+        //             _theme);
+        //         
+        //         _processView.Items.Add(item);
+        //     }
+        //
+        //     if (selectedIndex < _processView.Items.Count) {
+        //         _processView.SelectedIndex = selectedIndex;
+        //     }
+        //     
+        //     return;
+        // }
+
+        // Remove items from the ListView that are NOT in the sorted list.
+        for (int i = _processView.Items.Count - 1; i >= 0; i--) {
+            var item = (ProcessListViewItem)_processView.Items[i];
+            var exists = false;
             
-            for (int i = 0; i < sortedProcesses.Length; i++) {
-                ProcessListViewItem item = new(
-                    ref sortedProcesses[i],
-                    ref systemStatistics,
-                    _theme);
-                
-                _processView.Items.Add(item);
+            for (int j = 0; j < sortedProcesses.Count; j++) {
+                if (sortedProcesses[j].Pid == item.Pid) {
+                    exists = true;
+                    break;
+                }
             }
-            return;
+        
+            if (!exists) {
+                _processView.Items.RemoveAt(i);
+            }
         }
 
-        for (int i = 0; i < sortedProcesses.Length; i++) {
-            var found = false;
+        // Add items from the sorted list that are NOT in the ListView.
+        for (int i = 0; i < sortedProcesses.Count; i++) {
+            var exists = false;
             
             for (int j = 0; j < _processView.Items.Count; j++) {
                 var item = (ProcessListViewItem)_processView.Items[j];
                 
                 if (sortedProcesses[i].Pid == item.Pid) {
-                    item.UpdateItem(ref sortedProcesses[i], ref systemStatistics);
-
+                    item.UpdateItem(sortedProcesses[i], ref systemStatistics);
+        
                     int insertAt = i > _processView.Items.Count - 1 
                         ? _processView.Items.Count - 1 
                         : i;
-
-                    _processView.Items.InsertAt(insertAt, item);
+        
                     _processView.Items.RemoveAt(j);
+                    _processView.Items.InsertAt(insertAt, item);
                     
-                    found = true;
+                    exists = true;
                     break;
                 }
             }
-
-            if (false == found) {
+        
+            if (!exists) {
                 ProcessListViewItem item = new(
-                    ref sortedProcesses[i],
+                    sortedProcesses[i],
                     ref systemStatistics,
                     _theme);
                 

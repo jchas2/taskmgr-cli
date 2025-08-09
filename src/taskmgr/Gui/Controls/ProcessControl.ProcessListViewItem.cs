@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.System;
@@ -11,8 +12,16 @@ public partial class ProcessControl
 {
     private class ProcessListViewItem : ListViewItem
     {
+        private int _lastThreadCount = 0;
+        
+        private long _lastBasePriority = 0;
+        private long _lastUsedMemory = 0;
+        private long _lastDiskUsage = 0;
+
+        private double _lastCpu = 0;
+        
         public ProcessListViewItem(
-            ref ProcessInfo processInfo,
+            ProcessInfo processInfo,
             ref SystemStatistics systemStatistics,
             Theme theme) 
             : base(processInfo.FileDescription ?? string.Empty)
@@ -30,15 +39,27 @@ public partial class ProcessControl
                 new ListViewSubItem(this, processInfo.DiskUsage.ToString()),
                 new ListViewSubItem(this, processInfo.CmdLine ?? string.Empty));
 
-            UpdateItem(ref processInfo, ref systemStatistics);
+            UpdateItem(processInfo, ref systemStatistics);
         }
 
         public int Pid { get; private set; }
 
         private Theme Theme { get; }
 
-        public void UpdateItem(ref ProcessInfo processInfo, ref SystemStatistics systemStatistics)
+        private void UpdateSubItem(ListViewSubItem subItem, Func<bool> lowCondition, Func<bool> highCondition)
         {
+            if (lowCondition.Invoke()) {
+                subItem.ForegroundColor = Theme.RangeLowForeground;
+            }
+            else if (highCondition.Invoke()) {
+                subItem.ForegroundColor = Theme.RangeHighForeground;
+            }
+        }
+        
+        public void UpdateItem(ProcessInfo processInfo, ref SystemStatistics systemStatistics)
+        {
+            Debug.Assert(processInfo.Pid == Pid);
+            
             for (int i = 0; i < (int)Columns.Count; i++) {
                 SubItems[i].BackgroundColor = Theme.Background;
                 SubItems[i].ForegroundColor = Theme.Foreground;
@@ -53,8 +74,14 @@ public partial class ProcessControl
             }
             
             SubItems[(int)Columns.Priority].Text = processInfo.BasePriority.ToString();
-            SubItems[(int)Columns.Cpu].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
+
+            UpdateSubItem(
+                SubItems[(int)Columns.Priority], 
+                () => processInfo.BasePriority < _lastBasePriority,
+                () => processInfo.BasePriority > _lastBasePriority);
             
+            SubItems[(int)Columns.Cpu].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
+
             if (processInfo.CpuTimePercent > 1.0) {
                 if (processInfo.CpuTimePercent < 10.0) {
                     SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeLowBackground;
@@ -72,8 +99,20 @@ public partial class ProcessControl
                     SubItems[(int)Columns.Cpu].BackgroundColor = Theme.RangeHighBackground;
                 }
             }
+            else {
+                UpdateSubItem(
+                    SubItems[(int)Columns.Cpu], 
+                    () => processInfo.CpuTimePercent < _lastCpu,
+                    () => processInfo.CpuTimePercent > _lastCpu);
+            }
             
             SubItems[(int)Columns.Threads].Text = processInfo.ThreadCount.ToString();
+
+            UpdateSubItem(
+                SubItems[(int)Columns.Threads], 
+                () => processInfo.ThreadCount < _lastThreadCount,
+                () => processInfo.ThreadCount > _lastThreadCount);
+            
             SubItems[(int)Columns.Memory].Text = processInfo.UsedMemory.ToFormattedByteSize();
 
             double memRatio = (double)processInfo.UsedMemory / (double)systemStatistics.TotalPhysical;
@@ -90,7 +129,13 @@ public partial class ProcessControl
                 SubItems[(int)Columns.Memory].ForegroundColor = Theme.Foreground;
                 SubItems[(int)Columns.Memory].BackgroundColor = Theme.RangeHighBackground;
             }
-
+            else {
+                UpdateSubItem(
+                    SubItems[(int)Columns.Memory], 
+                    () => processInfo.UsedMemory < _lastUsedMemory,
+                    () => processInfo.UsedMemory > _lastUsedMemory);
+            }
+            
             SubItems[(int)Columns.Disk].Text = processInfo.DiskUsage.ToFormattedMbpsFromBytes();
             double mbps = processInfo.DiskUsage.ToMbpsFromBytes(); 
             
@@ -108,8 +153,20 @@ public partial class ProcessControl
                     SubItems[(int)Columns.Disk].BackgroundColor = Theme.RangeHighBackground;
                 }
             }
+            else {
+                UpdateSubItem(
+                    SubItems[(int)Columns.Disk], 
+                    () => processInfo.DiskUsage < _lastDiskUsage,
+                    () => processInfo.DiskUsage > _lastDiskUsage);
+            }
 
             SubItems[(int)Columns.CommandLine].Text = processInfo.CmdLine ?? string.Empty;
+            
+            _lastCpu = processInfo.CpuTimePercent;
+            _lastBasePriority = processInfo.BasePriority;
+            _lastThreadCount = processInfo.ThreadCount;
+            _lastUsedMemory = processInfo.UsedMemory;
+            _lastDiskUsage = processInfo.DiskUsage;
         }
     }
 }

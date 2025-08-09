@@ -178,8 +178,12 @@ public partial class ProcessInfoControl : Control
                     }
                     
                     _focusedControl.Draw();
-                    ListViewItemEventArgs e = new(_menuView.SelectedItem);
-                    MenuViewOnItemClicked(this, e);
+
+                    if (_menuView.SelectedItem != null) {
+                        ListViewItemEventArgs e = new(_menuView.SelectedItem);
+                        MenuViewOnItemClicked(this, e);
+                    }
+                    
                     break;
                 
                 case ConsoleKey.RightArrow:
