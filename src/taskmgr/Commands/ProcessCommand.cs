@@ -12,7 +12,7 @@ public class ProcessCommand(MainScreen mainScreen) : AbstractCommand
     public override bool IsEnabled
         => ProcessControl.SelectedProcessId > -1;
 
-    private ProcessControl ProcessControl
+    protected ProcessControl ProcessControl
         => MainScreen.Controls.OfType<ProcessControl>().Single();
     
     protected int SelectedProcessId => ProcessControl.SelectedProcessId; 

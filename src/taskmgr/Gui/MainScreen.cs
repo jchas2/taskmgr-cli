@@ -5,6 +5,7 @@ using Task.Manager.Gui.Controls;
 using Task.Manager.System;
 using Task.Manager.System.Configuration;
 using Task.Manager.System.Controls;
+using Task.Manager.System.Controls.InputBox;
 using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Screens;
 
@@ -16,12 +17,13 @@ public sealed class MainScreen : Screen
     private readonly Theme _theme;
     private readonly Config _config;
 
-    private readonly ListView _menuView;
     private readonly ProcessControl _processControl;
     private readonly ProcessInfoControl _processInfoControl;
     private readonly HeaderControl _headerControl;
-    private readonly FooterControl _footerControl;
-    private Control? _activeControl;
+    private readonly CommandControl _commandControl;
+    private readonly FilterControl _filterControl;
+    private Control _activeControl;
+    private Control _footerControl;
     
     private readonly Dictionary<Type, AbstractCommand> _commandMap;
 
@@ -43,21 +45,10 @@ public sealed class MainScreen : Screen
             [typeof(HelpCommand)] = new HelpCommand(),
             [typeof(SetupCommand)] = new SetupCommand(),
             [typeof(ProcessSortCommand)] = new ProcessSortCommand(this),
+            [typeof(FilterCommand)] = new FilterCommand(this),
             [typeof(ProcessInfoCommand)] = new ProcessInfoCommand(this),
             [typeof(EndTaskCommand)] = new EndTaskCommand(this)
         };
-
-        _menuView = new ListView(terminal) {
-            BackgroundHighlightColour = theme.BackgroundHighlight,
-            ForegroundHighlightColour = theme.ForegroundHighlight,
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
-            HeaderBackgroundColour = theme.HeaderBackground,
-            HeaderForegroundColour = theme.HeaderForeground,
-            Visible = true
-        };
-        
-        _menuView.ColumnHeaders.Add(new ListViewColumnHeader("MENU"));
 
         _headerControl = new HeaderControl(
             _runContext.Processor,
@@ -70,7 +61,12 @@ public sealed class MainScreen : Screen
             _theme);
         
         _processInfoControl = new ProcessInfoControl(terminal, _theme);
-        _footerControl = new FooterControl(terminal, _theme);
+        
+        _commandControl = new CommandControl(terminal, _theme);
+        _filterControl = new FilterControl(terminal, _theme);
+
+        _activeControl = _processControl;
+        _footerControl = _commandControl;
 
         Controls
             .Add(_processControl)
@@ -102,21 +98,6 @@ public sealed class MainScreen : Screen
             return;
         }
         
-        AbstractCommand? command = keyInfo.Key switch {
-            ConsoleKey.F1 => GetCommandInstance<HelpCommand>(),
-            ConsoleKey.F2 => GetCommandInstance<SetupCommand>(),
-            ConsoleKey.F3 => GetCommandInstance<ProcessSortCommand>(),
-            ConsoleKey.F4 => GetCommandInstance<ProcessInfoCommand>(),
-            ConsoleKey.F5 => GetCommandInstance<EndTaskCommand>(),
-            _ => null
-        };
-
-        if (command != null && command.IsEnabled) {
-            command.Execute();
-            handled = true;
-            return;
-        }
-        
         Control? activeControl = GetActiveControl;
 
         if (keyInfo.Key == ConsoleKey.Escape && activeControl != _processControl) {
@@ -127,6 +108,25 @@ public sealed class MainScreen : Screen
         }
         
         activeControl?.KeyPressed(keyInfo, ref handled);
+
+        if (handled) {
+            return;
+        }
+        
+        AbstractCommand? command = keyInfo.Key switch {
+            ConsoleKey.F1 => GetCommandInstance<HelpCommand>(),
+            ConsoleKey.F2 => GetCommandInstance<SetupCommand>(),
+            ConsoleKey.F3 => GetCommandInstance<ProcessSortCommand>(),
+            ConsoleKey.F4 => GetCommandInstance<FilterCommand>(),
+            ConsoleKey.F5 => GetCommandInstance<ProcessInfoCommand>(),
+            ConsoleKey.F6 => GetCommandInstance<EndTaskCommand>(),
+            _ => null
+        };
+
+        if (command != null && command.IsEnabled) {
+            command.Execute();
+            handled = true;
+        }
     }
 
     protected override void OnLoad()
@@ -191,6 +191,34 @@ public sealed class MainScreen : Screen
         _activeControl.Resize();
 
         return (T)_activeControl;
+    }
+
+    public void ShowCommandControl()
+    {
+        _filterControl.Visible = false;
+        ShowFooterControl(_commandControl);   
+    }
+
+    public void ShowFilterControl(Action<string, InputBoxResult> onInputBoxResult)
+    {
+        _commandControl.Visible = false;
+         ShowFooterControl(_filterControl);
+        
+        ShowInputBox(
+            _filterControl.X + _filterControl.NeededWidth,
+            _filterControl.Y,
+            40,
+            "Filter: ",
+            onInputBoxResult);
+    }
+
+    private void ShowFooterControl(Control control)
+     {
+        _footerControl = control;
+        _footerControl.Visible = true;
+        
+        Resize();
+        Draw();
     }
     
     private void SizeControl(Control control)
