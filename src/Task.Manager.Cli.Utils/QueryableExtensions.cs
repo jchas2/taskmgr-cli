@@ -1,10 +1,12 @@
-using System.Linq.Expressions;
-using System.Reflection;
+// using System.Linq.Expressions;
+// using System.Reflection;
 
 namespace Task.Manager.Cli.Utils;
 
 public static class QueryableExtensions
 {
+    /* The DynamicOrderBy<TSource> method breaks .net native AoT compilation */
+    /*
     public static IOrderedQueryable<TSource> DynamicOrderBy<TSource>(
         this IQueryable<TSource> source,
         string propertyName,
@@ -42,4 +44,5 @@ public static class QueryableExtensions
 
         return (IOrderedQueryable<TSource>)source.Provider.CreateQuery<TSource>(resultExp);
     }
+    */
 }

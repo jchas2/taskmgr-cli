@@ -17,10 +17,10 @@ public sealed class FilterCommand(MainScreen mainScreen) : AbstractCommand()
         void FilterAction(string filter, InputBoxResult result)
         {
             if (result == InputBoxResult.Enter) {
-                ProcessControl!.FilterText = filter;
+                ProcessControl.FilterText = filter;
             }
             else if (result == InputBoxResult.Cancel) {
-                ProcessControl!.FilterText = string.Empty;
+                ProcessControl.FilterText = string.Empty;
             }
 
             MainScreen.ShowCommandControl();
@@ -29,10 +29,10 @@ public sealed class FilterCommand(MainScreen mainScreen) : AbstractCommand()
 
         MainScreen.ShowFilterControl(FilterAction);
     }
-    
-    public override bool IsEnabled
-        => ProcessControl != null;
 
-    private ProcessControl? ProcessControl
-        => MainScreen.Controls.OfType<ProcessControl>().SingleOrDefault();
+    public override bool IsEnabled
+        => MainScreen.GetActiveControl is ProcessControl;
+
+    private ProcessControl ProcessControl
+        => MainScreen.GetControl<ProcessControl>();
 }
