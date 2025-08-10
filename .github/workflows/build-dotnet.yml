@@ -21,8 +21,9 @@ jobs:
       with:
         dotnet-version: 9.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: ./eng/build.ps1 -restore
     - name: Build
-      run: dotnet build --no-restore
+      run: ./eng/build.ps1 -build -config Debug
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: ./eng/build.ps1 -test
+      
