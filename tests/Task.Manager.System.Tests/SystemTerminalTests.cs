@@ -1,3 +1,4 @@
+using System.Runtime.Versioning;
 using System.Text;
 using Task.Manager.Cli.Utils;
 
@@ -5,7 +6,8 @@ namespace Task.Manager.System.Tests;
 
 public sealed class SystemTerminalTests
 {
-    [Fact]
+    [SkippableFact]
+    [SupportedOSPlatform("macos")]
     public void Should_Set_Streams()
     {
         var terminal = new SystemTerminal();
@@ -14,7 +16,8 @@ public sealed class SystemTerminalTests
         Assert.True(terminal.StdIn != null);
     }
 
-    [Fact]
+    [SkippableFact]
+    [SupportedOSPlatform("macos")]
     public void Should_Set_Colours()
     {
         var terminal = new SystemTerminal();
@@ -29,7 +32,8 @@ public sealed class SystemTerminalTests
         Assert.True(terminal.ForegroundColor == background);
     }
 
-    [Fact]
+    [SkippableFact]
+    [SupportedOSPlatform("macos")]
     public void Should_Encode_Ansi_Colour_Codes()
     {
         var terminal = new SystemTerminal();
@@ -39,7 +43,8 @@ public sealed class SystemTerminalTests
         terminal.WriteLine(testString);
     }
 
-    [Fact]
+    [SkippableFact]
+    [SupportedOSPlatform("macos")]
     public void Should_Set_Cursor_Position()
     {
         var terminal = new SystemTerminal();
