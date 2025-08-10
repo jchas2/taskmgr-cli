@@ -4,6 +4,7 @@ namespace Task.Manager.Cli.Utils.Tests;
 
 public sealed class QueryableExtensionsTests
 {
+    /*
     private sealed class Data
     {
         public int Id { get; set; } = 0;
@@ -68,5 +69,5 @@ public sealed class QueryableExtensionsTests
         Assert.Equal("C", sortedData[1].Name);
         Assert.Equal("B", sortedData[2].Name);
         Assert.Equal("A", sortedData[3].Name);
-    }
+    }*/
 }

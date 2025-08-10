@@ -19,7 +19,7 @@ public static unsafe class SysInfoApi
         
         public MEMORYSTATUSEX()
         {
-            dwLength = (uint)Marshal.SizeOf(typeof(MEMORYSTATUSEX));
+            dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>();
         }
     }
 
