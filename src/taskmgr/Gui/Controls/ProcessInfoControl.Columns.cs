@@ -26,13 +26,21 @@ public partial class ProcessInfoControl
     internal const int ColumnThreadStateWidth = 16;
     internal const int ColumnThreadReasonWidth = 24;
     internal const int ColumnThreadPriorityWidth = 4;
+    internal const int ColumnThreadStartAddressWidth = 20;
+    internal const int ColumnThreadCpuKernelTimeWidth = 20;
+    internal const int ColumnThreadCpuUserTimeWidth = 20;
+    internal const int ColumnThreadCpuTotalTimeWidth = 20;
 
     public enum ThreadColumns
     {
         Id = 0,
-        State = 1,
-        Reason = 2,
-        Priority = 3,
+        State,
+        Reason,
+        Priority,
+        StartAddress,
+        CpuKernelTime,
+        CpuUserTime,
+        CpuTotalTime,
         Count
     }
 }

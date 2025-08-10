@@ -12,13 +12,11 @@ public partial class ProcessControl
 {
     private class ProcessListViewItem : ListViewItem
     {
-        private int _lastThreadCount = 0;
-        
-        private long _lastBasePriority = 0;
-        private long _lastUsedMemory = 0;
-        private long _lastDiskUsage = 0;
-
-        private double _lastCpu = 0;
+        private int _lastThreadCount;
+        private long _lastBasePriority;
+        private long _lastUsedMemory;
+        private long _lastDiskUsage;
+        private double _lastCpu;
         
         public ProcessListViewItem(
             ProcessInfo processInfo,
@@ -26,6 +24,8 @@ public partial class ProcessControl
             Theme theme) 
             : base(processInfo.FileDescription ?? string.Empty)
         {
+            ArgumentNullException.ThrowIfNull(processInfo);
+            
             Theme = theme ?? throw new ArgumentNullException(nameof(theme));
             Pid = processInfo.Pid;
 
@@ -58,6 +58,7 @@ public partial class ProcessControl
         
         public void UpdateItem(ProcessInfo processInfo, ref SystemStatistics systemStatistics)
         {
+            ArgumentNullException.ThrowIfNull(processInfo);
             Debug.Assert(processInfo.Pid == Pid);
             
             for (int i = 0; i < (int)Columns.Count; i++) {

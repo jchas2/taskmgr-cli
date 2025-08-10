@@ -23,6 +23,12 @@ public static class IntegerExtensions
         double mbps = ToMbpsFromBytes(num);
         return string.Format("{0,5:####0.0} MB/s", mbps);
     }
+
+    public static string ToHexadecimal(this long num) =>
+        ((ulong)num).ToHexadecimal();
+    
+    public static string ToHexadecimal(this ulong num) =>
+        "0x" + num.ToString("X16");
     
     public static double ToMbpsFromBytes(this long num) =>
          Math.Ceiling((double)num / 1000000.0 * 10.0) / 10.0;

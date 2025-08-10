@@ -267,7 +267,6 @@ public partial class Processor : IProcessor
             Thread? thread = threads[i];
 
             if (thread != null) {
-                
                 while (thread.IsAlive) {
                     Thread.Sleep(100);
                 }

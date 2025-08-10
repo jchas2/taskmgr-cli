@@ -75,6 +75,8 @@ public sealed class MainScreen : Screen
 
     public Control? GetActiveControl => _activeControl;
 
+    public T GetControl<T>() where T : Control => (T)Controls.Single(ctrl => ctrl is T);
+    
     private AbstractCommand GetCommandInstance<T>() where T : AbstractCommand => _commandMap[typeof(T)];
     
     protected override void OnDraw()
