@@ -1,4 +1,6 @@
-﻿using SysDiag = System.Diagnostics;
+﻿using System.Runtime.InteropServices;
+using Task.Manager.Interop.Mach;
+using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
 
@@ -10,7 +12,7 @@ public static partial class ProcessUtils
         return (uint)process.HandleCount;
     }
     
-    private string GetProcessCommandLine(global::System.Diagnostics.Process process)
+    public static string GetProcessCommandLine(global::System.Diagnostics.Process process)
     {
         // TODO: Determine for Mach
         try {
@@ -21,8 +23,18 @@ public static partial class ProcessUtils
         }
     }
 
-    private ulong GetProcessIoOperations(in SysDiag::Process process)
+    public static ulong GetProcessIoOperations(in int pid)
     {
+        if (!TryGetProcessByPid(pid, out SysDiag::Process? process)) {
+            return 0;
+        }
+        
+        return GetProcessIoOperations(process!);
+    }
+
+    public static ulong GetProcessIoOperations(in SysDiag::Process process)
+    {
+        // TODO:
         return 0;
     }
 
@@ -41,7 +53,7 @@ public static partial class ProcessUtils
         return (result == size ? new ProcInfo.proc_taskallinfo?(info) : null);
     }
     
-    private static unsafe string GetProcessProductName(SysDiag::Process process)
+    public static unsafe string GetProcessProductName(SysDiag::Process process)
     {
         // ReadOnlySpan<int> sysctlName = [
         //     (int)Sys.Selectors.CTL_KERN, 
@@ -72,7 +84,7 @@ public static partial class ProcessUtils
         return process.ProcessName;
     }
 
-    private unsafe string GetProcessUserName(global::System.Diagnostics.Process process)
+    public static unsafe string GetProcessUserName(global::System.Diagnostics.Process process)
     {
         ProcInfo.proc_taskallinfo? info = GetProcessInfoById(process.Id);
 
