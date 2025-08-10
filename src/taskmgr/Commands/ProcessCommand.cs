@@ -9,11 +9,12 @@ public class ProcessCommand(MainScreen mainScreen) : AbstractCommand
 
     public override void Execute() => throw new NotImplementedException();
 
-    public override bool IsEnabled
-        => ProcessControl.SelectedProcessId > -1;
+    public override bool IsEnabled =>
+        MainScreen.GetActiveControl is ProcessControl && 
+        ProcessControl.SelectedProcessId > -1;
 
     protected ProcessControl ProcessControl
-        => MainScreen.Controls.OfType<ProcessControl>().Single();
+        => MainScreen.GetControl<ProcessControl>();
     
     protected int SelectedProcessId => ProcessControl.SelectedProcessId; 
 }
