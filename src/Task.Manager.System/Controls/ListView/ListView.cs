@@ -90,6 +90,7 @@ public class ListView : Control
                     }
                 }
                 break;
+            
             case ConsoleKey.UpArrow:
                 if (_viewPort.SelectedIndex != 0) {
                     _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
@@ -100,7 +101,11 @@ public class ListView : Control
                         redrawAllItems = true;
                     }
                 }
+                else {
+                    _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
+                }
                 break;
+            
             case ConsoleKey.PageDown:
                 if (_viewPort.SelectedIndex != _items.Count - 1) {
                     _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
@@ -116,6 +121,7 @@ public class ListView : Control
                     }
                 }
                 break;
+            
             case ConsoleKey.PageUp:
                 if (_viewPort.SelectedIndex != 0) {
                     _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;

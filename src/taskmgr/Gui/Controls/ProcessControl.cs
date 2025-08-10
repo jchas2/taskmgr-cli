@@ -271,28 +271,9 @@ public sealed partial class ProcessControl : Control
             _processView.Items.Clear();
             return;
         }
-        
-        // if (!string.IsNullOrEmpty(FilterText) || _processView.Items.Count == 0) {
-        //     int selectedIndex = _processView.SelectedIndex;
-        //     _processView.Items.Clear();
-        //     
-        //     for (int i = 0; i < sortedProcesses.Count; i++) {
-        //         ProcessListViewItem item = new(
-        //             sortedProcesses[i],
-        //             ref systemStatistics,
-        //             _theme);
-        //         
-        //         _processView.Items.Add(item);
-        //     }
-        //
-        //     if (selectedIndex < _processView.Items.Count) {
-        //         _processView.SelectedIndex = selectedIndex;
-        //     }
-        //     
-        //     return;
-        // }
 
-        // Remove items from the ListView that are NOT in the sorted list.
+        int selectedIndex = _processView.SelectedIndex;
+        
         for (int i = _processView.Items.Count - 1; i >= 0; i--) {
             var item = (ProcessListViewItem)_processView.Items[i];
             var exists = false;
@@ -309,7 +290,6 @@ public sealed partial class ProcessControl : Control
             }
         }
 
-        // Add items from the sorted list that are NOT in the ListView.
         for (int i = 0; i < sortedProcesses.Count; i++) {
             var exists = false;
             
@@ -332,13 +312,15 @@ public sealed partial class ProcessControl : Control
             }
         
             if (!exists) {
-                ProcessListViewItem item = new(
-                    sortedProcesses[i],
-                    ref systemStatistics,
-                    _theme);
-                
+                ProcessListViewItem item = new(sortedProcesses[i], ref systemStatistics, _theme);
                 _processView.Items.InsertAt(i, item);
             }
+        }
+
+        if (_processView.Items.Count > 0) {
+            _processView.SelectedIndex = selectedIndex >= 0 && selectedIndex < _processView.Items.Count
+                ? selectedIndex
+                : 0;
         }
     }
 }

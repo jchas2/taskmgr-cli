@@ -11,8 +11,9 @@ public sealed class ProcessInfoCommand(MainScreen mainScreen) : ProcessCommand(m
             return;
         }
 
-        var processInfoControl = MainScreen.SetActiveControl<ProcessInfoControl>();
+        var processInfoControl = MainScreen.GetControl<ProcessInfoControl>();
         processInfoControl.SelectedProcessId = SelectedProcessId;
+        MainScreen.SetActiveControl<ProcessInfoControl>();
         MainScreen.Draw();
     }
 }
