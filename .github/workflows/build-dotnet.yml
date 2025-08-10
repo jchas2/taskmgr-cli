@@ -11,8 +11,8 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    # runs-on: ubuntu-latest (need .sh scripts)
 
     steps:
     - uses: actions/checkout@v4
@@ -26,4 +26,4 @@ jobs:
       run: ./eng/build.ps1 -build -config Debug
     - name: Test
       run: ./eng/build.ps1 -test
-      
+
