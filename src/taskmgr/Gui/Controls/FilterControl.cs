@@ -7,10 +7,10 @@ namespace Task.Manager.Gui.Controls;
 
 public class FilterControl : Control
 {
-    private readonly Theme _theme;
+    private readonly Theme theme;
     private const int CommandLength = 6;
     
-    public FilterControl(ISystemTerminal terminal, Theme theme) : base(terminal) => _theme = theme;
+    public FilterControl(ISystemTerminal terminal, Theme theme) : base(terminal) => this.theme = theme;
 
     public int NeededWidth { get; private set; }
     
@@ -39,7 +39,7 @@ public class FilterControl : Control
             nchars,
             Y,
             CommandLength,
-            _theme,
+            theme,
             Terminal);
 
         nchars += KeyBindControl.Draw(
@@ -48,7 +48,7 @@ public class FilterControl : Control
             nchars,
             Y,
             CommandLength,
-            _theme,
+            theme,
             Terminal);
 
         Terminal.WriteEmptyLineTo(Width - nchars);
@@ -57,13 +57,13 @@ public class FilterControl : Control
         string spacer = "  ";
         string filterCommand = "Filter: ";
 
-        Terminal.BackgroundColor = _theme.Background;
-        Terminal.ForegroundColor = _theme.Foreground;
+        Terminal.BackgroundColor = theme.Background;
+        Terminal.ForegroundColor = theme.Foreground;
         Terminal.Write(spacer);
         nchars += spacer.Length;
         
-        Terminal.BackgroundColor = _theme.BackgroundHighlight;
-        Terminal.ForegroundColor = _theme.ForegroundHighlight;
+        Terminal.BackgroundColor = theme.BackgroundHighlight;
+        Terminal.ForegroundColor = theme.ForegroundHighlight;
         Terminal.Write(filterCommand);
         nchars += filterCommand.Length;
         

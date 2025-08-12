@@ -6,7 +6,7 @@ namespace Task.Manager.Tests.Controls;
 
 public sealed class ListViewItemTests
 {
-    private readonly Mock<ISystemTerminal> _terminalMock = new();
+    private readonly Mock<ISystemTerminal> terminalMock = new();
     
     public static List<ListViewItem> GetListViewItemData()
         => new() {
@@ -18,7 +18,7 @@ public sealed class ListViewItemTests
     [Fact]
     public void Should_Add_All_Items()
     {
-        var listview = new ListView(_terminalMock.Object);
+        var listview = new ListView(terminalMock.Object);
         listview.Items.AddRange(GetListViewItemData().ToArray());
         
         Assert.True(listview.Items.Count == 3);
@@ -30,7 +30,7 @@ public sealed class ListViewItemTests
     [Fact]
     public void Should_Enumerate_All_Items()
     {
-        var listview = new ListView(_terminalMock.Object);
+        var listview = new ListView(terminalMock.Object);
         listview.Items.AddRange(GetListViewItemData().ToArray());
 
         foreach (var item in listview.Items) {
@@ -41,7 +41,7 @@ public sealed class ListViewItemTests
     [Fact]
     public void Should_Get_Selected_Item()
     {
-        var listview = new ListView(_terminalMock.Object);
+        var listview = new ListView(terminalMock.Object);
         listview.Items.AddRange(GetListViewItemData().ToArray());
         
         Assert.True(listview.SelectedItem != null);

@@ -2,27 +2,27 @@
 
 public sealed class OutputWriter : IOutputWriter
 {
-    private readonly TextWriter _writer;
+    private readonly TextWriter writer;
 
-    private static readonly OutputWriter _errorWriter = new OutputWriter(Console.Error);
-    private static readonly OutputWriter _outWriter = new OutputWriter(Console.Out);
+    private static readonly OutputWriter errorWriter = new OutputWriter(Console.Error);
+    private static readonly OutputWriter outWriter = new OutputWriter(Console.Out);
     
     public OutputWriter(TextWriter writer) => 
-        _writer = writer;
+        this.writer = writer;
     
-    public static OutputWriter Error => _errorWriter;
+    public static OutputWriter Error => errorWriter;
 
-    public static OutputWriter Out => _outWriter;
+    public static OutputWriter Out => outWriter;
     
     public void Write(string message) =>
-        _writer?.Write(message);
+        writer?.Write(message);
 
     public void WriteLine() =>
-        _writer?.WriteLine();
+        writer?.WriteLine();
 
     public void WriteLine(string message) =>
-        _writer?.WriteLine(message);
+        writer?.WriteLine(message);
     
     public void WriteLine(string format, params object?[] args) =>
-        _writer?.WriteLine(string.Format(format, args));
+        writer?.WriteLine(string.Format(format, args));
 }

@@ -6,11 +6,11 @@ namespace Task.Manager.System.Screens;
 
 public partial class Screen : Control
 {
-    private readonly MessageBox _messageBox;
-    private readonly InputBox _inputBox;
+    private readonly MessageBox messageBox;
+    private readonly InputBox inputBox;
     
-    Action? _onMessageBoxResult;
-    Action<string, InputBoxResult>? _onInputBoxResult;
+    Action? onMessageBoxResult;
+    Action<string, InputBoxResult>? onInputBoxResult;
 
     private const int MessageBoxWidth = 48;
     private const int MessageBoxHeight = 11;
@@ -19,13 +19,13 @@ public partial class Screen : Control
 
     public Screen(ISystemTerminal systemTerminal) : base(systemTerminal)
     {
-        _messageBox = new MessageBox(systemTerminal) {
+        messageBox = new MessageBox(systemTerminal) {
             Width = MessageBoxWidth,
             Height = MessageBoxHeight,
             Visible = false
         };
 
-        _inputBox = new InputBox(systemTerminal) {
+        inputBox = new InputBox(systemTerminal) {
             Width = MessageBoxWidth,
             Height = 1,
             Visible = false
@@ -46,20 +46,20 @@ public partial class Screen : Control
     {
         base.OnClear();
         
-        _messageBox.Clear();
-        _inputBox.Clear();
+        messageBox.Clear();
+        inputBox.Clear();
     }
 
     protected override void OnDraw()
     {
         base.OnDraw();
 
-        if (_messageBox.Visible) {
-            _messageBox.Draw();
+        if (messageBox.Visible) {
+            messageBox.Draw();
         }
 
-        if (_inputBox.Visible) {
-            _inputBox.Draw();
+        if (inputBox.Visible) {
+            inputBox.Draw();
         }
     }
 
@@ -71,10 +71,10 @@ public partial class Screen : Control
             return;
         }
 
-        if (_messageBox.Visible) {
+        if (messageBox.Visible) {
             OnMessageBoxKeyPressed(keyInfo, ref handled);
         }
-        else if (_inputBox.Visible) {
+        else if (inputBox.Visible) {
             OnInputBoxKeyPressed(keyInfo, ref handled);
         }
     }
@@ -83,39 +83,39 @@ public partial class Screen : Control
     {
         base.OnLoad();
         
-        _messageBox.Load();
-        _inputBox.Load();
+        messageBox.Load();
+        inputBox.Load();
     }
 
     private void OnInputBoxKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
     {
-        _inputBox.KeyPressed(keyInfo, ref handled);
+        inputBox.KeyPressed(keyInfo, ref handled);
 
-        if (_inputBox.Result == InputBoxResult.None) {
+        if (inputBox.Result == InputBoxResult.None) {
             return;
         }
 
         Control.RedrawEnabled = true;
-        _inputBox.Visible = false;
+        inputBox.Visible = false;
 
-        _onInputBoxResult?.Invoke(_inputBox.Text, _inputBox.Result);
+        onInputBoxResult?.Invoke(inputBox.Text, inputBox.Result);
 
         Draw();
     }
     
     private void OnMessageBoxKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
     {
-        _messageBox.KeyPressed(keyInfo, ref handled);
+        messageBox.KeyPressed(keyInfo, ref handled);
 
-        if (_messageBox.Result == MessageBoxResult.None) {
+        if (messageBox.Result == MessageBoxResult.None) {
             return;
         }
 
         Control.RedrawEnabled = true;
-        _messageBox.Visible = false;
+        messageBox.Visible = false;
 
-        if (_messageBox.Result == MessageBoxResult.Ok) {
-            _onMessageBoxResult?.Invoke();
+        if (messageBox.Result == MessageBoxResult.Ok) {
+            onMessageBoxResult?.Invoke();
         }
 
         Draw();
@@ -123,17 +123,17 @@ public partial class Screen : Control
     
     protected override void OnResize()
     {
-        _messageBox.X = X + (Width / 2 - _messageBox.Width / 2);
-        _messageBox.Y = Y + (Height / 2 - _messageBox.Height / 2);
-        _messageBox.Resize();
+        messageBox.X = X + (Width / 2 - messageBox.Width / 2);
+        messageBox.Y = Y + (Height / 2 - messageBox.Height / 2);
+        messageBox.Resize();
     }
     
     protected override void OnUnload()
     {
         base.OnUnload();
         
-        _messageBox.Unload();
-        _inputBox.Unload();
+        messageBox.Unload();
+        inputBox.Unload();
     }
 
     public void Show()
@@ -156,15 +156,15 @@ public partial class Screen : Control
 
         Control.RedrawEnabled = false;
         
-        _onInputBoxResult = onInputResult;
+        onInputBoxResult = onInputResult;
 
-        _inputBox.Visible = true;
-        _inputBox.X = x;
-        _inputBox.Y = y;
-        _inputBox.Width = width;
-        _inputBox.Title = title;
+        inputBox.Visible = true;
+        inputBox.X = x;
+        inputBox.Y = y;
+        inputBox.Width = width;
+        inputBox.Title = title;
         
-        _inputBox.ShowInputBox();
+        inputBox.ShowInputBox();
     }
 
     public void ShowMessageBox(
@@ -178,12 +178,12 @@ public partial class Screen : Control
 
         Control.RedrawEnabled = false;
         
-        _onMessageBoxResult = onMessageBoxResult;
+        this.onMessageBoxResult = onMessageBoxResult;
 
-        _messageBox.Visible = true;
-        _messageBox.Text = text;
-        _messageBox.Title = title;
+        messageBox.Visible = true;
+        messageBox.Text = text;
+        messageBox.Title = title;
         
-        _messageBox.ShowMessageBox();
+        messageBox.ShowMessageBox();
     }
 }

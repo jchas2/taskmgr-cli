@@ -10,44 +10,44 @@ public class Control
      * This provides a clean api for interacting with the Collection on the
      * control, similar to the WinForms Controls Collection.
      */
-    private readonly ControlCollection _controlCollection;
+    private readonly ControlCollection controlCollection;
 
     /* The container holding the List<T> for rendering. We don't expose it via a public api. */
-    private List<Control> _controls = [];
+    private List<Control> controls = [];
 
-    private static readonly object _drawingLock = new();
-    private static int _drawingLocksAcquired = 0;
+    private static readonly object drawingLock = new();
+    private static int drawingLocksAcquired = 0;
     
-    private readonly ISystemTerminal _terminal;
+    private readonly ISystemTerminal terminal;
 
     public Control(ISystemTerminal terminal)
     {
-        _terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
-        _controlCollection = new ControlCollection(this);
+        this.terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
+        controlCollection = new ControlCollection(this);
     }
 
     public ConsoleColor BackgroundColour { get; set; } = ConsoleColor.Black;
 
     public void Clear() => OnClear();
     
-    internal void ClearControls() => _controls.Clear();
+    internal void ClearControls() => controls.Clear();
 
     protected static void DrawingLockAcquire()
     {
-        _drawingLocksAcquired++;
+        drawingLocksAcquired++;
         
-        Monitor.Enter(_drawingLock);
+        Monitor.Enter(drawingLock);
     }
 
     protected static void DrawingLockRelease()
     {
-        if (_drawingLocksAcquired == 0) {
+        if (drawingLocksAcquired == 0) {
             return;
         }
         
-        _drawingLocksAcquired--;
+        drawingLocksAcquired--;
         
-        Monitor.Exit(_drawingLock);
+        Monitor.Exit(drawingLock);
     }
 
     protected void DrawRectangle(
@@ -61,8 +61,8 @@ public class Control
         Terminal.BackgroundColor = colour;
         
         for (int i = y; i < y + height; i++) {
-            _terminal.SetCursorPosition(x, i);
-            _terminal.WriteEmptyLineTo(width);
+            terminal.SetCursorPosition(x, i);
+            terminal.WriteEmptyLineTo(width);
         }
     }
 
@@ -75,7 +75,7 @@ public class Control
         }
     }
 
-    internal int ControlCount => _controls.Count;
+    internal int ControlCount => controls.Count;
     
     public ConsoleColor ForegroundColour { get; set; } = ConsoleColor.White;
     
@@ -83,17 +83,17 @@ public class Control
     {
         ArgumentNullException.ThrowIfNull(control, nameof(control));
         
-        return _controls.Contains(control);
+        return controls.Contains(control);
     }
    
-    public ControlCollection Controls => _controlCollection;
+    public ControlCollection Controls => controlCollection;
 
     internal Control GetControlByIndex(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _controls.Count, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, controls.Count, nameof(index));
         
-        return _controls[index];
+        return controls[index];
     }
     
     public int Height { get; set; } = 0;
@@ -102,8 +102,8 @@ public class Control
     {
         ArgumentNullException.ThrowIfNull(control, nameof(control));
 
-        for (int i = 0; i < _controls.Count; i++) {
-            if (_controls[i] == control) {
+        for (int i = 0; i < controls.Count; i++) {
+            if (controls[i] == control) {
                 return i;
             }
         }
@@ -114,16 +114,16 @@ public class Control
     internal void InsertControl(int index, Control control)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, _controls.Count, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, controls.Count, nameof(index));
         
-        _controls.Insert(index, control);
+        controls.Insert(index, control);
     }
 
     internal void InsertControls(Control[] controls)
     {
         ArgumentNullException.ThrowIfNull(controls, nameof(controls));
         
-        _controls.AddRange(controls);
+        this.controls.AddRange(controls);
     }
     
     public void KeyPressed(ConsoleKeyInfo keyInfo, ref bool handled) => OnKeyPressed(keyInfo, ref handled);
@@ -158,9 +158,9 @@ public class Control
     internal void RemoveControlAt(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _controls.Count, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, controls.Count, nameof(index));
         
-        _controls.RemoveAt(index);
+        controls.RemoveAt(index);
     }
 
     internal void RemoveControl(Control control)
@@ -181,7 +181,7 @@ public class Control
         }
     }
 
-    protected ISystemTerminal Terminal => _terminal;
+    protected ISystemTerminal Terminal => terminal;
     
     public bool Visible { get; set; } = true;
     

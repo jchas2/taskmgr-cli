@@ -2,18 +2,18 @@ namespace Task.Manager.Cli.Utils;
 
 public sealed class TerminalColourRestorer : IDisposable
 {
-    private readonly ConsoleColor _cachedBackgroundColour;
-    private readonly ConsoleColor _cachedForegroundColour;
+    private readonly ConsoleColor cachedBackgroundColour;
+    private readonly ConsoleColor cachedForegroundColour;
 
     public TerminalColourRestorer()
     {
-        _cachedBackgroundColour = Console.BackgroundColor;
-        _cachedForegroundColour = Console.ForegroundColor;
+        cachedBackgroundColour = Console.BackgroundColor;
+        cachedForegroundColour = Console.ForegroundColor;
     }
     
     public void Dispose()
     {
-        Console.BackgroundColor = _cachedBackgroundColour;
-        Console.ForegroundColor = _cachedForegroundColour;
+        Console.BackgroundColor = cachedBackgroundColour;
+        Console.ForegroundColor = cachedForegroundColour;
     }
 }

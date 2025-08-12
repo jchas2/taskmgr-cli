@@ -13,19 +13,19 @@ namespace Task.Manager.Gui;
 
 public sealed class MainScreen : Screen
 {
-    private readonly RunContext _runContext;
-    private readonly Theme _theme;
-    private readonly Config _config;
+    private readonly RunContext runContext;
+    private readonly Theme theme;
+    private readonly Config config;
 
-    private readonly ProcessControl _processControl;
-    private readonly ProcessInfoControl _processInfoControl;
-    private readonly HeaderControl _headerControl;
-    private readonly CommandControl _commandControl;
-    private readonly FilterControl _filterControl;
-    private Control _activeControl;
-    private Control _footerControl;
+    private readonly ProcessControl processControl;
+    private readonly ProcessInfoControl processInfoControl;
+    private readonly HeaderControl headerControl;
+    private readonly CommandControl commandControl;
+    private readonly FilterControl filterControl;
+    private Control activeControl;
+    private Control footerControl;
     
-    private readonly Dictionary<Type, AbstractCommand> _commandMap;
+    private readonly Dictionary<Type, AbstractCommand> commandMap;
 
     private const int HeaderHeight = 9;
     private const int FooterHeight = 1;
@@ -37,11 +37,11 @@ public sealed class MainScreen : Screen
         Config config)
     : base(terminal)
     {
-        _runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
-        _theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        _config = config ?? throw new ArgumentNullException(nameof(config));
+        this.runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
+        this.theme = theme ?? throw new ArgumentNullException(nameof(theme));
+        this.config = config ?? throw new ArgumentNullException(nameof(config));
 
-        _commandMap = new Dictionary<Type, AbstractCommand>() {
+        commandMap = new Dictionary<Type, AbstractCommand>() {
             [typeof(HelpCommand)] = new HelpCommand(),
             [typeof(SetupCommand)] = new SetupCommand(),
             [typeof(ProcessSortCommand)] = new ProcessSortCommand(this),
@@ -50,44 +50,44 @@ public sealed class MainScreen : Screen
             [typeof(EndTaskCommand)] = new EndTaskCommand(this)
         };
 
-        _headerControl = new HeaderControl(
-            _runContext.Processor,
+        headerControl = new HeaderControl(
+            this.runContext.Processor,
             terminal,
             theme);
         
-        _processControl = new ProcessControl(
-            _runContext.Processor,
+        processControl = new ProcessControl(
+            this.runContext.Processor,
             terminal, 
-            _theme);
+            this.theme);
         
-        _processInfoControl = new ProcessInfoControl(terminal, _theme);
+        processInfoControl = new ProcessInfoControl(terminal, this.theme);
         
-        _commandControl = new CommandControl(terminal, _theme);
-        _filterControl = new FilterControl(terminal, _theme);
+        commandControl = new CommandControl(terminal, this.theme);
+        filterControl = new FilterControl(terminal, this.theme);
 
-        _activeControl = _processControl;
-        _footerControl = _commandControl;
+        activeControl = processControl;
+        footerControl = commandControl;
 
         Controls
-            .Add(_processControl)
-            .Add(_processInfoControl);
+            .Add(processControl)
+            .Add(processInfoControl);
     }
 
-    public Control? GetActiveControl => _activeControl;
+    public Control? GetActiveControl => activeControl;
 
     public T GetControl<T>() where T : Control => (T)Controls.Single(ctrl => ctrl is T);
     
-    private AbstractCommand GetCommandInstance<T>() where T : AbstractCommand => _commandMap[typeof(T)];
+    private AbstractCommand GetCommandInstance<T>() where T : AbstractCommand => commandMap[typeof(T)];
     
     protected override void OnDraw()
     {
-        Debug.Assert(_activeControl != null);
+        Debug.Assert(activeControl != null);
 
         Terminal.CursorVisible = false;
         
-        _headerControl.Draw();
-        _activeControl.Draw();
-        _footerControl.Draw();
+        headerControl.Draw();
+        activeControl.Draw();
+        footerControl.Draw();
         
         Terminal.CursorVisible = true;
     }
@@ -102,7 +102,7 @@ public sealed class MainScreen : Screen
         
         Control? activeControl = GetActiveControl;
 
-        if (keyInfo.Key == ConsoleKey.Escape && activeControl != _processControl) {
+        if (keyInfo.Key == ConsoleKey.Escape && activeControl != processControl) {
             SetActiveControl<ProcessControl>();
             Draw();
             handled = true;
@@ -133,13 +133,13 @@ public sealed class MainScreen : Screen
 
     protected override void OnLoad()
     {
-        _activeControl = _processControl;
+        activeControl = processControl;
 
-        _headerControl.Load();
-        _activeControl.Load();
-        _footerControl.Load();
+        headerControl.Load();
+        activeControl.Load();
+        footerControl.Load();
         
-        _runContext.Processor.Run();
+        runContext.Processor.Run();
     }
     
     protected override void OnResize()
@@ -148,26 +148,26 @@ public sealed class MainScreen : Screen
         
         Clear();
         
-        _headerControl.X = 0;
-        _headerControl.Y = 0;
-        _headerControl.Height = HeaderHeight;
-        _headerControl.Width = Width;
-        _headerControl.Resize();
+        headerControl.X = 0;
+        headerControl.Y = 0;
+        headerControl.Height = HeaderHeight;
+        headerControl.Width = Width;
+        headerControl.Resize();
         
         foreach (Control control in Controls) {
             SizeControl(control);            
         }
 
-        _footerControl.X = 0;
-        _footerControl.Y = Height - FooterHeight;
-        _footerControl.Width = Width;
-        _footerControl.Height = FooterHeight;
-        _footerControl.Resize();
+        footerControl.X = 0;
+        footerControl.Y = Height - FooterHeight;
+        footerControl.Width = Width;
+        footerControl.Height = FooterHeight;
+        footerControl.Resize();
     }
 
     protected override void OnUnload()
     {
-        _runContext.Processor.Stop();
+        runContext.Processor.Stop();
 
         foreach (Control control in Controls) {
             control.Unload();
@@ -176,7 +176,7 @@ public sealed class MainScreen : Screen
 
     public T SetActiveControl<T>() where T : Control
     {
-        Debug.Assert(_activeControl != null);
+        Debug.Assert(activeControl != null);
         
         Control? nextControl = Controls.ToList().SingleOrDefault(c => c.GetType() == typeof(T));
         
@@ -184,31 +184,31 @@ public sealed class MainScreen : Screen
             throw new InvalidOperationException();
         }
         
-        _activeControl.Unload();
-        _activeControl = nextControl;
+        activeControl.Unload();
+        activeControl = nextControl;
         
-        SizeControl(_activeControl);
+        SizeControl(activeControl);
         
-        _activeControl.Load();
-        _activeControl.Resize();
+        activeControl.Load();
+        activeControl.Resize();
 
-        return (T)_activeControl;
+        return (T)activeControl;
     }
 
     public void ShowCommandControl()
     {
-        _filterControl.Visible = false;
-        ShowFooterControl(_commandControl);   
+        filterControl.Visible = false;
+        ShowFooterControl(commandControl);   
     }
 
     public void ShowFilterControl(Action<string, InputBoxResult> onInputBoxResult)
     {
-        _commandControl.Visible = false;
-         ShowFooterControl(_filterControl);
+        commandControl.Visible = false;
+         ShowFooterControl(filterControl);
         
         ShowInputBox(
-            _filterControl.X + _filterControl.NeededWidth,
-            _filterControl.Y,
+            filterControl.X + filterControl.NeededWidth,
+            filterControl.Y,
             40,
             "Filter: ",
             onInputBoxResult);
@@ -216,8 +216,8 @@ public sealed class MainScreen : Screen
 
     private void ShowFooterControl(Control control)
      {
-        _footerControl = control;
-        _footerControl.Visible = true;
+        footerControl = control;
+        footerControl.Visible = true;
         
         Resize();
         Draw();

@@ -4,16 +4,16 @@ namespace Task.Manager.System.Controls.ListView;
 
 public class ListViewColumnHeaderCollection : IEnumerable<ListViewColumnHeader>
 {
-    private readonly ListView _owner;
+    private readonly ListView owner;
     
     public ListViewColumnHeaderCollection(ListView owner) =>
-        _owner = owner ?? throw new ArgumentNullException(nameof(owner));
+        this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
     
     public ListViewColumnHeaderCollection Add(ListViewColumnHeader columnHeader)
     {
         ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
         
-        _owner.InsertColumnHeaders([columnHeader]);
+        owner.InsertColumnHeaders([columnHeader]);
 
         return this;
     }
@@ -22,25 +22,25 @@ public class ListViewColumnHeaderCollection : IEnumerable<ListViewColumnHeader>
     {
         ArgumentNullException.ThrowIfNull(columnHeaders, nameof(columnHeaders));
         
-        _owner.InsertColumnHeaders(columnHeaders);
+        owner.InsertColumnHeaders(columnHeaders);
     }
 
-    public void Clear() => _owner.ClearColumnHeaders();
+    public void Clear() => owner.ClearColumnHeaders();
 
     public bool Contains(ListViewColumnHeader columnHeader)
     {
         ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
         
-        return _owner.Contains(columnHeader);
+        return owner.Contains(columnHeader);
     }
 
     public IEnumerator<ListViewColumnHeader> GetEnumerator()
     {
         /* Shallow copy the items and return an enumerator off that container. */
-        List<ListViewColumnHeader> columnHeaders = new(_owner.ColumnHeaderCount);
+        List<ListViewColumnHeader> columnHeaders = new(owner.ColumnHeaderCount);
         
-        for (int i = 0; i < _owner.ColumnHeaderCount; i++) {
-            columnHeaders.Add(_owner.GetColumnHeaderByIndex(i));
+        for (int i = 0; i < owner.ColumnHeaderCount; i++) {
+            columnHeaders.Add(owner.GetColumnHeaderByIndex(i));
         }
         
         return columnHeaders.GetEnumerator();
@@ -52,7 +52,7 @@ public class ListViewColumnHeaderCollection : IEnumerable<ListViewColumnHeader>
     {
         ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
         
-        return _owner.IndexOfColumnHeader(columnHeader);
+        return owner.IndexOfColumnHeader(columnHeader);
     }
     
     public ListViewColumnHeader this[int index]
@@ -60,7 +60,7 @@ public class ListViewColumnHeaderCollection : IEnumerable<ListViewColumnHeader>
         get {
             ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
             
-            return _owner.GetColumnHeaderByIndex(index);
+            return owner.GetColumnHeaderByIndex(index);
         }
         set => throw new InvalidOperationException();
     }

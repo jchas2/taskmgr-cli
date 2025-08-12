@@ -9,15 +9,15 @@ public class ConfigParser : IDisposable
 {
     private const int EndOfFile = -1;
     private const int InitialStringSize = 32;
-    private readonly TextReader _reader;
-    private readonly IList<ConfigSection> _sections;
+    private readonly TextReader reader;
+    private readonly IList<ConfigSection> sections;
     
     public ConfigParser(string str)
     {
         ArgumentNullException.ThrowIfNull(str);
 
-        _reader = new StringReader(str);
-        _sections = new List<ConfigSection>();
+        reader = new StringReader(str);
+        sections = new List<ConfigSection>();
     }
 
     public ConfigParser(IFileSystem fileSys, string path)
@@ -29,15 +29,15 @@ public class ConfigParser : IDisposable
             throw new FileNotFoundException(path);
         }
 
-        _reader = new StreamReader(path);
-        _sections = new List<ConfigSection>();
+        reader = new StreamReader(path);
+        sections = new List<ConfigSection>();
     }
 
     ~ConfigParser() => 
         Dispose();
     
     public void Dispose() =>
-        _reader.Dispose();
+        reader.Dispose();
 
     public void Parse()
     {
@@ -45,7 +45,7 @@ public class ConfigParser : IDisposable
         ConfigSection? section = null;
 
         while (true) {
-            int character = _reader.Read();
+            int character = reader.Read();
 
             if (character == EndOfFile) {
                 break;
@@ -74,7 +74,7 @@ public class ConfigParser : IDisposable
             if (ch == '[') {
                 section = new ConfigSection();
                 ParseSection(ref section);
-                _sections.Add(section);
+                sections.Add(section);
                 continue;
             }
 
@@ -98,7 +98,7 @@ public class ConfigParser : IDisposable
         StringBuilder buffer = new(InitialStringSize);
         
         while (true) {
-            int character = _reader.Read();
+            int character = reader.Read();
             char ch = (char)character;
             
             if (character == EndOfFile) {
@@ -138,7 +138,7 @@ public class ConfigParser : IDisposable
         char ch;
         
         while (true) {
-            int character = _reader.Read();
+            int character = reader.Read();
             ch = (char)character;
             
             if (character == EndOfFile) {
@@ -154,7 +154,7 @@ public class ConfigParser : IDisposable
         }
 
         while (ch == ' ' || ch == '\t') {
-            ch = (char)(_reader.Read());
+            ch = (char)(reader.Read());
         }
 
         if (ch != '=') {
@@ -182,7 +182,7 @@ public class ConfigParser : IDisposable
         bool inComment = false;
 
         while (true) {
-            int character = _reader.Read();
+            int character = reader.Read();
 
             if (character == EndOfFile) {
                 return;
@@ -212,5 +212,5 @@ public class ConfigParser : IDisposable
         }
     }
 
-    public IList<ConfigSection> Sections => _sections;
+    public IList<ConfigSection> Sections => sections;
 }

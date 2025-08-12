@@ -7,10 +7,10 @@ public sealed class InputBox(ISystemTerminal terminal) : Control(terminal)
     private const int MinWidth = 40;
     private const int MinHeight = 1;
 
-    private readonly TextBuffer _textBuffer = new();
+    private readonly TextBuffer textBuffer = new();
     
     // TODO: Theme.
-    private readonly ConsoleColor _boxColour = ConsoleColor.Gray;
+    private readonly ConsoleColor boxColour = ConsoleColor.Gray;
 
     protected override void OnDraw()
     {
@@ -25,12 +25,12 @@ public sealed class InputBox(ISystemTerminal terminal) : Control(terminal)
             Y,
             Width,
             Height,
-            _boxColour);
+            boxColour);
          
         Terminal.SetCursorPosition(X, Y);
 
         if (!string.IsNullOrEmpty(Text)) {
-            Terminal.BackgroundColor = _boxColour;
+            Terminal.BackgroundColor = boxColour;
             Terminal.ForegroundColor = ConsoleColor.Black;
             Terminal.Write(Text);
         }
@@ -45,7 +45,7 @@ public sealed class InputBox(ISystemTerminal terminal) : Control(terminal)
 
         using TerminalColourRestorer _ = new();
 
-        Terminal.BackgroundColor = _boxColour;
+        Terminal.BackgroundColor = boxColour;
         Terminal.ForegroundColor = ConsoleColor.Black;
         
         switch (keyInfo.Key) {
@@ -54,49 +54,49 @@ public sealed class InputBox(ISystemTerminal terminal) : Control(terminal)
                 break;
             
             case ConsoleKey.Escape:
-                _textBuffer.Clear();
+                textBuffer.Clear();
                 Result = InputBoxResult.Cancel;
                 break;
             
             case ConsoleKey.Backspace:
-                if (_textBuffer.MoveBackwards()) {
+                if (textBuffer.MoveBackwards()) {
                     Terminal.CursorLeft--;
-                    Terminal.Write(_textBuffer.Text.Substring(_textBuffer.CursorBufferPosition) + " ");
-                    Terminal.CursorLeft -= _textBuffer.Text.Length - _textBuffer.CursorBufferPosition + 1;
+                    Terminal.Write(textBuffer.Text.Substring(textBuffer.CursorBufferPosition) + " ");
+                    Terminal.CursorLeft -= textBuffer.Text.Length - textBuffer.CursorBufferPosition + 1;
                 }
                 break;
             
             case ConsoleKey.Delete:
-                if (_textBuffer.Delete()) {
-                    Terminal.Write(_textBuffer.Text.Substring(_textBuffer.CursorBufferPosition) + " ");
-                    Terminal.CursorLeft -= _textBuffer.Length - _textBuffer.CursorBufferPosition + 1;
+                if (textBuffer.Delete()) {
+                    Terminal.Write(textBuffer.Text.Substring(textBuffer.CursorBufferPosition) + " ");
+                    Terminal.CursorLeft -= textBuffer.Length - textBuffer.CursorBufferPosition + 1;
                 }
                 break;
             
             case ConsoleKey.LeftArrow:
-                if (_textBuffer.MoveLeft()) {
+                if (textBuffer.MoveLeft()) {
                     Terminal.CursorLeft--;
                 }
                 break;
             
             case ConsoleKey.RightArrow:
-                if (_textBuffer.MoveRight()) {
+                if (textBuffer.MoveRight()) {
                     Terminal.CursorLeft++;
                 }
                 break;
             
             case ConsoleKey.Insert:
-                _textBuffer.InsertMode = !_textBuffer.InsertMode;
+                textBuffer.InsertMode = !textBuffer.InsertMode;
                 break;
             
             default:
-                if (!_textBuffer.Add(keyInfo.KeyChar)) {
+                if (!textBuffer.Add(keyInfo.KeyChar)) {
                     break;
                 }
 
-                if (_textBuffer.InsertMode) {
+                if (textBuffer.InsertMode) {
                     int currentCursorPosition = Terminal.CursorLeft;
-                    Terminal.Write(_textBuffer.Text.Substring(_textBuffer.CursorBufferPosition - 1));
+                    Terminal.Write(textBuffer.Text.Substring(textBuffer.CursorBufferPosition - 1));
                     Terminal.CursorLeft = currentCursorPosition + 1;
                 }
                 else {
@@ -115,7 +115,7 @@ public sealed class InputBox(ISystemTerminal terminal) : Control(terminal)
         OnDraw();
     }
 
-    public string Text => _textBuffer.Text;
+    public string Text => textBuffer.Text;
     
     public string Title { get; set; } = string.Empty;
 }

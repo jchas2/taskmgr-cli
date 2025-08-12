@@ -12,19 +12,19 @@ public class ListView : Control
      * This provides a clean api for interacting with Collections on the ListView
      * control, similar to the Win32 ListView common control. 
      */
-    private readonly ListViewColumnHeaderCollection _columnHeaderCollection;
-    private readonly ListViewItemCollection _itemCollection;
+    private readonly ListViewColumnHeaderCollection columnHeaderCollection;
+    private readonly ListViewItemCollection itemCollection;
 
     /* The containers holding the List<T> for rendering. We don't expose them via a public api. */
-    private List<ListViewColumnHeader> _columnHeaders = [];
-    private List<ListViewItem> _items = [];
+    private List<ListViewColumnHeader> columnHeaders = [];
+    private List<ListViewItem> items = [];
 
-    private ViewPort _viewPort = new();
+    private ViewPort viewPort = new();
 
-    private ISystemTerminal _terminal;
+    private ISystemTerminal terminal;
     
     /* Buffer for working with strings when writing out terminal content */
-    private StringBuilder _buffer = new(1024);
+    private StringBuilder buffer = new(1024);
 
     private const int DefaultColumnWidth = 30;
     private const int DefaultHeaderWidth = 80;
@@ -35,9 +35,9 @@ public class ListView : Control
     public ListView(ISystemTerminal terminal)
         : base(terminal)
     {
-        _terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
-        _itemCollection = new ListViewItemCollection(this);
-        _columnHeaderCollection = new ListViewColumnHeaderCollection(this);
+        this.terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
+        itemCollection = new ListViewItemCollection(this);
+        columnHeaderCollection = new ListViewColumnHeaderCollection(this);
 
         EnableRowSelect = true;
         EnableScroll = true;
@@ -46,30 +46,30 @@ public class ListView : Control
     
     public ConsoleColor BackgroundHighlightColour { get; set; } = ConsoleColor.White;
 
-    internal void ClearColumnHeaders() => _columnHeaders.Clear();
+    internal void ClearColumnHeaders() => columnHeaders.Clear();
 
     internal void ClearItems()
     {
-        _items.Clear();
-        _viewPort.Reset();
+        items.Clear();
+        viewPort.Reset();
     }
 
-    internal int ColumnHeaderCount => _columnHeaders.Count;
+    internal int ColumnHeaderCount => columnHeaders.Count;
 
-    public ListViewColumnHeaderCollection ColumnHeaders => _columnHeaderCollection;
+    public ListViewColumnHeaderCollection ColumnHeaders => columnHeaderCollection;
     
     internal bool Contains(ListViewColumnHeader columnHeader)
     {
         ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
         
-        return _columnHeaders.Contains(columnHeader);
+        return columnHeaders.Contains(columnHeader);
     }
     
     internal bool Contains(ListViewItem item)
     {
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         
-        return _items.Contains(item);
+        return items.Contains(item);
     }
     
     private void DoScroll(ConsoleKey consoleKey, out bool redrawAllItems)
@@ -78,13 +78,13 @@ public class ListView : Control
         
         switch (consoleKey) {
             case ConsoleKey.DownArrow:
-                if (_viewPort.SelectedIndex != _items.Count - 1) {
-                    _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
-                    _viewPort.SelectedIndex++;
+                if (viewPort.SelectedIndex != items.Count - 1) {
+                    viewPort.PreviousSelectedIndex = viewPort.SelectedIndex;
+                    viewPort.SelectedIndex++;
                     
-                    if (_viewPort.SelectedIndex - _viewPort.CurrentIndex >= _viewPort.RowCount) {
-                        if (_viewPort.CurrentIndex <= _items.Count - _viewPort.Height + 1) {
-                            _viewPort.CurrentIndex++;
+                    if (viewPort.SelectedIndex - viewPort.CurrentIndex >= viewPort.RowCount) {
+                        if (viewPort.CurrentIndex <= items.Count - viewPort.Height + 1) {
+                            viewPort.CurrentIndex++;
                             redrawAllItems = true;
                         }
                     }
@@ -92,49 +92,49 @@ public class ListView : Control
                 break;
             
             case ConsoleKey.UpArrow:
-                if (_viewPort.SelectedIndex != 0) {
-                    _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
-                    _viewPort.SelectedIndex--;
+                if (viewPort.SelectedIndex != 0) {
+                    viewPort.PreviousSelectedIndex = viewPort.SelectedIndex;
+                    viewPort.SelectedIndex--;
                     
-                    if (_viewPort.SelectedIndex <= _viewPort.CurrentIndex - 1 && _viewPort.CurrentIndex != 0) {
-                        _viewPort.CurrentIndex--;
+                    if (viewPort.SelectedIndex <= viewPort.CurrentIndex - 1 && viewPort.CurrentIndex != 0) {
+                        viewPort.CurrentIndex--;
                         redrawAllItems = true;
                     }
                 }
                 else {
-                    _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
+                    viewPort.PreviousSelectedIndex = viewPort.SelectedIndex;
                 }
                 break;
             
             case ConsoleKey.PageDown:
-                if (_viewPort.SelectedIndex != _items.Count - 1) {
-                    _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
-                    _viewPort.SelectedIndex += _viewPort.RowCount;
+                if (viewPort.SelectedIndex != items.Count - 1) {
+                    viewPort.PreviousSelectedIndex = viewPort.SelectedIndex;
+                    viewPort.SelectedIndex += viewPort.RowCount;
                     
-                    if (_viewPort.SelectedIndex > _items.Count - 1) {
-                        _viewPort.SelectedIndex = _items.Count - 1;
+                    if (viewPort.SelectedIndex > items.Count - 1) {
+                        viewPort.SelectedIndex = items.Count - 1;
                     }
                     
-                    if (_viewPort.SelectedIndex - _viewPort.CurrentIndex >= _viewPort.RowCount) {
-                        _viewPort.CurrentIndex = Math.Min(_items.Count - _viewPort.RowCount, _viewPort.SelectedIndex);
+                    if (viewPort.SelectedIndex - viewPort.CurrentIndex >= viewPort.RowCount) {
+                        viewPort.CurrentIndex = Math.Min(items.Count - viewPort.RowCount, viewPort.SelectedIndex);
                         redrawAllItems = true;
                     }
                 }
                 break;
             
             case ConsoleKey.PageUp:
-                if (_viewPort.SelectedIndex != 0) {
-                    _viewPort.PreviousSelectedIndex = _viewPort.SelectedIndex;
+                if (viewPort.SelectedIndex != 0) {
+                    viewPort.PreviousSelectedIndex = viewPort.SelectedIndex;
                     
-                    if (_viewPort.SelectedIndex > _viewPort.RowCount) {
-                        _viewPort.SelectedIndex -= _viewPort.RowCount;
+                    if (viewPort.SelectedIndex > viewPort.RowCount) {
+                        viewPort.SelectedIndex -= viewPort.RowCount;
                     }
                     else {
-                        _viewPort.SelectedIndex = 0;
+                        viewPort.SelectedIndex = 0;
                     }
                     
-                    if (_viewPort.SelectedIndex <= _viewPort.CurrentIndex - 1 && _viewPort.CurrentIndex != 0) {
-                        _viewPort.CurrentIndex = Math.Max(0, _viewPort.SelectedIndex);
+                    if (viewPort.SelectedIndex <= viewPort.CurrentIndex - 1 && viewPort.CurrentIndex != 0) {
+                        viewPort.CurrentIndex = Math.Max(0, viewPort.SelectedIndex);
                         redrawAllItems = true;
                     }
                 }
@@ -146,49 +146,49 @@ public class ListView : Control
     {
         using TerminalColourRestorer _ = new();
 
-        _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y - 1);
+        terminal.SetCursorPosition(viewPort.Bounds.X, viewPort.Bounds.Y - 1);
 
         if (ColumnHeaderCount == 0) {
-            _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width);
+            terminal.WriteEmptyLineTo(viewPort.Bounds.Width);
             return;
         }
 
-        _buffer.Clear();
+        buffer.Clear();
 
         /* TODO: Will look into span<T> + stackalloc char[] to fast build strings */
         int c = 0;
         
         for (int i = 0; i < ColumnHeaderCount; i++) {
-            if (c + _columnHeaders[i].Width > _viewPort.Bounds.Width) {
+            if (c + columnHeaders[i].Width > viewPort.Bounds.Width) {
                 break;
             }
 
-            int columnHeaderFormatWidth = _columnHeaders[i].Width > 0 
-                ? _columnHeaders[i].Width - 1
-                : _columnHeaders[i].Width;
+            int columnHeaderFormatWidth = columnHeaders[i].Width > 0 
+                ? columnHeaders[i].Width - 1
+                : columnHeaders[i].Width;
             
-            string formatStr = _columnHeaders[i].RightAligned 
+            string formatStr = columnHeaders[i].RightAligned 
                 ? "{0," + columnHeaderFormatWidth.ToString() + "}"
                 : "{0,-" + columnHeaderFormatWidth.ToString() + "}";
 
-            ConsoleColor foreground = _columnHeaders[i].ForegroundColour ?? HeaderForegroundColour;
-            ConsoleColor background = _columnHeaders[i].BackgroundColour ?? HeaderBackgroundColour;
+            ConsoleColor foreground = columnHeaders[i].ForegroundColour ?? HeaderForegroundColour;
+            ConsoleColor background = columnHeaders[i].BackgroundColour ?? HeaderBackgroundColour;
 
-            if (_columnHeaders[i].Text.Length > _columnHeaders[i].Width) {
-                _buffer.Append((string.Format(formatStr, _columnHeaders[i].Text.Substring(0, _columnHeaders[i].Width - 1)) + ' ')
+            if (columnHeaders[i].Text.Length > columnHeaders[i].Width) {
+                buffer.Append((string.Format(formatStr, columnHeaders[i].Text.Substring(0, columnHeaders[i].Width - 1)) + ' ')
                     .ToColour(foreground, background));
             }
             else {
-                _buffer.Append((string.Format(formatStr, _columnHeaders[i].Text) + ' ')
+                buffer.Append((string.Format(formatStr, columnHeaders[i].Text) + ' ')
                     .ToColour(foreground, background));
             }
 
-            c+= _columnHeaders[i].Width;
+            c+= columnHeaders[i].Width;
         }
         
-        _terminal.Write(_buffer.ToString());
-        _terminal.BackgroundColor = HeaderBackgroundColour;
-        _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width - c);
+        terminal.Write(buffer.ToString());
+        terminal.BackgroundColor = HeaderBackgroundColour;
+        terminal.WriteEmptyLineTo(viewPort.Bounds.Width - c);
     }
 
     private void DrawItem(
@@ -198,7 +198,7 @@ public class ListView : Control
     {
         using TerminalColourRestorer _ = new();
 
-        _buffer.Clear();
+        buffer.Clear();
 
         /* TODO: Will look into span<T> + stackalloc char[] to fast build strings */
         int c = 0;
@@ -210,11 +210,11 @@ public class ListView : Control
             int columnWidth = DefaultColumnWidth;
 
             if (i < ColumnHeaderCount) {
-                rightAligned = _columnHeaders[i].RightAligned;
-                columnWidth = _columnHeaders[i].Width;
+                rightAligned = columnHeaders[i].RightAligned;
+                columnWidth = columnHeaders[i].Width;
             }
 
-            if (c + columnWidth > _viewPort.Bounds.Width) {
+            if (c + columnWidth > viewPort.Bounds.Width) {
                 break;
             }
 
@@ -239,51 +239,51 @@ public class ListView : Control
                 : subItem.BackgroundColor;
 
             if (subItem.Text.Length > columnWidth) {
-                _buffer.Append((string.Format(formatStr, subItem.Text.Substring(0, columnWidth - 1)) + ' ')
+                buffer.Append((string.Format(formatStr, subItem.Text.Substring(0, columnWidth - 1)) + ' ')
                     .ToColour(foregroundColour, backgroundColour));
             }
             else {
-                _buffer.Append((string.Format(formatStr, subItem.Text) + ' ')
+                buffer.Append((string.Format(formatStr, subItem.Text) + ' ')
                     .ToColour(foregroundColour, backgroundColour));
             }
 
             c += columnWidth;
         }
 
-        _terminal.Write(_buffer.ToString());
-        _terminal.BackgroundColor = item.SubItems[item.SubItemCount - 1].BackgroundColor;
-        _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width - c);
+        terminal.Write(buffer.ToString());
+        terminal.BackgroundColor = item.SubItems[item.SubItemCount - 1].BackgroundColor;
+        terminal.WriteEmptyLineTo(viewPort.Bounds.Width - c);
     }
 
     private void DrawItems()
     {
-        _viewPort.Height = _viewPort.Bounds.Height;
-        _viewPort.RowCount = _viewPort.Height - 1;
+        viewPort.Height = viewPort.Bounds.Height;
+        viewPort.RowCount = viewPort.Height - 1;
 
         int n = 0;
 
-        for (int i = 0; i < _viewPort.RowCount; i++) {
-            int pid = i + _viewPort.CurrentIndex;
+        for (int i = 0; i < viewPort.RowCount; i++) {
+            int pid = i + viewPort.CurrentIndex;
 
             if (pid < ItemCount) {
                 var item = Items[pid];
                 
-                _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y + n);
+                terminal.SetCursorPosition(viewPort.Bounds.X, viewPort.Bounds.Y + n);
                 
                 DrawItem(
                     item,
-                    _viewPort.Bounds.Width,
-                    highlight: pid == _viewPort.SelectedIndex);
+                    viewPort.Bounds.Width,
+                    highlight: pid == viewPort.SelectedIndex);
 
                 n++;
             }
         }
 
-        _terminal.BackgroundColor = BackgroundColour;
+        terminal.BackgroundColor = BackgroundColour;
 
         for (int i = n; i < Height - 1; i++) {
-            _terminal.SetCursorPosition(_viewPort.Bounds.X, _viewPort.Bounds.Y + i);
-            _terminal.WriteEmptyLineTo(_viewPort.Bounds.Width);
+            terminal.SetCursorPosition(viewPort.Bounds.X, viewPort.Bounds.Y + i);
+            terminal.WriteEmptyLineTo(viewPort.Bounds.Width);
         }
     }
 
@@ -296,17 +296,17 @@ public class ListView : Control
     internal ListViewColumnHeader GetColumnHeaderByIndex(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _columnHeaders.Count, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, columnHeaders.Count, nameof(index));
         
-        return _columnHeaders[index];
+        return columnHeaders[index];
     }
     
     internal ListViewItem GetItemByIndex(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, items.Count, nameof(index));
         
-        return _items[index];
+        return items[index];
     }
 
     public ConsoleColor HeaderBackgroundColour { get; set; } = ConsoleColor.Black;
@@ -317,8 +317,8 @@ public class ListView : Control
     {
         ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
 
-        for (int i = 0; i < _columnHeaders.Count; i++) {
-            if (_columnHeaders[i] == columnHeader) {
+        for (int i = 0; i < columnHeaders.Count; i++) {
+            if (columnHeaders[i] == columnHeader) {
                 return i;
             }
         }
@@ -330,8 +330,8 @@ public class ListView : Control
     {
         ArgumentNullException.ThrowIfNull(item, nameof(item));
 
-        for (int i = 0; i < _items.Count; i++) {
-            if (_items[i] == item) {
+        for (int i = 0; i < items.Count; i++) {
+            if (items[i] == item) {
                 return i;
             }
         }
@@ -343,36 +343,36 @@ public class ListView : Control
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, items.Count, nameof(index));
         
-        _columnHeaders.Insert(index, columnHeader);
+        columnHeaders.Insert(index, columnHeader);
     }
 
     internal void InsertColumnHeaders(ListViewColumnHeader[] columnHeaders)
     {
         ArgumentNullException.ThrowIfNull(columnHeaders, nameof(columnHeaders));
         
-        _columnHeaders.AddRange(columnHeaders);
+        this.columnHeaders.AddRange(columnHeaders);
     }
     
     internal void InsertItem(int index, ListViewItem item)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, _items.Count, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, items.Count, nameof(index));
         
-        _items.Insert(index, item);
+        items.Insert(index, item);
     }
 
     internal void InsertItems(ListViewItem[] items)
     {
         ArgumentNullException.ThrowIfNull(items, nameof(items));
         
-        _items.AddRange(items);
+        this.items.AddRange(items);
     }
     
-    internal int ItemCount => _items.Count;
+    internal int ItemCount => items.Count;
     
-    public ListViewItemCollection Items => _itemCollection;
+    public ListViewItemCollection Items => itemCollection;
     
     protected override void OnDraw()
     {
@@ -382,7 +382,7 @@ public class ListView : Control
             ? Y + 1 
             : Y;
         
-        _viewPort.Bounds = new Rectangle(X, y, Width, Height);
+        viewPort.Bounds = new Rectangle(X, y, Width, Height);
 
         if (ShowColumnHeaders) {
             DrawHeader();
@@ -443,23 +443,23 @@ public class ListView : Control
 
     private void RedrawItem()
     {
-        _terminal.SetCursorPosition(X, _viewPort.Bounds.Y + _viewPort.SelectedIndex - _viewPort.CurrentIndex);
+        terminal.SetCursorPosition(X, viewPort.Bounds.Y + viewPort.SelectedIndex - viewPort.CurrentIndex);
                     
-        var selectedItem = _items[_viewPort.SelectedIndex];
+        var selectedItem = items[viewPort.SelectedIndex];
 
         DrawItem(
             selectedItem,
-            _viewPort.Bounds.Width,
+            viewPort.Bounds.Width,
             highlight: true);
 
-        if (_viewPort.PreviousSelectedIndex != _viewPort.SelectedIndex) {
-            _terminal.SetCursorPosition(X, _viewPort.Bounds.Y + _viewPort.PreviousSelectedIndex - _viewPort.CurrentIndex);
+        if (viewPort.PreviousSelectedIndex != viewPort.SelectedIndex) {
+            terminal.SetCursorPosition(X, viewPort.Bounds.Y + viewPort.PreviousSelectedIndex - viewPort.CurrentIndex);
                         
-            var previousSelectedItem = _items[_viewPort.PreviousSelectedIndex];
+            var previousSelectedItem = items[viewPort.PreviousSelectedIndex];
 
             DrawItem(
                 previousSelectedItem,
-                _viewPort.Bounds.Width,
+                viewPort.Bounds.Width,
                 highlight: false);
         }
     }
@@ -467,9 +467,9 @@ public class ListView : Control
     internal void RemoveAt(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _items.Count, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, items.Count, nameof(index));
         
-        _items.RemoveAt(index);
+        items.RemoveAt(index);
     }
 
     internal void RemoveItem(ListViewItem item)
@@ -484,23 +484,23 @@ public class ListView : Control
 
     public int SelectedIndex
     {
-        get => _viewPort.SelectedIndex;
+        get => viewPort.SelectedIndex;
         set {
             ArgumentOutOfRangeException.ThrowIfNegative(value, nameof(value));
-            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(value, _items.Count, nameof(value));
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(value, items.Count, nameof(value));
 
-            _viewPort.SelectedIndex = value;
+            viewPort.SelectedIndex = value;
         }
     }
 
     public ListViewItem? SelectedItem
     {
         get {
-            if (_items.Count == 0) {
+            if (items.Count == 0) {
                 return null;
             }
             
-            return _items[SelectedIndex];
+            return items[SelectedIndex];
         }
     } 
     

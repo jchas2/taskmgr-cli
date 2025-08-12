@@ -4,62 +4,62 @@ namespace Task.Manager.System.Controls.InputBox;
 
 public class TextBuffer
 {
-    private StringBuilder _buffer = new();
-    private int _cursorBufferPosition = 0;
+    private StringBuilder buffer = new();
+    private int cursorBufferPosition = 0;
     
-    public int CursorBufferPosition => _cursorBufferPosition;
+    public int CursorBufferPosition => cursorBufferPosition;
     
-    public int Length => _buffer.Length;
+    public int Length => buffer.Length;
     
-    public string Text => _buffer.ToString();
+    public string Text => buffer.ToString();
     
     public void Clear()
     {
-        _buffer.Clear();
-        _cursorBufferPosition = 0;
+        buffer.Clear();
+        cursorBufferPosition = 0;
     }
 
     public bool MoveBackwards()
     {
-        if (_cursorBufferPosition == 0) {
+        if (cursorBufferPosition == 0) {
             return false;
         }
         
-        _buffer.Remove(_cursorBufferPosition - 1, 1);
-        _cursorBufferPosition--;
+        buffer.Remove(cursorBufferPosition - 1, 1);
+        cursorBufferPosition--;
         
         return true;
     }
 
     public bool Delete()
     {
-        if (_cursorBufferPosition == _buffer.Length) {
+        if (cursorBufferPosition == buffer.Length) {
             return false;
         }
 
-        _buffer.Remove(_cursorBufferPosition, 1);
+        buffer.Remove(cursorBufferPosition, 1);
         
         return true;
     }
 
     public bool MoveLeft()
     {
-        if (_cursorBufferPosition == 0) {
+        if (cursorBufferPosition == 0) {
             return false;
         }
         
-        _cursorBufferPosition--;
+        cursorBufferPosition--;
 
         return true;
     }
 
     public bool MoveRight()
     {
-        if (_cursorBufferPosition == _buffer.Length) {
+        if (cursorBufferPosition == buffer.Length) {
             return false;
         }
 
-        _cursorBufferPosition++;
+        cursorBufferPosition++;
         
         return true;
     }
@@ -73,18 +73,18 @@ public class TextBuffer
         }
         
         if (InsertMode) {
-            _buffer.Insert(_cursorBufferPosition, ch);
-            _cursorBufferPosition++;
+            buffer.Insert(cursorBufferPosition, ch);
+            cursorBufferPosition++;
         }
         else {
-            if (_cursorBufferPosition < _buffer.Length) {
-                _buffer[_cursorBufferPosition] = ch;
-                _cursorBufferPosition++; 
+            if (cursorBufferPosition < buffer.Length) {
+                buffer[cursorBufferPosition] = ch;
+                cursorBufferPosition++; 
             }
             else {
                 // Overwrite at the end behaves like an insert.
-                _buffer.Append(ch);
-                _cursorBufferPosition++;
+                buffer.Append(ch);
+                cursorBufferPosition++;
             }
         }
 

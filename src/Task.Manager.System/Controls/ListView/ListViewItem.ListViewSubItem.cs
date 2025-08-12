@@ -2,14 +2,14 @@
 
 public class ListViewSubItem
 {
-    private ListViewItem _owner;
-    private string _text;
-    private SubItemStyle? _style;
+    private ListViewItem owner;
+    private string text;
+    private SubItemStyle? style;
 
     public ListViewSubItem(ListViewItem owner, string text)
     {
-        _owner = owner;
-        _text = text;
+        this.owner = owner;
+        this.text = text;
     }
 
     public ListViewSubItem(
@@ -18,9 +18,9 @@ public class ListViewSubItem
         ConsoleColor backgroundColor,
         ConsoleColor foregroundColor)
     {
-        _owner = owner;
-        _text = text;
-        _style = new SubItemStyle {
+        this.owner = owner;
+        this.text = text;
+        style = new SubItemStyle {
             BackgroundColour = backgroundColor,
             ForegroundColour = foregroundColor
         };
@@ -29,48 +29,48 @@ public class ListViewSubItem
     public ConsoleColor BackgroundColor
     {
         get {
-            if (_style != null) {
-                return _style.BackgroundColour;
+            if (style != null) {
+                return style.BackgroundColour;
             }
 
-            return _owner.BackgroundColour;
+            return owner.BackgroundColour;
         }
         set {
-            _style ??= new SubItemStyle();
+            style ??= new SubItemStyle();
             
-            if (_style.BackgroundColour != value) {
-                _style.BackgroundColour = value;
+            if (style.BackgroundColour != value) {
+                style.BackgroundColour = value;
             }
         }
     }
 
     internal ListViewItem Owner
     {
-        get => _owner;
-        set => _owner = value;
+        get => owner;
+        set => owner = value;
     }
     
     public ConsoleColor ForegroundColor
     {
         get {
-            if (_style != null) {
-                return _style.ForegroundColour;
+            if (style != null) {
+                return style.ForegroundColour;
             }
 
-            return _owner.ForegroundColour;
+            return owner.ForegroundColour;
         }
         set {
-            _style ??= new SubItemStyle();
+            style ??= new SubItemStyle();
             
-            if (_style.ForegroundColour != value) {
-                _style.ForegroundColour = value;
+            if (style.ForegroundColour != value) {
+                style.ForegroundColour = value;
             }
         }
     }
 
     public string Text
     {
-        get => _text ?? string.Empty;
-        set => _text = value;
+        get => text ?? string.Empty;
+        set => text = value;
     }
 }
