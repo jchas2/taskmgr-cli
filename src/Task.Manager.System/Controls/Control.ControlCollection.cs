@@ -4,16 +4,16 @@ namespace Task.Manager.System.Controls;
 
 public class ControlCollection : IEnumerable<Control>
 {
-    private readonly Control _owner;
+    private readonly Control owner;
     
     public ControlCollection(Control owner) =>
-        _owner = owner ?? throw new ArgumentNullException(nameof(owner));
+        this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
     
     public ControlCollection Add(Control control)
     {
         ArgumentNullException.ThrowIfNull(control, nameof(control));
         
-        _owner.InsertControls([control]);
+        owner.InsertControls([control]);
 
         return this;
     }
@@ -22,27 +22,27 @@ public class ControlCollection : IEnumerable<Control>
     {
         ArgumentNullException.ThrowIfNull(controls, nameof(controls));
         
-        _owner.InsertControls(controls);
+        owner.InsertControls(controls);
     }
 
-    public void Clear() => _owner.ClearControls();
+    public void Clear() => owner.ClearControls();
 
     public bool Contains(Control control)
     {
         ArgumentNullException.ThrowIfNull(control, nameof(control));
         
-        return _owner.ContainsControl(control);
+        return owner.ContainsControl(control);
     }
 
-    public int Count => _owner.ControlCount;
+    public int Count => owner.ControlCount;
 
     public IEnumerator<Control> GetEnumerator()
     {
         /* Shallow copy the items and return an enumerator off that container. */
-        List<Control> items = new(_owner.Controls.Count);
+        List<Control> items = new(owner.Controls.Count);
         
-        for (int i = 0; i < _owner.ControlCount; i++) {
-            items.Add(_owner.GetControlByIndex(i));
+        for (int i = 0; i < owner.ControlCount; i++) {
+            items.Add(owner.GetControlByIndex(i));
         }
         
         return items.GetEnumerator();
@@ -54,14 +54,14 @@ public class ControlCollection : IEnumerable<Control>
     {
         ArgumentNullException.ThrowIfNull(control, nameof(control));
         
-        return _owner.IndexOfControl(control);
+        return owner.IndexOfControl(control);
     }
 
     public void Remove(Control control)
     {
         ArgumentNullException.ThrowIfNull(control, nameof(control));
         
-        _owner.RemoveControl(control);
+        owner.RemoveControl(control);
     }
     
     public Control this[int index]
@@ -69,13 +69,13 @@ public class ControlCollection : IEnumerable<Control>
         get {
             ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
             
-            return _owner.GetControlByIndex(index);
+            return owner.GetControlByIndex(index);
         }
         set {
             ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
             
-            _owner.RemoveControlAt(index);
-            _owner.InsertControl(index, value);
+            owner.RemoveControlAt(index);
+            owner.InsertControl(index, value);
         }
     }
 }

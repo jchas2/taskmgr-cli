@@ -12,11 +12,11 @@ public partial class ProcessControl
 {
     private class ProcessListViewItem : ListViewItem
     {
-        private int _lastThreadCount;
-        private long _lastBasePriority;
-        private long _lastUsedMemory;
-        private long _lastDiskUsage;
-        private double _lastCpu;
+        private int lastThreadCount;
+        private long lastBasePriority;
+        private long lastUsedMemory;
+        private long lastDiskUsage;
+        private double lastCpu;
         
         public ProcessListViewItem(
             ProcessInfo processInfo,
@@ -78,8 +78,8 @@ public partial class ProcessControl
 
             UpdateSubItem(
                 SubItems[(int)Columns.Priority], 
-                () => processInfo.BasePriority < _lastBasePriority,
-                () => processInfo.BasePriority > _lastBasePriority);
+                () => processInfo.BasePriority < lastBasePriority,
+                () => processInfo.BasePriority > lastBasePriority);
             
             SubItems[(int)Columns.Cpu].Text = (processInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
 
@@ -103,16 +103,16 @@ public partial class ProcessControl
             else {
                 UpdateSubItem(
                     SubItems[(int)Columns.Cpu], 
-                    () => processInfo.CpuTimePercent < _lastCpu,
-                    () => processInfo.CpuTimePercent > _lastCpu);
+                    () => processInfo.CpuTimePercent < lastCpu,
+                    () => processInfo.CpuTimePercent > lastCpu);
             }
             
             SubItems[(int)Columns.Threads].Text = processInfo.ThreadCount.ToString();
 
             UpdateSubItem(
                 SubItems[(int)Columns.Threads], 
-                () => processInfo.ThreadCount < _lastThreadCount,
-                () => processInfo.ThreadCount > _lastThreadCount);
+                () => processInfo.ThreadCount < lastThreadCount,
+                () => processInfo.ThreadCount > lastThreadCount);
             
             SubItems[(int)Columns.Memory].Text = processInfo.UsedMemory.ToFormattedByteSize();
 
@@ -133,8 +133,8 @@ public partial class ProcessControl
             else {
                 UpdateSubItem(
                     SubItems[(int)Columns.Memory], 
-                    () => processInfo.UsedMemory < _lastUsedMemory,
-                    () => processInfo.UsedMemory > _lastUsedMemory);
+                    () => processInfo.UsedMemory < lastUsedMemory,
+                    () => processInfo.UsedMemory > lastUsedMemory);
             }
             
             SubItems[(int)Columns.Disk].Text = processInfo.DiskUsage.ToFormattedMbpsFromBytes();
@@ -157,17 +157,17 @@ public partial class ProcessControl
             else {
                 UpdateSubItem(
                     SubItems[(int)Columns.Disk], 
-                    () => processInfo.DiskUsage < _lastDiskUsage,
-                    () => processInfo.DiskUsage > _lastDiskUsage);
+                    () => processInfo.DiskUsage < lastDiskUsage,
+                    () => processInfo.DiskUsage > lastDiskUsage);
             }
 
             SubItems[(int)Columns.CommandLine].Text = processInfo.CmdLine ?? string.Empty;
             
-            _lastCpu = processInfo.CpuTimePercent;
-            _lastBasePriority = processInfo.BasePriority;
-            _lastThreadCount = processInfo.ThreadCount;
-            _lastUsedMemory = processInfo.UsedMemory;
-            _lastDiskUsage = processInfo.DiskUsage;
+            lastCpu = processInfo.CpuTimePercent;
+            lastBasePriority = processInfo.BasePriority;
+            lastThreadCount = processInfo.ThreadCount;
+            lastUsedMemory = processInfo.UsedMemory;
+            lastDiskUsage = processInfo.DiskUsage;
         }
     }
 }

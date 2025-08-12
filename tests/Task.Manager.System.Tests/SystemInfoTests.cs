@@ -5,9 +5,9 @@ namespace Task.Manager.System.Tests;
 
 public sealed class SystemInfoTests
 {
-    private readonly ITestOutputHelper _testOutputHelper;
+    private readonly ITestOutputHelper testOutputHelper;
     
-    public SystemInfoTests(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
+    public SystemInfoTests(ITestOutputHelper testOutputHelper) => this.testOutputHelper = testOutputHelper;
     
     [Fact]
     public void Should_Get_Cpu_Times()
@@ -35,24 +35,24 @@ public sealed class SystemInfoTests
         bool result = systemInfo.GetSystemInfo(ref systemStatistics);
         Assert.True(result);
 
-        _testOutputHelper.WriteLine($"CPU    : {systemStatistics.CpuName}");
-        _testOutputHelper.WriteLine($"Mhz    : {systemStatistics.CpuFrequency.ToString(CultureInfo.CurrentCulture)}");
-        _testOutputHelper.WriteLine($"Cores  : {systemStatistics.CpuCores}");
-        _testOutputHelper.WriteLine($"OS     : {systemStatistics.OsVersion}");
-        _testOutputHelper.WriteLine($"Machine: {systemStatistics.MachineName}");
+        testOutputHelper.WriteLine($"CPU    : {systemStatistics.CpuName}");
+        testOutputHelper.WriteLine($"Mhz    : {systemStatistics.CpuFrequency.ToString(CultureInfo.CurrentCulture)}");
+        testOutputHelper.WriteLine($"Cores  : {systemStatistics.CpuCores}");
+        testOutputHelper.WriteLine($"OS     : {systemStatistics.OsVersion}");
+        testOutputHelper.WriteLine($"Machine: {systemStatistics.MachineName}");
 
-        _testOutputHelper.WriteLine($"Priv IP: {systemStatistics.PrivateIPv4Address}");
-        _testOutputHelper.WriteLine($"Pub IP : {systemStatistics.PublicIPv4Address}");
+        testOutputHelper.WriteLine($"Priv IP: {systemStatistics.PrivateIPv4Address}");
+        testOutputHelper.WriteLine($"Pub IP : {systemStatistics.PublicIPv4Address}");
         
         result = systemInfo.GetSystemMemory(ref systemStatistics);
         Assert.True(result);
         
-        _testOutputHelper.WriteLine($"Avail Phys: {systemStatistics.AvailablePhysical}");
-        _testOutputHelper.WriteLine($"Avail Virt: {systemStatistics.AvailableVirtual}");
-        _testOutputHelper.WriteLine($"Tot Phys  : {systemStatistics.TotalPhysical}");
-        _testOutputHelper.WriteLine($"Tot Virt  : {systemStatistics.TotalVirtual}");
-        _testOutputHelper.WriteLine($"Avail Page: {systemStatistics.AvailablePageFile}");
-        _testOutputHelper.WriteLine($"Tot Page  : {systemStatistics.TotalPageFile}");
+        testOutputHelper.WriteLine($"Avail Phys: {systemStatistics.AvailablePhysical}");
+        testOutputHelper.WriteLine($"Avail Virt: {systemStatistics.AvailableVirtual}");
+        testOutputHelper.WriteLine($"Tot Phys  : {systemStatistics.TotalPhysical}");
+        testOutputHelper.WriteLine($"Tot Virt  : {systemStatistics.TotalVirtual}");
+        testOutputHelper.WriteLine($"Avail Page: {systemStatistics.AvailablePageFile}");
+        testOutputHelper.WriteLine($"Tot Page  : {systemStatistics.TotalPageFile}");
     }
 }
 

@@ -4,14 +4,14 @@ namespace Task.Manager.Internal.Abstractions.Tests;
 
 public sealed class FileCleanupHelper : IDisposable
 {
-    private List<string> _tempDirs = new();
-    private Lock _lock = new();
+    private List<string> tempDirs = new();
+    private Lock @lock = new();
 
     ~FileCleanupHelper() => Dispose();
 
     public void Dispose()
     {
-        foreach (string dir in _tempDirs) {
+        foreach (string dir in tempDirs) {
             try {
                 try {
                     Directory.Delete(dir, recursive: true);
@@ -33,10 +33,10 @@ public sealed class FileCleanupHelper : IDisposable
 
     private string GetTempDirectoryInternal([CallerMemberName] string memberName = "")
     {
-        lock (_lock) {
+        lock (@lock) {
             string tempDirectory = Path.Combine(Path.GetTempPath(), $"{memberName}-{Guid.NewGuid()}");
             Directory.CreateDirectory(tempDirectory);
-            _tempDirs.Add(tempDirectory);
+            tempDirs.Add(tempDirectory);
             return tempDirectory;
         }
     } 

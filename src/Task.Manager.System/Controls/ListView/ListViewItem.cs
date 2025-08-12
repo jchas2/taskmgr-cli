@@ -7,17 +7,17 @@ public class ListViewItem
      * This provides a clean api for interacting with Collections on the ListViewItem
      * control, similar to the Win32 ListView common control.
      */
-    private readonly ListViewSubItemCollection _subItemCollection;
+    private readonly ListViewSubItemCollection subItemCollection;
 
     /* The containers holding the List<T> for rendering. We don't expose them via a public api. */
-    private List<ListViewSubItem> _subItems = [];
+    private List<ListViewSubItem> subItems = [];
 
     public ListViewItem(string text)
     {
         ArgumentNullException.ThrowIfNull(text, nameof(text));
         
-        _subItems.Add(new ListViewSubItem(this, text));
-        _subItemCollection = new ListViewSubItemCollection(this);
+        subItems.Add(new ListViewSubItem(this, text));
+        subItemCollection = new ListViewSubItemCollection(this);
     }
 
     public ListViewItem(
@@ -37,10 +37,10 @@ public class ListViewItem
         for (int i = 0; i < items.Length; i++) {
             ArgumentNullException.ThrowIfNull(items[i], nameof(items));
             
-            _subItems.Add(new ListViewSubItem(this, items[i]));
+            subItems.Add(new ListViewSubItem(this, items[i]));
         }
         
-        _subItemCollection = new ListViewSubItemCollection(this);
+        subItemCollection = new ListViewSubItemCollection(this);
     }
 
     public ListViewItem(
@@ -61,10 +61,10 @@ public class ListViewItem
             ArgumentNullException.ThrowIfNull(subItems[i], nameof(subItems));
             
             subItems[i].Owner = this;
-            _subItems.Add(subItems[i]);
+            this.subItems.Add(subItems[i]);
         }
         
-        _subItemCollection = new ListViewSubItemCollection(this);
+        subItemCollection = new ListViewSubItemCollection(this);
     }
 
     public ListViewItem(
@@ -79,13 +79,13 @@ public class ListViewItem
 
     public ConsoleColor BackgroundColour { get; set; } = ConsoleColor.Black;
 
-    internal void ClearSubItems() => _subItems.Clear();
+    internal void ClearSubItems() => subItems.Clear();
 
     internal bool Contains(ListViewSubItem subItem)
     {
         ArgumentNullException.ThrowIfNull(subItem, nameof(subItem));
         
-        return _subItems.Contains(subItem);
+        return subItems.Contains(subItem);
     }
 
     public ConsoleColor ForegroundColour { get; set; } = ConsoleColor.White;
@@ -93,17 +93,17 @@ public class ListViewItem
     internal ListViewSubItem GetSubItemByIndex(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _subItems.Count, nameof(index));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, subItems.Count, nameof(index));
         
-        return _subItems[index];
+        return subItems[index];
     }
     
     internal int IndexOfSubItem(ListViewSubItem subItem)
     {
         ArgumentNullException.ThrowIfNull(subItem, nameof(subItem));
 
-        for (int i = 0; i < _subItems.Count; i++) {
-            if (_subItems[i] == subItem) {
+        for (int i = 0; i < subItems.Count; i++) {
+            if (subItems[i] == subItem) {
                 return i;
             }
         }
@@ -115,16 +115,16 @@ public class ListViewItem
     {
         ArgumentNullException.ThrowIfNull(subItems, nameof(subItems));
         
-        _subItems.AddRange(subItems);
+        this.subItems.AddRange(subItems);
     }
 
-    internal int SubItemCount => _subItems.Count;
+    internal int SubItemCount => subItems.Count;
     
-    public ListViewSubItemCollection SubItems => _subItemCollection;
+    public ListViewSubItemCollection SubItems => subItemCollection;
 
     public string Text
     {
-        get => _subItems[0].Text;
-        set => _subItems[0].Text = value;
+        get => subItems[0].Text;
+        set => subItems[0].Text = value;
     }
 }

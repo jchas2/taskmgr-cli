@@ -1,3 +1,4 @@
+using System.Runtime.Versioning;
 using Task.Manager.System.Process;
 using SysDiag = System.Diagnostics;
 
@@ -5,7 +6,8 @@ namespace Task.Manager.System.Tests.Process;
 
 public sealed class ModuleInfoTests
 {
-    [Fact]
+    [SkippableFact]
+    [SupportedOSPlatform("windows")]
     public void Should_Return_Modules_For_Current_Process()
     {
         using var currentProcess = SysDiag::Process.GetCurrentProcess();

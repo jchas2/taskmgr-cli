@@ -11,12 +11,12 @@ public sealed class MessageBox : Control
     private const int ButtonHeight = 1;
     private const int ButtonGap = 6;
 
-    private bool _okFocused = true;
+    private bool okFocused = true;
     
     // TODO: Theme.
-    private ConsoleColor _dialogColour = ConsoleColor.Gray;
-    private ConsoleColor _dialogShadowColour = ConsoleColor.DarkGray;
-    private ConsoleColor _dialogTitleColour = ConsoleColor.White;
+    private ConsoleColor dialogColour = ConsoleColor.Gray;
+    private ConsoleColor dialogShadowColour = ConsoleColor.DarkGray;
+    private ConsoleColor dialogTitleColour = ConsoleColor.White;
     
     public MessageBox(ISystemTerminal terminal) : base(terminal) { }
 
@@ -37,10 +37,10 @@ public sealed class MessageBox : Control
             y,
             width,
             height,
-            _dialogTitleColour);
+            dialogTitleColour);
         
         string centredText = text.CentreWithLength(width);
-        Terminal.BackgroundColor = _dialogTitleColour;
+        Terminal.BackgroundColor = dialogTitleColour;
         Terminal.ForegroundColor = ConsoleColor.Black;
         
         Terminal.SetCursorPosition(x, y);
@@ -80,25 +80,25 @@ public sealed class MessageBox : Control
             Y + 1,
             Width,
             Height,
-            _dialogShadowColour);
+            dialogShadowColour);
         
         DrawRectangle(
             X,
             Y,
             Width,
             Height,
-            _dialogColour);
+            dialogColour);
         
         int y = Y;
 
          string centredTitle = Title.CentreWithLength(Width);
-         Terminal.BackgroundColor = _dialogTitleColour;
+         Terminal.BackgroundColor = dialogTitleColour;
          Terminal.ForegroundColor = ConsoleColor.Black;
          Terminal.SetCursorPosition(X, y);
          Terminal.Write(centredTitle);
         
          string spacer = new(' ', Width);
-         Terminal.BackgroundColor = _dialogColour;
+         Terminal.BackgroundColor = dialogColour;
          Terminal.ForegroundColor = ConsoleColor.Black;
          Terminal.SetCursorPosition(X, ++y);
          Terminal.Write(spacer);
@@ -134,7 +134,7 @@ public sealed class MessageBox : Control
                  ButtonWidth,
                  ButtonHeight,
                  "OK",
-                 selected: _okFocused);
+                 selected: okFocused);
          }
          
          if (Buttons == MessageBoxButtons.OkCancel) {
@@ -144,7 +144,7 @@ public sealed class MessageBox : Control
                  ButtonWidth,
                  ButtonHeight,
                  "Cancel",
-                 selected: !_okFocused);
+                 selected: !okFocused);
          }
 
          Terminal.SetCursorPosition(X, ++y);
@@ -166,17 +166,17 @@ public sealed class MessageBox : Control
             case ConsoleKey.LeftArrow:
             case ConsoleKey.O:
             case ConsoleKey.Y:
-                _okFocused = true;
+                okFocused = true;
                 break;
             
             case ConsoleKey.RightArrow:
             case ConsoleKey.C:
             case ConsoleKey.N:
-                _okFocused = Buttons == MessageBoxButtons.Ok;
+                okFocused = Buttons == MessageBoxButtons.Ok;
                 break;
             
             case ConsoleKey.Enter:
-                Result = _okFocused ? MessageBoxResult.Ok : MessageBoxResult.Cancel;
+                Result = okFocused ? MessageBoxResult.Ok : MessageBoxResult.Cancel;
                 break;
             
             case ConsoleKey.Escape:

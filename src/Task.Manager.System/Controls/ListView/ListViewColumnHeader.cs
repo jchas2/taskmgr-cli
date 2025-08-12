@@ -2,11 +2,11 @@
 
 public class ListViewColumnHeader
 {
-    private string _text;
+    private string text;
     private const int DefaultColumnWidth = 30;
     
     public ListViewColumnHeader(string text) =>
-        _text = text ?? throw new ArgumentNullException(nameof(text));
+        this.text = text ?? throw new ArgumentNullException(nameof(text));
 
     public ListViewColumnHeader(
         string text,
@@ -26,8 +26,8 @@ public class ListViewColumnHeader
     
     public string Text
     {
-        get => _text;
-        set => _text = value ?? throw new ArgumentNullException(nameof(value));
+        get => text;
+        set => text = value ?? throw new ArgumentNullException(nameof(value));
     }
     
     public int Width { get; set; } = DefaultColumnWidth;

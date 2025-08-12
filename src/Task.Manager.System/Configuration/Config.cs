@@ -4,10 +4,10 @@ namespace Task.Manager.System.Configuration;
 
 public class Config
 {
-    private IList<ConfigSection> _configSections;
+    private IList<ConfigSection> configSections;
 
     public Config() =>
-        _configSections = new List<ConfigSection>();
+        configSections = new List<ConfigSection>();
 
     public Config AddConfigSection(ConfigSection section)
     {
@@ -21,12 +21,12 @@ public class Config
     
     public IList<ConfigSection> ConfigSections
     {
-        get => _configSections;
-        private set => _configSections = value;
+        get => configSections;
+        private set => configSections = value;
     }
 
     public bool ContainsSection(string name) =>
-        _configSections.Any(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
+        configSections.Any(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
 
     public static Config? FromFile(IFileSystem fileSys, string path)
     {
@@ -53,7 +53,7 @@ public class Config
             throw new InvalidOperationException();
         }
 
-        return _configSections.Single(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
+        return configSections.Single(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
     }
     
     private static Config ParseConfig(ConfigParser parser)

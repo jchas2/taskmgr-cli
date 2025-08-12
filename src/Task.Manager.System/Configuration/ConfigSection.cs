@@ -4,15 +4,15 @@ namespace Task.Manager.System.Configuration;
 
 public sealed class ConfigSection
 {
-    private string _name = string.Empty;
-    private readonly Dictionary<string, string> _keys;
+    private string name = string.Empty;
+    private readonly Dictionary<string, string> keys;
 
-    internal ConfigSection() => _keys = new Dictionary<string, string>();
+    internal ConfigSection() => keys = new Dictionary<string, string>();
 
     public ConfigSection(string name)
     {
-        _name = name ?? throw new ArgumentNullException(nameof(name));
-        _keys = new Dictionary<string, string>();
+        this.name = name ?? throw new ArgumentNullException(nameof(name));
+        keys = new Dictionary<string, string>();
     }
     
     public ConfigSection Add(string key, string value)
@@ -20,7 +20,7 @@ public sealed class ConfigSection
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
 
-        _keys[key] = value;
+        keys[key] = value;
 
         return this;
     }
@@ -30,14 +30,14 @@ public sealed class ConfigSection
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
 
-        if (!_keys.ContainsKey(key)) {
+        if (!keys.ContainsKey(key)) {
             Add(key, value);
         }
 
         return this;
     }
 
-    public bool Contains(string key) => _keys.ContainsKey(key);
+    public bool Contains(string key) => keys.ContainsKey(key);
 
     public string GetString(string key) => GetString(key, string.Empty);
 
@@ -50,7 +50,7 @@ public sealed class ConfigSection
             return defaultValue;
         }
 
-        return _keys[key];
+        return keys[key];
     }
 
     public ConsoleColor GetColour(string key) => GetColour(key, ConsoleColor.Black);
@@ -76,8 +76,8 @@ public sealed class ConfigSection
 
     public string Name
     {
-        get => _name;
-        set => _name = value ?? throw new ArgumentNullException(nameof(Name));
+        get => name;
+        set => name = value ?? throw new ArgumentNullException(nameof(Name));
     }
 
     private T TryParse<T>(string key, Func<string, T> parseMethod, T defaultValue)

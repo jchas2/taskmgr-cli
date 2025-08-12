@@ -7,11 +7,11 @@ public partial class ProcessInfoControl
 {
     private class MenuListViewItem : ListViewItem
     {
-        private readonly Control _associatedControl;
+        private readonly Control associatedControl;
         
         public MenuListViewItem(Control associatedControl, string text)
-            : base(text) => _associatedControl = associatedControl;
+            : base(text) => this.associatedControl = associatedControl;
         
-        public Control AssociatedControl => _associatedControl;
+        public Control AssociatedControl => associatedControl;
     }
 }

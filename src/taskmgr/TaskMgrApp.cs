@@ -15,12 +15,12 @@ public sealed class TaskMgrApp
     private const string MutexId = "Task-Mgr-d3f8e2a1-4b6f-4e8a-9b2d-1c3e4f5a6b7c";
     private const string ConfigFile = "taskmgr.config";
 
-    private readonly RunContext _runContext;
-    private static Mutex? _mutex = null;
+    private readonly RunContext runContext;
+    private static Mutex? mutex = null;
     
     public TaskMgrApp(RunContext runContext)
     {
-        _runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
+        this.runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
     }
     
     private RootCommand InitRootCommand(Config config)
@@ -140,7 +140,7 @@ public sealed class TaskMgrApp
             Theme theme = new(config);
             
             RunCommand(
-                _runContext,
+                runContext,
                 config,
                 theme);
         });   
@@ -184,10 +184,10 @@ public sealed class TaskMgrApp
         var ownsMutex = true;
 
         try {
-            _mutex = new Mutex(initiallyOwned: false, name: MutexId, out ownsMutex);
+            mutex = new Mutex(initiallyOwned: false, name: MutexId, out ownsMutex);
 
             if (!ownsMutex) {
-                _runContext.OutputWriter.WriteLine("Another instance of app is already running.".ToRed());
+                runContext.OutputWriter.WriteLine("Another instance of app is already running.".ToRed());
                 return -1;
             }
 
@@ -195,7 +195,7 @@ public sealed class TaskMgrApp
 
             if (TryGetConfigurationPath(out string? configPath) && !string.IsNullOrEmpty(configPath)) {
                 string configFile = Path.Combine(configPath, ConfigFile);
-                if (_runContext.FileSystem.Exists(configFile)) {
+                if (runContext.FileSystem.Exists(configFile)) {
                     TryGetConfigurationFromFile(configFile, out config);
                 }
             }
@@ -208,9 +208,9 @@ public sealed class TaskMgrApp
             return exitCode;
         }
         finally {
-            if (_mutex != null && ownsMutex) {
-                _mutex.ReleaseMutex();
-                _mutex.Dispose();
+            if (mutex != null && ownsMutex) {
+                mutex.ReleaseMutex();
+                mutex.Dispose();
             }
         }
     }
@@ -220,14 +220,14 @@ public sealed class TaskMgrApp
         config = null;
 
         try {
-            config = Config.FromFile(_runContext.FileSystem, configFile);
+            config = Config.FromFile(runContext.FileSystem, configFile);
             return true;
         }
         catch (Exception e) when (e is FileNotFoundException || e is IOException) {
-            _runContext.OutputWriter.WriteLine($"Error loading config: ${e.Message}.".ToRed());
+            runContext.OutputWriter.WriteLine($"Error loading config: ${e.Message}.".ToRed());
         }
         catch (Exception e) when (e is ConfigParseException) {
-            _runContext.OutputWriter.WriteLine($"Error parsing config: {e.Message}.".ToRed());
+            runContext.OutputWriter.WriteLine($"Error parsing config: {e.Message}.".ToRed());
         }
 
         return false;
@@ -242,7 +242,7 @@ public sealed class TaskMgrApp
             return true;
         }
         catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is IOException) {
-            _runContext.OutputWriter.WriteLine($"Unable to get working path: {e.Message}.".ToRed());
+            runContext.OutputWriter.WriteLine($"Unable to get working path: {e.Message}.".ToRed());
             return false;
         }
     }

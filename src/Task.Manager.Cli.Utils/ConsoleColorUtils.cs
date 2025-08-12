@@ -2,14 +2,14 @@ namespace Task.Manager.Cli.Utils;
 
 public static class ConsoleColorUtils
 {
-    private static Dictionary<string, ConsoleColor>? _colourMap; 
+    private static Dictionary<string, ConsoleColor>? colourMap; 
     
     public static ConsoleColor FromName(string name, ConsoleColor defaultColour)
     {
-        _colourMap ??= GetConsoleColours();
+        colourMap ??= GetConsoleColours();
         
         string key = GetKey(name);
-        return _colourMap.GetValueOrDefault(key, defaultColour);
+        return colourMap.GetValueOrDefault(key, defaultColour);
     }
 
     private static Dictionary<string, ConsoleColor> GetConsoleColours()

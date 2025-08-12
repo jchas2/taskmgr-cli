@@ -13,7 +13,7 @@ public static partial class ProcessUtils
 #if __WIN32__
     private const string DefaultUser = "SYSTEM";
     private const string ServiceHost = "svchost.exe";
-    private static Dictionary<string, string> _userMap = new();
+    private static readonly Dictionary<string, string> userMap = new();
 
     public static uint GetHandleCountInternal(SysDiag::Process process)
     {
@@ -136,14 +136,14 @@ public static partial class ProcessUtils
                     IdentityReference identityRef = sid.Translate(typeof(NTAccount));
                     var userName = identityRef.ToString();
 
-                    if (_userMap.ContainsKey(userName)) {
-                        return _userMap[userName];
+                    if (userMap.ContainsKey(userName)) {
+                        return userMap[userName];
                     }
                     
                     int domainIndex = userName.IndexOf('\\');
                     if (domainIndex != -1) {
                         var abbrevUserName = userName.Substring(domainIndex + 1);
-                        _userMap.Add(userName, abbrevUserName);
+                        userMap.Add(userName, abbrevUserName);
                     }
                     
                     return userName;

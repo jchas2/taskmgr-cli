@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using System.Security;
 using System.Text;
 
@@ -5,22 +6,22 @@ namespace Task.Manager.Cli.Utils;
 
 public sealed class TerminalUtf8Encoder : IDisposable
 {
-    private Encoding? _origOutputEncoding;
-    private Encoding? _origInputEncoding;
+    private Encoding? origOutputEncoding;
+    private Encoding? origInputEncoding;
 
     public TerminalUtf8Encoder()
     {
         UseTryCatch(() => {
-            _origOutputEncoding = Console.OutputEncoding;
-            _origInputEncoding = Console.InputEncoding;
+            origOutputEncoding = Console.OutputEncoding;
+            origInputEncoding = Console.InputEncoding;
         });
     }
 
     public void Dispose()
     {
         UseTryCatch(() => {
-            Console.OutputEncoding = _origOutputEncoding ?? Console.OutputEncoding;
-            Console.InputEncoding = _origInputEncoding ?? Console.InputEncoding;
+            Console.OutputEncoding = origOutputEncoding ?? Console.OutputEncoding;
+            Console.InputEncoding = origInputEncoding ?? Console.InputEncoding;
         });
     }
 
@@ -29,9 +30,8 @@ public sealed class TerminalUtf8Encoder : IDisposable
         try {
             action();
         }
-        catch (Exception e) when (e is IOException || e is SecurityException) {
-            // TODO: Print nice exception using framework.
-            Console.WriteLine(e);
+        catch (Exception ex) when (ex is IOException || ex is SecurityException) {
+            ExceptionHelper.HandleException(ex);
         }
     }
 }

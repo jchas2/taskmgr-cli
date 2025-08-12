@@ -7,11 +7,11 @@ namespace Task.Manager.System.Tests.Process;
 
 public sealed class ProcessorTests
 {
-    private readonly ITestOutputHelper _testOutputHelper;
+    private readonly ITestOutputHelper testOutputHelper;
     
     public ProcessorTests(ITestOutputHelper testOutputHelper)
     {
-        _testOutputHelper = testOutputHelper;
+        this.testOutputHelper = testOutputHelper;
     }
 
     [Fact]
