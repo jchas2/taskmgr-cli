@@ -1,8 +1,8 @@
-using System.Drawing;
-using Task.Manager.Cli.Utils;
+﻿using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
+using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
 
 namespace Task.Manager.Gui.Controls;
@@ -10,9 +10,27 @@ namespace Task.Manager.Gui.Controls;
 public sealed class HeaderControl : Control
 {
     private readonly IProcessor processor;
+    private readonly Theme theme;
     private SystemStatistics systemStatistics = new();
+
+    private readonly MetreControl cpuMetre;
+    private readonly MetreControl memoryMetre;
+    private readonly MetreControl virtualMemoryMetre;
+    private readonly MetreControl diskMetre;
+    private readonly ListView statisticsView;
+    
     private double maxMbps = 0;
-    private const int MetreWidth = 48;
+    
+    private const int MetreWidth = 52;
+    private const int StatisticsViewColumnCount = 8;
+    private const int CpuLabelColumnWidth = 7;
+    private const int CpuDataColumnWidth = 7;
+    private const int MemoryLabelColumnWidth = 8;
+    private const int MemoryDataColumnWidth = 10;
+    private const int VirtualMemoryLabelColumnWidth = 7;
+    private const int VirtualMemoryDataColumnWidth = 10;
+    private const int DiskLabelColumnWidth = 5;
+    private const int DiskDataColumnWidth = 14;
 
     public HeaderControl(
         IProcessor processor, 
@@ -20,131 +38,49 @@ public sealed class HeaderControl : Control
         Theme theme) : base(terminal)
     {
         this.processor = processor ?? throw new ArgumentNullException(nameof(processor));
-        ArgumentNullException.ThrowIfNull(theme);
+        this.theme = theme ?? throw new ArgumentNullException(nameof(theme));
         
         BackgroundColour = theme.Background;
         ForegroundColour = theme.Foreground;
         MenubarColour = theme.Menubar;
-    }
-    
-    private int DrawColumnLabelValue(
-        string label,
-        string value,
-        ConsoleColor valueColour)
-    {
-        Terminal.ForegroundColor = ForegroundColour;
-        Terminal.Write(label);
-        Terminal.ForegroundColor = valueColour;
-        Terminal.Write(value);
-        Terminal.ForegroundColor = ForegroundColour;
 
-        return label.Length + value.Length;
-    }
+        cpuMetre = new MetreControl(terminal) {
+            Text = "Cpu",
+            DrawStacked = true,
+            LabelSeries1 = "k",
+            LabelSeries2 = "u"
+        };
 
-    private int DrawStackedPercentageBar(
-        string labelA,
-        double percentageA,
-        ConsoleColor colourA,
-        string labelB,
-        double percentageB,
-        ConsoleColor colourB)
-    {
-        int nchars = 0;
+        memoryMetre = new MetreControl(terminal) {
+            Text = "Mem",
+            DrawStacked = false,
+            LabelSeries1 = "m"
+        };
+
+        virtualMemoryMetre = new MetreControl(terminal) {
+            Text = "Vir",
+            DrawStacked = false,
+            LabelSeries1 = "v"
+        };
+
+        diskMetre = new MetreControl(terminal) {
+            Text = "Dsk",
+            DrawStacked = false,
+            LabelSeries1 = string.Empty
+        };
         
-        Terminal.BackgroundColor = BackgroundColour;
-        Terminal.ForegroundColor = ForegroundColour;
-        Terminal.Write('[');
+        statisticsView = new ListView(terminal) {
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground,
+            EnableScroll = false,
+            EnableRowSelect = false,
+            ShowColumnHeaders = false,
+            Visible = true
+        };
 
-        nchars++;
-
-        nchars += DrawMeter(
-            labelA,
-            percentageA,
-            colourA,
-            offsetX: 0,
-            drawVoid: false);
-        
-        nchars += DrawMeter(
-            labelB,
-            percentageB,
-            colourB,
-            offsetX: nchars - 1,
-            drawVoid: true);
-        
-        Terminal.Write(']');
-
-        return ++nchars;
-    }
-    
-    private int DrawPercentageBar(
-        string label,
-        double percentage,
-        ConsoleColor colour)
-    {
-        int nchars = 0;
-        
-        Terminal.BackgroundColor = BackgroundColour;
-        Terminal.ForegroundColor = ForegroundColour;
-        Terminal.Write('[');
-
-        nchars++;
-
-        nchars += DrawMeter(
-            label,
-            percentage,
-            colour,
-            offsetX: 0,
-            drawVoid: true);
-        
-        Terminal.Write(']');
-
-        return ++nchars;
-    }
-    
-    private int DrawMeter(
-        string label,
-        double percentage,
-        ConsoleColor colour,
-        int offsetX,
-        bool drawVoid)
-    {
-        int nchars = 0;
-        int inverseBars = (int)(percentage * (double)MetreWidth);
-
-        if (inverseBars == 0 && percentage > 0) {
-            inverseBars = 1;
+        for (int i = 0; i < StatisticsViewColumnCount; i++) {
+            statisticsView.ColumnHeaders.Add(new ListViewColumnHeader(string.Empty));
         }
-
-        var currBackgroundColour = Terminal.BackgroundColor;
-        var currForegroundColour = Terminal.ForegroundColor;
-        
-        Terminal.BackgroundColor = colour;
-        Terminal.ForegroundColor = currForegroundColour;
-
-        Terminal.Write(label);
-        nchars += label.Length;
-
-        for (int i = nchars; i < inverseBars; i++) {
-            Terminal.Write(' ');
-            nchars++;
-        }
-
-        if (drawVoid)
-        {
-            /* TODO: Needs to be a theme colour for this. */
-            Terminal.BackgroundColor = ConsoleColor.DarkGray;
-            Terminal.ForegroundColor = ConsoleColor.DarkGray;
-
-            for (int i = 0; i < MetreWidth - (inverseBars + offsetX); i++) {
-                Terminal.Write(' ');
-                nchars++;
-            }
-        }
-        
-        Terminal.BackgroundColor = currBackgroundColour;
-        Terminal.ForegroundColor = currForegroundColour;
-        
-        return nchars;
     }
     
     public ConsoleColor MenubarColour { get; set; } = ConsoleColor.DarkGray;
@@ -164,9 +100,7 @@ public sealed class HeaderControl : Control
     {
         using TerminalColourRestorer _ = new();
 
-        int nlines = 0;
-        
-        Terminal.SetCursorPosition(left: X, top: Y);
+        Terminal.SetCursorPosition(X, Y);
         Terminal.BackgroundColor = MenubarColour;
         Terminal.ForegroundColor = ForegroundColour;
 
@@ -177,22 +111,17 @@ public sealed class HeaderControl : Control
         Terminal.Write(menubar);
         Terminal.WriteEmptyLineTo(Width - offsetX - menubar.Length);
         
-        nlines++;
-
         Terminal.BackgroundColor = BackgroundColour;
 
         Terminal.Write(
-            $"{systemStatistics.MachineName}  ({systemStatistics.OsVersion})  IP {systemStatistics.PrivateIPv4Address} Pub {systemStatistics.PublicIPv4Address}");
-        
+            $"{systemStatistics.MachineName}  ({systemStatistics.OsVersion})  IP {systemStatistics.PrivateIPv4Address}");
+
         int nchars =
             systemStatistics.MachineName.Length + 3 +
             systemStatistics.OsVersion.Length + 6 +
-            systemStatistics.PrivateIPv4Address.Length + 5 +
-            systemStatistics.PublicIPv4Address.Length;
+            systemStatistics.PrivateIPv4Address.Length;
         
         Terminal.WriteEmptyLineTo(Width - nchars);
-        
-        nlines++;
         
         Terminal.Write(
             $"{systemStatistics.CpuName} (Cores {systemStatistics.CpuCores})");
@@ -204,8 +133,6 @@ public sealed class HeaderControl : Control
         Terminal.WriteEmptyLineTo(Width - nchars);
         Terminal.WriteEmptyLine();
         
-        nlines += 2;
-
         double totalCpu = systemStatistics.CpuPercentKernelTime + systemStatistics.CpuPercentUserTime;
         double memRatio = 1.0 - ((double)(systemStatistics.AvailablePhysical) / (double)(systemStatistics.TotalPhysical));
         double virRatio = 1.0 - ((double)(systemStatistics.AvailablePageFile) / (double)(systemStatistics.TotalPageFile));
@@ -240,153 +167,163 @@ public sealed class HeaderControl : Control
             : mbps < 100.0 ? ConsoleColor.DarkYellow
             : ConsoleColor.Red;
 
-        Terminal.Write("Cpu ");
+        cpuMetre.PercentageSeries1 = systemStatistics.CpuPercentKernelTime / 100;
+        cpuMetre.PercentageSeries2 = systemStatistics.CpuPercentUserTime / 100;
+        cpuMetre.ColourSeries1 = kernelColour;
+        cpuMetre.ColourSeries2 = userColour;
+        cpuMetre.Draw();
+        
+        memoryMetre.PercentageSeries1 = memRatio;
+        memoryMetre.ColourSeries1 = memColour;
+        memoryMetre.Draw();
 
-        nchars = DrawStackedPercentageBar(
-            "k",
-            systemStatistics.CpuPercentKernelTime / 100,
-            kernelColour,
-            "u",
-            systemStatistics.CpuPercentUserTime / 100,
-            userColour);
-        
-        nchars += DrawColumnLabelValue(
-            "  Cpu:     ",
-            (totalCpu / 100).ToString("000.0%"),
-            userColour);
-        
-        nchars += DrawColumnLabelValue(
-            "  Mem:     ",
-            memRatio.ToString("000.0%"),
-            memColour);
-        
-        nchars += DrawColumnLabelValue(
-            "  Virt:    ",
-            virRatio.ToString("000.0%"),
-            virColour);
+        virtualMemoryMetre.PercentageSeries1 = virRatio;
+        virtualMemoryMetre.ColourSeries1 = virColour;
+        virtualMemoryMetre.Draw();
 
-        nchars += DrawColumnLabelValue(
-            "  Disk:    ",
-            string.Format("{0,5:####0.0} MB/s", mbps),
-            mbpsColour);
-        
-        Terminal.WriteEmptyLineTo(Width - nchars - 4);
-        
-        nlines++;
-        
-        Terminal.Write("Mem ");
+        diskMetre.PercentageSeries1 = mbpsRatio;
+        diskMetre.ColourSeries1 = mbpsColour;
+        diskMetre.Draw();
 
-        nchars = DrawPercentageBar(
-            "m",
-            memRatio,
-            memColour);
+        statisticsView.Items[0].SubItems[1].Text = (totalCpu / 100).ToString("000.0%");
+        statisticsView.Items[0].SubItems[1].ForegroundColor = userColour;
+        statisticsView.Items[0].SubItems[3].Text = memRatio.ToString("000.0%");
+        statisticsView.Items[0].SubItems[3].ForegroundColor = memColour;
+        statisticsView.Items[0].SubItems[5].Text = virRatio.ToString("000.0%");
+        statisticsView.Items[0].SubItems[5].ForegroundColor = virColour;
+        statisticsView.Items[0].SubItems[7].Text = string.Format("{0,5:####0.0} MB/s", mbps);
+        statisticsView.Items[0].SubItems[7].ForegroundColor = mbpsColour;
 
-        nchars += DrawColumnLabelValue(
-            "  User:    ",
-            (systemStatistics.CpuPercentUserTime / 100).ToString("000.0%"),
-            userColour);
+        statisticsView.Items[1].SubItems[1].Text = (systemStatistics.CpuPercentUserTime / 100).ToString("000.0%");
+        statisticsView.Items[1].SubItems[1].ForegroundColor = userColour;
+        statisticsView.Items[1].SubItems[3].Text = ((double)(systemStatistics.TotalPhysical) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[1].SubItems[3].ForegroundColor = ForegroundColour;
+        statisticsView.Items[1].SubItems[5].Text = ((double)(systemStatistics.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[1].SubItems[5].ForegroundColor = ForegroundColour;
+        statisticsView.Items[1].SubItems[7].Text = string.Format("{0,5:####0.0} MB/s", maxMbps);
+        statisticsView.Items[1].SubItems[7].ForegroundColor = mbpsColour;
 
-        nchars += DrawColumnLabelValue(
-            "  Total: ",
-            ((double)(systemStatistics.TotalPhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            ForegroundColour);
+        statisticsView.Items[2].SubItems[1].Text = (systemStatistics.CpuPercentKernelTime / 100).ToString("000.0%");
+        statisticsView.Items[2].SubItems[1].ForegroundColor = kernelColour;
+        statisticsView.Items[2].SubItems[3].Text = ((double)(systemStatistics.TotalPhysical - systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[2].SubItems[3].ForegroundColor = ForegroundColour;
+        statisticsView.Items[2].SubItems[5].Text = ((double)(systemStatistics.TotalPageFile - systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[2].SubItems[5].ForegroundColor = ForegroundColour;
+        statisticsView.Items[2].SubItems[7].Text = string.Empty;
+        statisticsView.Items[2].SubItems[7].ForegroundColor = ForegroundColour;
         
-        nchars += DrawColumnLabelValue(
-            "  Total: ",
-            ((double)(systemStatistics.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            ForegroundColour);
-        
-        nchars += DrawColumnLabelValue(
-            "  Peak:    ",
-            string.Format("{0,5:####0.0} MB/s", maxMbps),
-            mbpsColour);
-        
-        Terminal.WriteEmptyLineTo(Width - nchars - 4);
+        statisticsView.Items[3].SubItems[1].Text = (systemStatistics.CpuPercentIdleTime / 100).ToString("000.0%");
+        statisticsView.Items[3].SubItems[1].ForegroundColor = ForegroundColour;
+        statisticsView.Items[3].SubItems[3].Text = ((double)(systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[3].SubItems[3].ForegroundColor = ForegroundColour;
+        statisticsView.Items[3].SubItems[5].Text = ((double)(systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[3].SubItems[5].ForegroundColor = ForegroundColour;
+        statisticsView.Items[3].SubItems[7].Text = string.Empty;
+        statisticsView.Items[3].SubItems[7].ForegroundColor = ForegroundColour;
 
-        nlines++;
-        
-        Terminal.Write("Vir ");
-
-        nchars = DrawPercentageBar(
-            "v",
-            virRatio,
-            virColour);
-
-        nchars += DrawColumnLabelValue(
-            "  Kernel:  ",
-            (systemStatistics.CpuPercentKernelTime / 100).ToString("000.0%"),
-            kernelColour);
-
-        nchars += DrawColumnLabelValue(
-            "  Used:  ",
-            ((double)(systemStatistics.TotalPhysical - systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            ForegroundColour);
-        
-        nchars += DrawColumnLabelValue(
-            "  Used:  ",
-            ((double)(systemStatistics.TotalPageFile - systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            ForegroundColour);
-        
-        Terminal.WriteEmptyLineTo(Width - nchars - 4);
-
-        nlines++;
-
-        Terminal.Write("Dsk ");
-        
-        nchars = DrawPercentageBar(
-            string.Empty,
-            mbpsRatio,
-            mbpsColour);
-        
-        nchars += DrawColumnLabelValue(
-            "  Idle:    ",
-            (systemStatistics.CpuPercentIdleTime / 100).ToString("000.0%"),
-            ForegroundColour);
-
-        nchars += DrawColumnLabelValue(
-            "  Free:  ",
-            ((double)(systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            ForegroundColour);
-        
-        nchars += DrawColumnLabelValue(
-            "  Free:  ",
-            ((double)(systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB"),
-            ForegroundColour);
-        
-        Terminal.WriteEmptyLineTo(Width - nchars - 4);
-        
-        nlines++;
-        
-        nchars = DrawColumnLabelValue(
-            "Processes: ",
-            systemStatistics.ProcessCount.ToString(),
-            ForegroundColour);
+        statisticsView.Items[4].SubItems[1].Text = systemStatistics.ProcessCount.ToString();
+        statisticsView.Items[4].SubItems[1].ForegroundColor = ForegroundColour;
+        statisticsView.Items[4].SubItems[3].Text = systemStatistics.ThreadCount.ToString();
+        statisticsView.Items[4].SubItems[3].ForegroundColor = ForegroundColour;
 #if DEBUG        
-        nchars += DrawColumnLabelValue(
-            ", Ghosts: ",
-            systemStatistics.GhostProcessCount.ToString(),
-            ForegroundColour);
+        statisticsView.Items[4].SubItems[5].Text = systemStatistics.GhostProcessCount.ToString();
+#else
+        statisticsView.Items[4].SubItems[5].Text = string.Empty;
 #endif
-        nchars += DrawColumnLabelValue(
-            ", Threads: ",
-            systemStatistics.ThreadCount.ToString(),
-            ForegroundColour);
+        statisticsView.Items[4].SubItems[5].ForegroundColor = ForegroundColour;
+        statisticsView.Items[4].SubItems[7].Text = string.Empty;
+        statisticsView.Items[4].SubItems[7].ForegroundColor = ForegroundColour;
         
-        Terminal.WriteEmptyLineTo(Width - nchars);
-        
-        Height = nlines;
+        statisticsView.Draw();
     }
 
-    protected override void OnLoad() =>
-        processor.ProcessorUpdated += OnProcessorUpdated;
-    
-    protected override void OnUnload() =>
+    protected override void OnLoad()
+    {
+        foreach (Control control in Controls) {
+            control.Load();
+        }
+
+        int[] columnWidths = [
+            CpuLabelColumnWidth,
+            CpuDataColumnWidth,
+            MemoryLabelColumnWidth,
+            MemoryDataColumnWidth,
+            VirtualMemoryLabelColumnWidth,
+            VirtualMemoryDataColumnWidth,
+            DiskLabelColumnWidth,
+            DiskDataColumnWidth
+        ];
+
+        for (int i = 0; i < columnWidths.Length; i++) {
+            statisticsView.ColumnHeaders[i].Width = columnWidths[i];
+        }
+        
+        for (int i = 0; i < statisticsView.ColumnHeaders.Count(); i++) {
+            statisticsView.ColumnHeaders[i].RightAligned = (i + 1) % 2 == 0;
+        }
+
+        statisticsView.Items.Add(new(["Cpu:   ",       "", "Mem:    ",      "", "Vir:   ",    "", "Disk:", ""]));
+        statisticsView.Items.Add(new(["User:  ",       "", "Total:  ",      "", "Total: ",    "", "Peak:", ""]));
+        statisticsView.Items.Add(new(["Kernel:",       "", "Used:   ",      "", "Used:  ",    "", "",      ""]));
+        statisticsView.Items.Add(new(["Idle:  ",       "", "Free:   ",      "", "Free:  ",    "", "",      ""]));
+#if DEBUG        
+        statisticsView.Items.Add(new(["Proc:  ",       "", "Threads:",      "", "Ghosts:",    "", "",      ""]));
+#else
+        statisticsView.Items.Add(new(["Procs  :",       "", "Threads:",      "", "",         "", "",      ""]));
+#endif
+        
+        processor.ProcessorUpdated += OnProcessorUpdated; 
+    }
+
+    protected override void OnResize()
+    {
+        Clear();
+
+        cpuMetre.X = X;
+        cpuMetre.Y = Y + 3;
+        cpuMetre.Width = MetreWidth;
+        cpuMetre.Height = 1;
+        cpuMetre.Resize();
+
+        memoryMetre.X = X;
+        memoryMetre.Y = Y + 4;
+        memoryMetre.Width = MetreWidth;
+        memoryMetre.Height = 1;
+        memoryMetre.Resize();
+
+        virtualMemoryMetre.X = X;
+        virtualMemoryMetre.Y = Y + 5;
+        virtualMemoryMetre.Width = MetreWidth;
+        virtualMemoryMetre.Height = 1;
+        virtualMemoryMetre.Resize();
+
+        diskMetre.X = X;
+        diskMetre.Y = Y + 6;
+        diskMetre.Width = MetreWidth;
+        diskMetre.Height = 1;
+        diskMetre.Resize();
+
+        statisticsView.X = X + cpuMetre.Width + 2;
+        statisticsView.Y = cpuMetre.Y;
+        statisticsView.Width = Width - MetreWidth - 2;
+        statisticsView.Height = statisticsView.Items.Count;
+        statisticsView.Resize();
+    }
+
+    protected override void OnUnload()
+    {
+        statisticsView.Items.Clear();
+        
+        foreach (Control control in Controls) {
+            control.Unload();
+        }
+
         processor.ProcessorUpdated -= OnProcessorUpdated;
+    }
 
     private void OnProcessorUpdated(object? sender, ProcessorEventArgs e)
     {
         systemStatistics = e.SystemStatistics;
-        
         Draw();
     }
 }
