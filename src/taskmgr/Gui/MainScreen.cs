@@ -19,7 +19,7 @@ public sealed class MainScreen : Screen
 
     private readonly ProcessControl processControl;
     private readonly ProcessInfoControl processInfoControl;
-    private readonly HeaderControl2 headerControl;
+    private readonly HeaderControl headerControl;
     private readonly CommandControl commandControl;
     private readonly FilterControl filterControl;
     private Control activeControl;
@@ -50,7 +50,7 @@ public sealed class MainScreen : Screen
             [typeof(EndTaskCommand)] = new EndTaskCommand(this)
         };
 
-        headerControl = new HeaderControl2(
+        headerControl = new HeaderControl(
             this.runContext.Processor,
             terminal,
             theme);
