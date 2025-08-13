@@ -46,6 +46,17 @@ public class ListView : Control
     
     public ConsoleColor BackgroundHighlightColour { get; set; } = ConsoleColor.White;
 
+    private void CalculateViewPortBounds()
+    {
+        // Bounds is the scrollable region for the ListViewItems. The value 1
+        // is added to make room for the header.
+        int y = ShowColumnHeaders 
+            ? Y + 1 
+            : Y;
+        
+        viewPort.Bounds = new Rectangle(X, y, Width, Height);
+    }
+    
     internal void ClearColumnHeaders() => columnHeaders.Clear();
 
     internal void ClearItems()
@@ -174,7 +185,7 @@ public class ListView : Control
             ConsoleColor foreground = columnHeaders[i].ForegroundColour ?? HeaderForegroundColour;
             ConsoleColor background = columnHeaders[i].BackgroundColour ?? HeaderBackgroundColour;
 
-            if (columnHeaders[i].Text.Length > columnHeaders[i].Width) {
+            if (columnHeaders[i].Text.Length >= columnHeaders[i].Width) {
                 buffer.Append((string.Format(formatStr, columnHeaders[i].Text.Substring(0, columnHeaders[i].Width - 1)) + ' ')
                     .ToColour(foreground, background));
             }
@@ -238,7 +249,7 @@ public class ListView : Control
                     : subItem.BackgroundColor
                 : subItem.BackgroundColor;
 
-            if (subItem.Text.Length > columnWidth) {
+            if (subItem.Text.Length >= columnWidth) {
                 buffer.Append((string.Format(formatStr, subItem.Text.Substring(0, columnWidth - 1)) + ' ')
                     .ToColour(foregroundColour, backgroundColour));
             }
@@ -376,14 +387,8 @@ public class ListView : Control
     
     protected override void OnDraw()
     {
-        // Bounds is the scrollable region for the ListViewItems. The value 1
-        // is added to make room for the header.
-        int y = ShowColumnHeaders 
-            ? Y + 1 
-            : Y;
+        CalculateViewPortBounds();
         
-        viewPort.Bounds = new Rectangle(X, y, Width, Height);
-
         if (ShowColumnHeaders) {
             DrawHeader();
         }
@@ -440,6 +445,8 @@ public class ListView : Control
             }
         }
     }
+
+    protected override void OnResize() => CalculateViewPortBounds();
 
     private void RedrawItem()
     {

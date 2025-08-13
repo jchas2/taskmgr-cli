@@ -213,14 +213,14 @@ public partial class ProcessInfoControl : Control
 
     protected override void OnLoad()
     {
+        foreach (Control control in Controls) {
+            control.Load();
+        }
+
         menuView.Items.Add(new MenuListViewItem(threadsView, "THREADS"));
         menuView.Items.Add(new MenuListViewItem(modulesView, "MODULES"));
         menuView.Items.Add(new MenuListViewItem(handlesView, "HANDLES"));
 
-        foreach (Control control in Controls) {
-            control.Load();
-        }
-        
         TryLoadProcessInfo();
         TryUpdateListViewThreadItems();
         TryUpdateListViewModuleItems();
@@ -324,7 +324,7 @@ public partial class ProcessInfoControl : Control
         }
         catch (Exception ex) {
             ExceptionHelper.HandleException(ex);
-            processInfoView.Items.Add(new(new string[] { "Error:", ex.Message.ToRed() }));
+            processInfoView.Items.Add(new(new[] { "Error:", ex.Message.ToRed() }));
         }
     }
     
