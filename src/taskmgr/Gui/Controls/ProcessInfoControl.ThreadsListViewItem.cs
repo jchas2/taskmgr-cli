@@ -46,7 +46,7 @@ public partial class ProcessInfoControl
             subItem.Text = text;
             
             if (changeCondition.Invoke()) {
-                subItem.ForegroundColor = ConsoleColor.Yellow;
+                subItem.ForegroundColor = Theme.RangeMidForeground;
             }
         }
         

@@ -75,8 +75,8 @@ public static class ConfigBuilder
                     .Add(Constants.Keys.RangeLowBackground, "white")
                     .Add(Constants.Keys.RangeMidBackground, "darkgray")
                     .Add(Constants.Keys.RangeHighForeground, "white")
-                    .Add(Constants.Keys.RangeLowForeground, "white")
-                    .Add(Constants.Keys.RangeMidForeground, "black")
+                    .Add(Constants.Keys.RangeLowForeground, "black")
+                    .Add(Constants.Keys.RangeMidForeground, "white")
                     .Add(Constants.Keys.HeaderBackground, "darkgray")
                     .Add(Constants.Keys.HeaderForeground, "white");
             default:
@@ -126,12 +126,15 @@ public static class ConfigBuilder
             { Constants.Keys.Background, "black" },
             { Constants.Keys.BackgroundHighlight, "black" },
             { Constants.Keys.Error, "red" },
-            { Constants.Keys.Foreground, "darkgray" },
+            { Constants.Keys.Foreground, "white" },
             { Constants.Keys.ForegroundHighlight, "white" },
             { Constants.Keys.Menubar, "gray" },
             { Constants.Keys.RangeHighBackground, "red" },
             { Constants.Keys.RangeLowBackground, "darkgreen" },
             { Constants.Keys.RangeMidBackground, "darkyellow" },
+            { Constants.Keys.RangeHighForeground, "white" },
+            { Constants.Keys.RangeLowForeground, "black" },
+            { Constants.Keys.RangeMidForeground, "black" },
             { Constants.Keys.HeaderBackground, "cyan" },
             { Constants.Keys.HeaderForeground, "white" }
         };
@@ -146,6 +149,9 @@ public static class ConfigBuilder
             { Constants.Keys.RangeHighBackground, "gray" },
             { Constants.Keys.RangeLowBackground, "white" },
             { Constants.Keys.RangeMidBackground, "darkgray" },
+            { Constants.Keys.RangeHighForeground, "white" },
+            { Constants.Keys.RangeLowForeground, "black" },
+            { Constants.Keys.RangeMidForeground, "white" },
             { Constants.Keys.HeaderBackground, "darkgray" },
             { Constants.Keys.HeaderForeground, "white" }
         };
