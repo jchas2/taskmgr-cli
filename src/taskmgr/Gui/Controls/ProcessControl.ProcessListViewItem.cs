@@ -86,17 +86,17 @@ public partial class ProcessControl
             if (processInfo.CpuTimePercent > 1.0) {
                 if (processInfo.CpuTimePercent < 10.0) {
                     SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeLowBackground;
-                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.Foreground;
+                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.ForegroundHighlight;
                     SubItems[(int)Columns.Cpu].BackgroundColor = Theme.RangeLowBackground;
                 }
                 else if (processInfo.CpuTimePercent < 50.0) {
                     SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeMidBackground;
-                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.Foreground;
+                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.ForegroundHighlight;
                     SubItems[(int)Columns.Cpu].BackgroundColor = Theme.RangeMidBackground;
                 }
                 else {
                     SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeHighBackground;
-                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.Foreground;
+                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.ForegroundHighlight;
                     SubItems[(int)Columns.Cpu].BackgroundColor = Theme.RangeHighBackground;
                 }
             }
@@ -119,15 +119,15 @@ public partial class ProcessControl
             double memRatio = (double)processInfo.UsedMemory / (double)systemStatistics.TotalPhysical;
             
             if (memRatio > 0.1 && memRatio <= 0.2) {
-                SubItems[(int)Columns.Memory].ForegroundColor = Theme.Foreground;
+                SubItems[(int)Columns.Memory].ForegroundColor = Theme.ForegroundHighlight;
                 SubItems[(int)Columns.Memory].BackgroundColor = Theme.RangeLowBackground;
             }
             else if (memRatio > 0.2 && memRatio <= 0.5) {
-                SubItems[(int)Columns.Memory].ForegroundColor = Theme.Foreground;
+                SubItems[(int)Columns.Memory].ForegroundColor = Theme.ForegroundHighlight;
                 SubItems[(int)Columns.Memory].BackgroundColor = Theme.RangeMidBackground;
             }
             else if (memRatio > 0.5) {
-                SubItems[(int)Columns.Memory].ForegroundColor = Theme.Foreground;
+                SubItems[(int)Columns.Memory].ForegroundColor = Theme.ForegroundHighlight;
                 SubItems[(int)Columns.Memory].BackgroundColor = Theme.RangeHighBackground;
             }
             else {
@@ -142,15 +142,15 @@ public partial class ProcessControl
             
             if (mbps > 1.0) {
                 if (mbps < 10.0) {
-                    SubItems[(int)Columns.Disk].ForegroundColor = Theme.Foreground;
+                    SubItems[(int)Columns.Disk].ForegroundColor = Theme.ForegroundHighlight;
                     SubItems[(int)Columns.Disk].BackgroundColor = Theme.RangeLowBackground;
                 }
                 else if (mbps < 100.0) {
-                    SubItems[(int)Columns.Disk].ForegroundColor = Theme.Foreground;
+                    SubItems[(int)Columns.Disk].ForegroundColor = Theme.ForegroundHighlight;
                     SubItems[(int)Columns.Disk].BackgroundColor = Theme.RangeMidBackground;
                 }
                 else {
-                    SubItems[(int)Columns.Disk].ForegroundColor = Theme.Foreground;
+                    SubItems[(int)Columns.Disk].ForegroundColor = Theme.ForegroundHighlight;
                     SubItems[(int)Columns.Disk].BackgroundColor = Theme.RangeHighBackground;
                 }
             }

@@ -48,7 +48,7 @@ public sealed class TaskMgrApp
             description: "Only display up to nprocs processes.");
         Option<string> themeOption = new(
             name: "--theme",
-            description: "Load a theme from the config file. Default themes are \"colour\" and \"mono\".");
+            description: "Load a theme from the config file. Default themes are \"theme-colour\" and \"theme-mono\".");
         Option<bool?> debugOption = new(
             name: "--debug",
             description: "Pause execution on startup until a debugger is attached to the process.");

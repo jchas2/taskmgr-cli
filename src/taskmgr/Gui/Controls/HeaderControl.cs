@@ -136,22 +136,23 @@ public sealed class HeaderControl : Control
         double totalCpu = systemStatistics.CpuPercentKernelTime + systemStatistics.CpuPercentUserTime;
         double memRatio = 1.0 - ((double)(systemStatistics.AvailablePhysical) / (double)(systemStatistics.TotalPhysical));
         double virRatio = 1.0 - ((double)(systemStatistics.AvailablePageFile) / (double)(systemStatistics.TotalPageFile));
-        
-        var userColour = totalCpu < 50.0 ? ConsoleColor.DarkGreen
-            : totalCpu < 75.0 ? ConsoleColor.DarkYellow
-            : ConsoleColor.Red;
 
-        var kernelColour = totalCpu < 50.0 ? ConsoleColor.Green
-            : totalCpu < 75.0 ? ConsoleColor.Yellow
-            : ConsoleColor.DarkRed;
+        var userColour = totalCpu < 50.0 ? theme.RangeLowBackground
+            : totalCpu < 75.0 ? theme.RangeMidBackground
+            : theme.RangeHighBackground;
 
-        var memColour = memRatio < 0.5 ? ConsoleColor.DarkGreen
-            : memRatio < 0.75 ? ConsoleColor.DarkYellow
-            : ConsoleColor.Red;
+        // Switch the kernel colours around to provide some contrast to the User Cpu %.
+        var kernelColour = totalCpu < 50.0 ? theme.RangeMidBackground
+            : totalCpu < 75.0 ? theme.RangeLowBackground
+            : theme.RangeMidBackground;
 
-        var virColour = virRatio < 0.5 ? ConsoleColor.DarkGreen
-            : virRatio < 0.75 ? ConsoleColor.DarkYellow
-            : ConsoleColor.Red;
+        var memColour = memRatio < 0.5 ? theme.RangeLowBackground
+            : memRatio < 0.75 ? theme.RangeMidBackground
+            : theme.RangeHighBackground;
+
+        var virColour = virRatio < 0.5 ? theme.RangeLowBackground
+            : virRatio < 0.75 ? theme.RangeMidForeground
+            : theme.RangeHighBackground;
         
         double mbps = systemStatistics.DiskUsage.ToMbpsFromBytes();
 
@@ -163,9 +164,9 @@ public sealed class HeaderControl : Control
             ? mbps / maxMbps
             : 0;
 
-        ConsoleColor mbpsColour = mbps < 10.0 ? ConsoleColor.DarkGreen 
-            : mbps < 100.0 ? ConsoleColor.DarkYellow
-            : ConsoleColor.Red;
+        ConsoleColor mbpsColour = mbps < 10.0 ? theme.RangeLowBackground 
+            : mbps < 100.0 ? theme.RangeMidBackground
+            : theme.RangeHighBackground;
 
         cpuMetre.PercentageSeries1 = systemStatistics.CpuPercentKernelTime / 100;
         cpuMetre.PercentageSeries2 = systemStatistics.CpuPercentUserTime / 100;
