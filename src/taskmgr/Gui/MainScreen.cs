@@ -53,17 +53,34 @@ public sealed class MainScreen : Screen
         headerControl = new HeaderControl(
             this.runContext.Processor,
             terminal,
-            theme);
-        
+            theme) {
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground
+        };
+
         processControl = new ProcessControl(
             this.runContext.Processor,
-            terminal, 
-            this.theme);
-        
-        processInfoControl = new ProcessInfoControl(terminal, this.theme);
-        
-        commandControl = new CommandControl(terminal, this.theme);
-        filterControl = new FilterControl(terminal, this.theme);
+            terminal,
+            this.theme) {
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground
+        };
+
+        processInfoControl = new ProcessInfoControl(terminal, this.theme) {
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground
+        };
+
+        commandControl = new CommandControl(terminal, this.theme) {
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground
+        };
+
+
+        filterControl = new FilterControl(terminal, this.theme) {
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground
+        };
 
         activeControl = processControl;
         footerControl = commandControl;

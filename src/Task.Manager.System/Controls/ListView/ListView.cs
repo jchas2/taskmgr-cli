@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
+using System.Security.Cryptography;
 using System.Text;
 using Task.Manager.Cli.Utils;
 
@@ -158,6 +159,8 @@ public class ListView : Control
         using TerminalColourRestorer _ = new();
 
         terminal.SetCursorPosition(viewPort.Bounds.X, viewPort.Bounds.Y - 1);
+        terminal.BackgroundColor = HeaderBackgroundColour;
+        terminal.ForegroundColor = HeaderForegroundColour;
 
         if (ColumnHeaderCount == 0) {
             terminal.WriteEmptyLineTo(viewPort.Bounds.Width);
@@ -187,10 +190,12 @@ public class ListView : Control
 
             if (columnHeaders[i].Text.Length >= columnHeaders[i].Width) {
                 buffer.Append((string.Format(formatStr, columnHeaders[i].Text.Substring(0, columnHeaders[i].Width - 1)) + ' ')
+                    .ToBold()
                     .ToColour(foreground, background));
             }
             else {
                 buffer.Append((string.Format(formatStr, columnHeaders[i].Text) + ' ')
+                    .ToBold()
                     .ToColour(foreground, background));
             }
 
@@ -198,7 +203,7 @@ public class ListView : Control
         }
         
         terminal.Write(buffer.ToString());
-        terminal.BackgroundColor = HeaderBackgroundColour;
+        Terminal.BackgroundColor = HeaderBackgroundColour;
         terminal.WriteEmptyLineTo(viewPort.Bounds.Width - c);
     }
 
@@ -208,6 +213,8 @@ public class ListView : Control
         bool highlight)
     {
         using TerminalColourRestorer _ = new();
+        Terminal.BackgroundColor = BackgroundColour;
+        Terminal.ForegroundColor = ForegroundColour;
 
         buffer.Clear();
 

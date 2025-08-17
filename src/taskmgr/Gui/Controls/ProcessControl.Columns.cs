@@ -21,24 +21,29 @@ public partial class ProcessControl
         Process = 0,
         [ColumnTitle("PID")]
         [ColumnProperty("Pid")]
+        [ColumnSortKey(ConsoleKey.N)]
         Pid,
         [ColumnTitle("USER")]
         [ColumnProperty("UserName")]
+        [ColumnSortKey(ConsoleKey.U)]
         User,
         [ColumnTitle("PRI")]
         [ColumnProperty("BasePriority")]
         Priority,
         [ColumnTitle("CPU%")]
         [ColumnProperty("CpuTimePercent")]
+        [ColumnSortKey(ConsoleKey.P)]
         Cpu,
         [ColumnTitle("THRDS")]
         [ColumnProperty("ThreadCount")]
         Threads,
         [ColumnTitle("MEM")]
         [ColumnProperty("UsedMemory")]
+        [ColumnSortKey(ConsoleKey.M)]
         Memory,
         [ColumnTitle("DISK")]
         [ColumnProperty("DiskUsage")]
+        [ColumnSortKey(ConsoleKey.D)]
         Disk,
         [ColumnTitle("PATH")]
         [ColumnProperty("CmdLine")]

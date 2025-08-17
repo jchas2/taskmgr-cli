@@ -34,59 +34,59 @@ console-color-yellow=yellow
 console-color-white=white
 ";
     
-    private static string TestConfigFile => $@"
-#####################################################
-# Example Config file.
-#####################################################
-
-[filter]
-pid=-1         ; Process Id to filter on. Must be > 0.
-username=      ; Name of the user to filter on.
-process=       ; Name of the process to filter on.
-
-[metres]
-bars=false
-
-[stats]
-cols=pid, process, user, pri, cpu, mem, virt, thrd, disk     
-nprocs=-1
-
-[sort]
-col=pid
-
-[iterations]
-limit=-1
-
-[theme-colour]
-background=black
-background-highlight=black
-error=red
-foreground=darkgray
-foreground-highlight=white
-menubar=gray
-range-high-background=red
-range-low-background=green
-range-mid-background=yellow
-range-high-foreground=white
-range-low-foreground=black
-range-mid-foreground=black
-process-header=cyan
-
-[theme-mono]
-background=black
-background-highlight=black
-error=gray
-foreground=darkgray
-foreground-highlight=white
-menubar=gray
-range-high-background=gray
-range-low-background=white
-range-mid-background=darkgray
-range-high-foreground=white
-range-low-foreground=black
-range-mid-foreground=black
-process-header=darkgray
-";
+//     private static string TestConfigFile => $@"
+// #####################################################
+// # Example Config file.
+// #####################################################
+//
+// [filter]
+// pid=-1         ; Process Id to filter on. Must be > 0.
+// username=      ; Name of the user to filter on.
+// process=       ; Name of the process to filter on.
+//
+// [metres]
+// bars=false
+//
+// [stats]
+// cols=pid, process, user, pri, cpu, mem, virt, thrd, disk     
+// nprocs=-1
+//
+// [sort]
+// col=pid
+//
+// [iterations]
+// limit=-1
+//
+// [theme-colour]
+// background=black
+// background-highlight=black
+// error=red
+// foreground=darkgray
+// foreground-highlight=white
+// menubar=gray
+// range-high-background=red
+// range-low-background=green
+// range-mid-background=yellow
+// range-high-foreground=white
+// range-low-foreground=black
+// range-mid-foreground=black
+// process-header=cyan
+//
+// [theme-mono]
+// background=black
+// background-highlight=black
+// error=gray
+// foreground=darkgray
+// foreground-highlight=white
+// menubar=gray
+// range-high-background=gray
+// range-low-background=white
+// range-mid-background=darkgray
+// range-high-foreground=white
+// range-low-foreground=black
+// range-mid-foreground=black
+// process-header=darkgray
+// ";
     
     [Fact]
     public void Should_Parse_Min_Config_File()

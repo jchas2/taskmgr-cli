@@ -42,10 +42,13 @@ public sealed class HeaderControl : Control
         
         BackgroundColour = theme.Background;
         ForegroundColour = theme.Foreground;
-        MenubarColour = theme.Menubar;
+        MenubarBackColour = theme.MenubarBackground;
+        MenubarForeColour = theme.MenubarForeground;
 
         cpuMetre = new MetreControl(terminal) {
             Text = "Cpu",
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground,
             DrawStacked = true,
             LabelSeries1 = "k",
             LabelSeries2 = "u"
@@ -53,18 +56,24 @@ public sealed class HeaderControl : Control
 
         memoryMetre = new MetreControl(terminal) {
             Text = "Mem",
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground,
             DrawStacked = false,
             LabelSeries1 = "m"
         };
 
         virtualMemoryMetre = new MetreControl(terminal) {
             Text = "Vir",
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground,
             DrawStacked = false,
             LabelSeries1 = "v"
         };
 
         diskMetre = new MetreControl(terminal) {
             Text = "Dsk",
+            BackgroundColour = theme.Background,
+            ForegroundColour = theme.Foreground,
             DrawStacked = false,
             LabelSeries1 = string.Empty
         };
@@ -83,7 +92,8 @@ public sealed class HeaderControl : Control
         }
     }
     
-    public ConsoleColor MenubarColour { get; set; } = ConsoleColor.DarkGray;
+    public ConsoleColor MenubarBackColour { get; set; } = ConsoleColor.DarkBlue;
+    public ConsoleColor MenubarForeColour { get; set; } = ConsoleColor.Gray;
 
     protected override void OnDraw()
     {
@@ -101,14 +111,14 @@ public sealed class HeaderControl : Control
         using TerminalColourRestorer _ = new();
 
         Terminal.SetCursorPosition(X, Y);
-        Terminal.BackgroundColor = MenubarColour;
-        Terminal.ForegroundColor = ForegroundColour;
+        Terminal.BackgroundColor = MenubarBackColour;
+        Terminal.ForegroundColor = MenubarForeColour;
 
-        string menubar = "Task Manager CLI";
+        string menubar = "TASK MANAGER";
         int offsetX = Terminal.WindowWidth / 2 - menubar.Length / 2;
         
         Terminal.WriteEmptyLineTo(offsetX);
-        Terminal.Write(menubar);
+        Terminal.Write(menubar.ToBold());
         Terminal.WriteEmptyLineTo(Width - offsetX - menubar.Length);
         
         Terminal.BackgroundColor = BackgroundColour;
@@ -185,6 +195,16 @@ public sealed class HeaderControl : Control
         diskMetre.PercentageSeries1 = mbpsRatio;
         diskMetre.ColourSeries1 = mbpsColour;
         diskMetre.Draw();
+
+        for (int i = 0; i < statisticsView.Items.Count; i++) {
+            statisticsView.Items[i].BackgroundColour = theme.Background;
+            statisticsView.Items[i].ForegroundColour = theme.Foreground;
+
+            for (int j = 0; j < statisticsView.Items[i].SubItems.Count(); j++) {
+                statisticsView.Items[i].SubItems[j].BackgroundColor = theme.Background;
+                statisticsView.Items[i].SubItems[j].ForegroundColor = theme.Foreground;
+            } 
+        }
 
         statisticsView.Items[0].SubItems[1].Text = (totalCpu / 100).ToString("000.0%");
         statisticsView.Items[0].SubItems[1].ForegroundColor = userColour;

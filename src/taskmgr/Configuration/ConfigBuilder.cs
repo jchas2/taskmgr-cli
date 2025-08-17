@@ -8,6 +8,74 @@ public static class ConfigBuilder
 {
     private const string StatsCols = "pid, process, user, pri, cpu, mem, virt, thrd, disk";
     
+    private static readonly string[,] colourMap = {
+        { Constants.Keys.Background, "black" },
+        { Constants.Keys.BackgroundHighlight, "cyan" },
+        { Constants.Keys.Error, "red" },
+        { Constants.Keys.Foreground, "white" },
+        { Constants.Keys.ForegroundHighlight, "white" },
+        { Constants.Keys.MenubarForeground, "white" },
+        { Constants.Keys.MenubarBackground, "darkblue" },
+        { Constants.Keys.RangeHighBackground, "red" },
+        { Constants.Keys.RangeLowBackground, "darkgreen" },
+        { Constants.Keys.RangeMidBackground, "darkyellow" },
+        { Constants.Keys.RangeHighForeground, "white" },
+        { Constants.Keys.RangeLowForeground, "black" },
+        { Constants.Keys.RangeMidForeground, "black" },
+        { Constants.Keys.HeaderBackground, "green" },
+        { Constants.Keys.HeaderForeground, "white" } };
+
+    private static readonly string[,] monoMap = {
+        { Constants.Keys.Background, "black" },
+        { Constants.Keys.BackgroundHighlight, "darkgray" },
+        { Constants.Keys.Error, "gray" },
+        { Constants.Keys.Foreground, "darkgray" },
+        { Constants.Keys.ForegroundHighlight, "white" },
+        { Constants.Keys.MenubarForeground, "white" },
+        { Constants.Keys.MenubarBackground, "gray" },
+        { Constants.Keys.RangeHighBackground, "gray" },
+        { Constants.Keys.RangeLowBackground, "gray" },
+        { Constants.Keys.RangeMidBackground, "gray" },
+        { Constants.Keys.RangeHighForeground, "gray" },
+        { Constants.Keys.RangeLowForeground, "gray" },
+        { Constants.Keys.RangeMidForeground, "gray" },
+        { Constants.Keys.HeaderBackground, "darkgray" },
+        { Constants.Keys.HeaderForeground, "white" } };
+
+    private static readonly string[,] msDosMap = {
+        { Constants.Keys.Background, "darkblue" },
+        { Constants.Keys.BackgroundHighlight, "cyan" },
+        { Constants.Keys.Error, "red" },
+        { Constants.Keys.Foreground, "darkgrey" },
+        { Constants.Keys.ForegroundHighlight, "white" },
+        { Constants.Keys.MenubarForeground, "yellow" },
+        { Constants.Keys.MenubarBackground, "blue" },
+        { Constants.Keys.RangeHighBackground, "red" },
+        { Constants.Keys.RangeLowBackground, "cyan" },
+        { Constants.Keys.RangeMidBackground, "darkcyan" },
+        { Constants.Keys.RangeHighForeground, "red" },
+        { Constants.Keys.RangeLowForeground, "cyan" },
+        { Constants.Keys.RangeMidForeground, "darkcyan" },
+        { Constants.Keys.HeaderBackground, "cyan" },
+        { Constants.Keys.HeaderForeground, "yellow" } };
+
+    private static readonly string[,] tokyoNightMap = {
+        { Constants.Keys.Background, "black" },
+        { Constants.Keys.BackgroundHighlight, "cyan" },
+        { Constants.Keys.Error, "red" },
+        { Constants.Keys.Foreground, "cyan" },
+        { Constants.Keys.ForegroundHighlight, "darkmagenta" },
+        { Constants.Keys.MenubarForeground, "magenta" },
+        { Constants.Keys.MenubarBackground, "darkblue" },
+        { Constants.Keys.RangeHighBackground, "red" },
+        { Constants.Keys.RangeLowBackground, "magenta" },
+        { Constants.Keys.RangeMidBackground, "magenta" },
+        { Constants.Keys.RangeHighForeground, "cyan" },
+        { Constants.Keys.RangeLowForeground, "cyan" },
+        { Constants.Keys.RangeMidForeground, "cyan" },
+        { Constants.Keys.HeaderBackground, "blue" },
+        { Constants.Keys.HeaderForeground, "magenta" } };
+
     public static Config BuildDefault() =>
         new Config()
             .AddConfigSection(BuildConfigSection(Constants.Sections.Filter))
@@ -16,7 +84,9 @@ public static class ConfigBuilder
             .AddConfigSection(BuildConfigSection(Constants.Sections.Sort))
             .AddConfigSection(BuildConfigSection(Constants.Sections.Iterations))
             .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeColour))
-            .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeMono));
+            .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeMono))
+            .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeMsDos))
+            .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeTokyoNight));
 
     public static ConfigSection BuildConfigSection(string name)
     {
@@ -48,37 +118,21 @@ public static class ConfigBuilder
                     /* Max number of iterations to execute before exiting. <= 0 infinite. */
                     .Add(Constants.Keys.Limit, "0");
             case Constants.Sections.ThemeColour:
-                return new ConfigSection(Constants.Sections.ThemeColour)
-                    .Add(Constants.Keys.Background, "black")
-                    .Add(Constants.Keys.BackgroundHighlight, "cyan")
-                    .Add(Constants.Keys.Error, "red")
-                    .Add(Constants.Keys.Foreground, "white")
-                    .Add(Constants.Keys.ForegroundHighlight, "black")
-                    .Add(Constants.Keys.Menubar, "gray")
-                    .Add(Constants.Keys.RangeHighBackground, "red")
-                    .Add(Constants.Keys.RangeLowBackground, "darkgreen")
-                    .Add(Constants.Keys.RangeMidBackground, "darkyellow")
-                    .Add(Constants.Keys.RangeHighForeground, "white")
-                    .Add(Constants.Keys.RangeLowForeground, "black")
-                    .Add(Constants.Keys.RangeMidForeground, "black")
-                    .Add(Constants.Keys.HeaderBackground, "darkgreen")
-                    .Add(Constants.Keys.HeaderForeground, "black");
+                ConfigSection themeColourSection = new(Constants.Sections.ThemeColour);
+                MapColours(themeColourSection, colourMap);
+                return themeColourSection;
             case Constants.Sections.ThemeMono:
-                return new ConfigSection(Constants.Sections.ThemeMono)
-                    .Add(Constants.Keys.Background, "black")
-                    .Add(Constants.Keys.BackgroundHighlight, "white")
-                    .Add(Constants.Keys.Error, "gray")
-                    .Add(Constants.Keys.Foreground, "white")
-                    .Add(Constants.Keys.ForegroundHighlight, "black")
-                    .Add(Constants.Keys.Menubar, "gray")
-                    .Add(Constants.Keys.RangeHighBackground, "gray")
-                    .Add(Constants.Keys.RangeLowBackground, "white")
-                    .Add(Constants.Keys.RangeMidBackground, "darkgray")
-                    .Add(Constants.Keys.RangeHighForeground, "white")
-                    .Add(Constants.Keys.RangeLowForeground, "black")
-                    .Add(Constants.Keys.RangeMidForeground, "white")
-                    .Add(Constants.Keys.HeaderBackground, "darkgray")
-                    .Add(Constants.Keys.HeaderForeground, "white");
+                ConfigSection themeMonoSection = new(Constants.Sections.ThemeMono);
+                MapColours(themeMonoSection, monoMap);
+                return themeMonoSection;
+            case Constants.Sections.ThemeMsDos:
+                ConfigSection themeMsDosSection = new(Constants.Sections.ThemeMsDos);
+                MapColours(themeMsDosSection, msDosMap);
+                return themeMsDosSection;
+            case Constants.Sections.ThemeTokyoNight:
+                ConfigSection themeTokyoNightSection = new(Constants.Sections.ThemeTokyoNight);
+                MapColours(themeTokyoNightSection, tokyoNightMap);
+                return themeTokyoNightSection;
             default:
                 throw new InvalidOperationException();
         }
@@ -122,40 +176,6 @@ public static class ConfigBuilder
         ConfigSection iterSection = GetConfigSection(Constants.Sections.Iterations, withConfig)
             .AddIfMissing(Constants.Keys.Limit, "0");
 
-        string[,] colourMap = {
-            { Constants.Keys.Background, "black" },
-            { Constants.Keys.BackgroundHighlight, "black" },
-            { Constants.Keys.Error, "red" },
-            { Constants.Keys.Foreground, "white" },
-            { Constants.Keys.ForegroundHighlight, "white" },
-            { Constants.Keys.Menubar, "gray" },
-            { Constants.Keys.RangeHighBackground, "red" },
-            { Constants.Keys.RangeLowBackground, "darkgreen" },
-            { Constants.Keys.RangeMidBackground, "darkyellow" },
-            { Constants.Keys.RangeHighForeground, "white" },
-            { Constants.Keys.RangeLowForeground, "black" },
-            { Constants.Keys.RangeMidForeground, "black" },
-            { Constants.Keys.HeaderBackground, "cyan" },
-            { Constants.Keys.HeaderForeground, "white" }
-        };
-
-        string[,] monoMap = {
-            { Constants.Keys.Background, "black" },
-            { Constants.Keys.BackgroundHighlight, "black" },
-            { Constants.Keys.Error, "gray" },
-            { Constants.Keys.Foreground, "darkgray" },
-            { Constants.Keys.ForegroundHighlight, "white" },
-            { Constants.Keys.Menubar, "gray" },
-            { Constants.Keys.RangeHighBackground, "gray" },
-            { Constants.Keys.RangeLowBackground, "white" },
-            { Constants.Keys.RangeMidBackground, "darkgray" },
-            { Constants.Keys.RangeHighForeground, "white" },
-            { Constants.Keys.RangeLowForeground, "black" },
-            { Constants.Keys.RangeMidForeground, "white" },
-            { Constants.Keys.HeaderBackground, "darkgray" },
-            { Constants.Keys.HeaderForeground, "white" }
-        };
-        
         string defaultThemeName = uxSection.GetString(Constants.Keys.DefaultTheme, string.Empty);
 
         if (!string.IsNullOrWhiteSpace(defaultThemeName)) {

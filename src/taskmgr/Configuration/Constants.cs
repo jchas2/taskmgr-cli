@@ -12,6 +12,8 @@ public sealed class Constants
 
         public const string ThemeColour = "theme-colour";
         public const string ThemeMono = "theme-mono";
+        public const string ThemeMsDos = "theme-msdos";
+        public const string ThemeTokyoNight = "theme-tokyo-night";
     }
 
     public sealed class Keys
@@ -36,7 +38,8 @@ public sealed class Constants
         public const string ForegroundHighlight = "foreground-highlight";
         public const string HeaderForeground = "header-foreground";
         public const string HeaderBackground = "header-background";
-        public const string Menubar = "menubar";
+        public const string MenubarForeground = "menubar-foreground";
+        public const string MenubarBackground = "menubar-background";
         public const string RangeHighBackground = "range-high-background";
         public const string RangeLowBackground = "range-low-background";
         public const string RangeMidBackground = "range-mid-background";

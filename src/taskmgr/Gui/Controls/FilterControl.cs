@@ -62,8 +62,8 @@ public class FilterControl : Control
         Terminal.Write(spacer);
         nchars += spacer.Length;
         
-        Terminal.BackgroundColor = theme.BackgroundHighlight;
-        Terminal.ForegroundColor = theme.ForegroundHighlight;
+        Terminal.BackgroundColor = theme.HeaderBackground;
+        Terminal.ForegroundColor = theme.HeaderForeground;
         Terminal.Write(filterCommand);
         nchars += filterCommand.Length;
         
