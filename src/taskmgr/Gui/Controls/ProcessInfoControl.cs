@@ -217,9 +217,25 @@ public partial class ProcessInfoControl : Control
             control.Load();
         }
 
-        menuView.Items.Add(new MenuListViewItem(threadsView, "THREADS"));
-        menuView.Items.Add(new MenuListViewItem(modulesView, "MODULES"));
-        menuView.Items.Add(new MenuListViewItem(handlesView, "HANDLES"));
+        menuView.Items.Add(
+            new MenuListViewItem(
+                threadsView, 
+                "THREADS",
+                theme.Background,
+                theme.Foreground));
+        
+        menuView.Items.Add(
+            new MenuListViewItem(
+                modulesView, "MODULES",
+                theme.Background,
+                theme.Foreground));
+        
+        menuView.Items.Add(
+            new MenuListViewItem(
+                handlesView, 
+                "HANDLES",
+                theme.Background,
+                theme.Foreground));
 
         TryLoadProcessInfo();
         TryUpdateListViewThreadItems();
@@ -313,14 +329,45 @@ public partial class ProcessInfoControl : Control
                 return;
             }
 
-            processInfoView.Items.Add(new(["Pid:", process!.Id.ToString()]) );
-            processInfoView.Items.Add(new(["File:", process!.MainModule!.ModuleName]) );
-            processInfoView.Items.Add(new(["Description:", ""]) );
-            processInfoView.Items.Add(new(["Path:", ProcessUtils.GetProcessCommandLine(process)]) );
-            processInfoView.Items.Add(new(["User:", ProcessUtils.GetProcessUserName(process)]) );
-            processInfoView.Items.Add(new(["Version:", ""]) );
-            processInfoView.Items.Add(new(["Size:", ""]) );
-            processInfoView.Items.Add(new(["", ""]) );
+            processInfoView.Items.Add(
+                new(["Pid:", process!.Id.ToString()],
+                theme.Background,
+                theme.Foreground));
+            
+            processInfoView.Items.Add(
+                new(["File:", process!.MainModule!.ModuleName],
+                theme.Background,
+                theme.Foreground));
+                    
+            processInfoView.Items.Add(
+                new(["Description:", ""],
+                theme.Background,
+                theme.Foreground));
+                    
+            processInfoView.Items.Add(
+                new(["Path:", ProcessUtils.GetProcessCommandLine(process)],
+                theme.Background,
+                theme.Foreground));
+            
+            processInfoView.Items.Add(
+                new(["User:", ProcessUtils.GetProcessUserName(process)],
+                theme.Background,
+                theme.Foreground));
+            
+            processInfoView.Items.Add(
+                new(["Version:", ""],
+                theme.Background,
+                theme.Foreground));
+            
+            processInfoView.Items.Add(
+                new(["Size:", ""],
+                theme.Background,
+                theme.Foreground));
+            
+            processInfoView.Items.Add(
+                new(["", ""],
+                theme.Background,
+                theme.Foreground));
         }
         catch (Exception ex) {
             ExceptionHelper.HandleException(ex);

@@ -1,4 +1,5 @@
-﻿using Task.Manager.Configuration;
+﻿using System.Numerics;
+using Task.Manager.Configuration;
 using Task.Manager.Extensions;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
@@ -83,7 +84,10 @@ public sealed partial class ProcessControl : Control
             .Select(c => c.GetTitle());
         
         foreach (var column in columns) {
-            sortView.Items.Add(new ListViewItem(column));
+            sortView.Items.Add(new ListViewItem(
+                column, 
+                theme.Background, 
+                theme.Foreground));
         }
     }
 
@@ -111,7 +115,7 @@ public sealed partial class ProcessControl : Control
     {
         try {
             Control.DrawingLockAcquire();
-            
+
             Control? targetControl = mode switch {
                 ControlMode.None => processView,
                 ControlMode.SortSelection => sortView,

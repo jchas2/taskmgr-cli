@@ -7,11 +7,16 @@ public partial class ProcessInfoControl
 {
     private class MenuListViewItem : ListViewItem
     {
-        private readonly Control associatedControl;
+        public MenuListViewItem(
+            Control associatedControl, 
+            string text,
+            ConsoleColor backgroundColor,
+            ConsoleColor foregroundColor)
+            : base(
+                text,
+                backgroundColor,
+                foregroundColor) => this.AssociatedControl = associatedControl;
         
-        public MenuListViewItem(Control associatedControl, string text)
-            : base(text) => this.associatedControl = associatedControl;
-        
-        public Control AssociatedControl => associatedControl;
+        public Control AssociatedControl { get; }
     }
 }

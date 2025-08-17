@@ -2,6 +2,8 @@ namespace Task.Manager.Cli.Utils;
 
 public static class AnsiConsoleStringExtensions
 {
+    public static string ToBold(this string str)=> $"\u001b[1m{str}\u001b[1m";
+    
     public static string ToColour(this string str, ConsoleColor foreground, ConsoleColor background)
     {
         string buffer = string.Empty;

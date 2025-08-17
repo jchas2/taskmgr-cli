@@ -20,8 +20,8 @@ public static class KeyBindControl
         terminal.Write(keyBinding);
         int nchars = keyBinding.Length;
         
-        terminal.BackgroundColor = theme.BackgroundHighlight;
-        terminal.ForegroundColor = theme.ForegroundHighlight;
+        terminal.BackgroundColor = theme.HeaderBackground;
+        terminal.ForegroundColor = theme.HeaderForeground;
         terminal.Write(text.CentreWithLength(width));
         nchars += width;
         

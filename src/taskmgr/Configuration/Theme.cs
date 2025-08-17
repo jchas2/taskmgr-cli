@@ -18,7 +18,8 @@ public sealed class Theme
         ForegroundHighlight = themeSection.GetColour(Constants.Keys.ForegroundHighlight, ConsoleColor.Black);
         HeaderBackground = themeSection.GetColour(Constants.Keys.HeaderBackground, ConsoleColor.DarkGreen);
         HeaderForeground = themeSection.GetColour(Constants.Keys.HeaderForeground, ConsoleColor.Black);
-        Menubar = themeSection.GetColour(Constants.Keys.Menubar, ConsoleColor.Gray);
+        MenubarBackground = themeSection.GetColour(Constants.Keys.MenubarBackground, ConsoleColor.DarkBlue);
+        MenubarForeground = themeSection.GetColour(Constants.Keys.MenubarForeground, ConsoleColor.Gray);
         RangeHighBackground = themeSection.GetColour(Constants.Keys.RangeHighBackground, ConsoleColor.Red);
         RangeLowBackground = themeSection.GetColour(Constants.Keys.RangeLowBackground, ConsoleColor.Green);
         RangeMidBackground = themeSection.GetColour(Constants.Keys.RangeMidBackground, ConsoleColor.Yellow);
@@ -34,7 +35,8 @@ public sealed class Theme
     public ConsoleColor ForegroundHighlight { get; private set; }
     public ConsoleColor HeaderBackground { get; private set; }
     public ConsoleColor HeaderForeground { get; private set; }
-    public ConsoleColor Menubar { get; private set; }
+    public ConsoleColor MenubarForeground { get; private set; }
+    public ConsoleColor MenubarBackground { get; private set; }
     public ConsoleColor RangeHighBackground { get; private set; }
     public ConsoleColor RangeLowBackground { get; private set; }
     public ConsoleColor RangeMidBackground { get; private set; }
