@@ -46,6 +46,8 @@ class Program
 
         using TerminalUtf8Encoder _ = new();
         Console.OutputEncoding = Encoding.UTF8;
+
+        using TerminalColourRestorer __ = new();
         
         if (args.Any(arg => arg.Equals("--debug", StringComparison.CurrentCultureIgnoreCase))) {
             OutputWriter.Out.WriteLine($"Waiting for debugger attach to Pid {Environment.ProcessId}");

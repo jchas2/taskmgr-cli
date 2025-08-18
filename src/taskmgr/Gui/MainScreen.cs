@@ -61,7 +61,8 @@ public sealed class MainScreen : Screen
         processControl = new ProcessControl(
             this.runContext.Processor,
             terminal,
-            this.theme) {
+            this.theme,
+            this.config) {
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground
         };

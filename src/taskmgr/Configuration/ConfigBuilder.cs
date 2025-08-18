@@ -56,7 +56,7 @@ public static class ConfigBuilder
         { Constants.Keys.RangeHighForeground, "red" },
         { Constants.Keys.RangeLowForeground, "cyan" },
         { Constants.Keys.RangeMidForeground, "darkcyan" },
-        { Constants.Keys.HeaderBackground, "cyan" },
+        { Constants.Keys.HeaderBackground, "darkblue" },
         { Constants.Keys.HeaderForeground, "yellow" } };
 
     private static readonly string[,] tokyoNightMap = {
