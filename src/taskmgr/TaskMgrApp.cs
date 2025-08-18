@@ -124,7 +124,9 @@ public sealed class TaskMgrApp
                 s.Name.Equals(Constants.Sections.UX, StringComparison.CurrentCultureIgnoreCase));
 
             if (!string.IsNullOrWhiteSpace(themeName)) {
-                uxSection?.Add(Constants.Keys.DefaultTheme, themeName);                
+                if (config.ContainsSection(themeName)) {
+                    uxSection?.Add(Constants.Keys.DefaultTheme, themeName);    
+                }
             }
 
             /*
@@ -181,12 +183,12 @@ public sealed class TaskMgrApp
             return -1;
         }
 #endif
-        var ownsMutex = true;
+        var createdMutex = true;
 
         try {
-            mutex = new Mutex(initiallyOwned: false, name: MutexId, out ownsMutex);
+            mutex = new Mutex(initiallyOwned: false, name: MutexId, out createdMutex);
 
-            if (!ownsMutex) {
+            if (!mutex.WaitOne(0, false)) {
                 runContext.OutputWriter.WriteLine("Another instance of app is already running.".ToRed());
                 return -1;
             }
@@ -208,7 +210,7 @@ public sealed class TaskMgrApp
             return exitCode;
         }
         finally {
-            if (mutex != null && ownsMutex) {
+            if (mutex != null) {
                 mutex.ReleaseMutex();
                 mutex.Dispose();
             }

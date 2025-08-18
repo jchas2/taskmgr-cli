@@ -2,6 +2,7 @@
 using Task.Manager.Configuration;
 using Task.Manager.Extensions;
 using Task.Manager.System;
+using Task.Manager.System.Configuration;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
@@ -12,6 +13,7 @@ public sealed partial class ProcessControl : Control
 {
     private readonly IProcessor processor;
     private readonly Theme theme;
+    private readonly Config config;
     private readonly ListView sortView;
     private readonly ListView processView;
 
@@ -28,11 +30,13 @@ public sealed partial class ProcessControl : Control
     public ProcessControl(
         IProcessor processor, 
         ISystemTerminal terminal, 
-        Theme theme)
+        Theme theme,
+        Config config)
         : base(terminal)
     {
         this.processor = processor ?? throw new ArgumentNullException(nameof(processor));
         this.theme = theme ?? throw new ArgumentNullException(nameof(theme));
+        this.config = config ?? throw new ArgumentNullException(nameof(config));
 
         sortView = new ListView(terminal) {
             BackgroundHighlightColour = theme.BackgroundHighlight,
