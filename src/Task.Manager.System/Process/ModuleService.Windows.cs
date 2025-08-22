@@ -4,10 +4,10 @@ using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
 
-public partial class ModuleInfo
+public partial class ModuleService
 {
 #if __WIN32__
-    private static bool GetModulesInternal(SysDiag::Process process, out List<ModuleInfo> moduleInfos)
+    private bool GetModulesInternal(SysDiag::Process process, out List<ModuleInfo> moduleInfos)
     {
         moduleInfos = new List<ModuleInfo>();
 

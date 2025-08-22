@@ -33,10 +33,11 @@ public sealed class CommandControl : Control
         int nchars = 0;
         
         for (int i = 1; i <= (CommandText.Length / CommandLength) - 1; i++) {
-
+            string commandText = CommandText.Substring(i * CommandLength, CommandLength);
+            
             nchars += KeyBindControl.Draw(
                 $"F{i}",
-                CommandText.Substring(i * CommandLength, CommandLength),
+                commandText,
                 nchars,
                 Y,
                 CommandLength,

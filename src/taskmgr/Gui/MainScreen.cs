@@ -67,7 +67,12 @@ public sealed class MainScreen : Screen
             ForegroundColour = theme.Foreground
         };
 
-        processInfoControl = new ProcessInfoControl(terminal, this.theme) {
+        processInfoControl = new ProcessInfoControl(
+            this.runContext.ProcessService,
+            this.runContext.ModuleService,
+            this.runContext.ThreadService,
+            terminal, 
+            this.theme) {
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground
         };
