@@ -1,0 +1,331 @@
+﻿using System.Runtime.CompilerServices;
+using Task.Manager.Cli.Utils;
+using Task.Manager.System;
+using Task.Manager.System.Process;
+using WorkerTask = System.Threading.Tasks.Task;
+
+namespace Task.Manager.Process;
+
+public partial class Processor : IProcessor
+{
+    private const int InitialBufferSize = 512;
+
+    private readonly IProcessService processService;
+    private readonly ISystemInfo systemInfo;
+    private SystemStatistics systemStatistics;
+    private readonly List<ProcessorInfo> allProcessorInfos;
+    private readonly List<ProcessorInfo> allProcessorInfosCopy;
+    private readonly Dictionary<int, ProcessorInfo> processMap;
+    private WorkerTask? workerTask;
+    private WorkerTask? monitorTask;
+    private CancellationTokenSource? cancellationTokenSource;
+    private readonly Lock @lock;
+    private readonly bool isWindows = false;
+    private int processCount = 0;
+    private int threadCount = 0;
+    
+    public const int UpdateTimeInMs = 1500;
+
+    public event EventHandler<ProcessorEventArgs>? ProcessorUpdated;
+    
+    public Processor(IProcessService processService)
+    {
+        this.processService = processService;
+        systemInfo = new SystemInfo();
+        systemStatistics = new SystemStatistics();
+        allProcessorInfos = new List<ProcessorInfo>(InitialBufferSize);
+        allProcessorInfosCopy = new List<ProcessorInfo>(InitialBufferSize);
+        processMap = new Dictionary<int, ProcessorInfo>();
+        @lock = new Lock();
+        isWindows = OperatingSystem.IsWindows();
+    }
+    
+    private bool GetProcessTimes(in int pid, ref ProcessTimeInfo ptInfo)
+    {
+        try {
+            ProcessInfo? processInfo = processService.GetProcessById(pid);
+
+            if (processInfo == null){
+                return false;
+            }
+            
+            TryMapProcessTimeInfo(processInfo, ref ptInfo);
+            return true;
+        }
+        catch (ArgumentException) {
+            return false;
+        }
+        // TODO: Catch all here for a graceful exit of the process.
+        catch (Exception) {
+            return false;
+        }
+    }
+    
+    private void GetSystemTimes(out SystemTimes systemTimes)
+    {
+        systemTimes = new SystemTimes();
+
+        if (!systemInfo.GetCpuTimes(ref systemTimes)) {
+            systemTimes.Idle = 0;
+            systemTimes.Kernel = 0;
+            systemTimes.User = 0;
+        }
+    }
+    
+    public int ProcessCount => processCount;
+
+    public void Run()
+    {
+        cancellationTokenSource = new CancellationTokenSource();
+       
+        workerTask = WorkerTask.Run(() => RunInternal(cancellationTokenSource.Token));
+        monitorTask = WorkerTask.Run(() => RunMonitorInternal(cancellationTokenSource.Token));
+    }
+
+    private void RunInternal(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested) {
+            ProcessInfo[] processInfos = processService.GetProcesses();
+            int index = 0;
+
+            allProcessorInfos.Clear();
+            processCount = 0;
+            threadCount = 0;
+
+            for (index = 0; index < processInfos.Length; index++) {
+                
+                if (cancellationToken.IsCancellationRequested) {
+                    return;
+                }
+#if __WIN32__
+                // On Windows, ignore the system "idle" process auto assigned to Pid 0.
+                if (isWindows && processInfos[index].Pid == 0) {
+                    continue;
+                }
+#endif
+                // Skip any process that generates an "Access Denied" Exception.
+                if (!TryGetProcessHandle(processInfos[index], out _)) {
+                    continue;
+                }
+
+                ProcessTimeInfo prevProcTimes = new();
+
+                if (!TryMapProcessTimeInfo(processInfos[index], ref prevProcTimes)) {
+                    continue;
+                }
+
+                if (!processMap.TryGetValue(processInfos[index].Pid, out ProcessorInfo? processorInfo)) {
+                    processorInfo = new ProcessorInfo();
+
+                    if (!TryMapProcessInfo(processInfos[index], processorInfo)) {
+                        continue;
+                    }
+
+                    processMap.Add(processorInfo.Pid, processorInfo);
+                }
+
+                if (!TryGetProcessStartTime(processInfos[index], out DateTime startTime)) {
+                    continue;
+                }
+
+                // Pid has been reallocated to new process.
+                if (!processorInfo.StartTime.Equals(startTime)) {
+
+                    if (!TryMapProcessInfo(processInfos[index], processorInfo)) {
+                        continue;
+                    }
+
+                    processMap[processorInfo.Pid] = processorInfo;
+                }
+
+                processorInfo.UsedMemory = processInfos[index].UsedMemory;
+                processorInfo.DiskOperations = processInfos[index].DiskOperations ;
+                processorInfo.DiskUsage = 0;
+                processorInfo.CpuTimePercent = 0.0;
+                processorInfo.CpuUserTimePercent = 0.0;
+                processorInfo.CpuKernelTimePercent = 0.0;
+                processorInfo.PrevCpuKernelTime = prevProcTimes.KernelTime;
+                processorInfo.PrevCpuUserTime = prevProcTimes.UserTime;
+                processorInfo.CurrCpuKernelTime = 0;
+                processorInfo.CurrCpuUserTime = 0;
+
+                allProcessorInfos.Add(processorInfo);
+                processCount++;
+                threadCount += processInfos[index].ThreadCount; 
+            }
+            
+            if (cancellationToken.IsCancellationRequested) {
+                return;
+            }
+
+            GetSystemTimes(out SystemTimes prevSysTimes);
+            Thread.Sleep(UpdateTimeInMs);
+            GetSystemTimes(out SystemTimes currSysTimes);
+            
+            SystemTimes sysTimesDeltas = new() {
+                Idle = currSysTimes.Idle - prevSysTimes.Idle,
+                Kernel = currSysTimes.Kernel - prevSysTimes.Kernel,
+                User = currSysTimes.User - prevSysTimes.User
+            };
+
+            systemStatistics.CpuPercentIdleTime = 0.0;
+            systemStatistics.CpuPercentUserTime = 0.0;
+            systemStatistics.CpuPercentKernelTime = 0.0;
+            systemStatistics.DiskUsage = 0;
+
+            systemInfo.GetSystemInfo(ref systemStatistics);
+            systemInfo.GetSystemMemory(ref systemStatistics);
+
+            long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User;
+            ProcessTimeInfo currProcTimes = new();
+
+            for (int i = 0; i < allProcessorInfos.Count; i++) {
+                
+                if (cancellationToken.IsCancellationRequested) {
+                    return;
+                }
+
+                currProcTimes.Clear();
+
+                if (!GetProcessTimes(allProcessorInfos[i].Pid, ref currProcTimes)) {
+                    continue;
+                }
+                
+                allProcessorInfos[i].CurrCpuKernelTime = currProcTimes.KernelTime;
+                allProcessorInfos[i].CurrCpuUserTime = currProcTimes.UserTime;
+
+                long procKernelDiff = allProcessorInfos[i].CurrCpuKernelTime - allProcessorInfos[i].PrevCpuKernelTime;
+                long procUserDiff = allProcessorInfos[i].CurrCpuUserTime - allProcessorInfos[i].PrevCpuUserTime;
+                long totalProc = procKernelDiff + procUserDiff;
+
+                if (totalSysTime == 0) {
+                    continue;
+                }
+
+                allProcessorInfos[i].CpuTimePercent = 100 * (double)totalProc / totalSysTime;
+                allProcessorInfos[i].CpuKernelTimePercent = 100 * (double)procKernelDiff / totalSysTime;
+                allProcessorInfos[i].CpuUserTimePercent = 100 * (double)procUserDiff / totalSysTime;
+                
+                systemStatistics.CpuPercentUserTime += allProcessorInfos[i].CpuUserTimePercent;
+                systemStatistics.CpuPercentKernelTime += allProcessorInfos[i].CpuKernelTimePercent;
+                
+                ulong prevDiskOperations = allProcessorInfos[i].DiskOperations;
+                
+                allProcessorInfos[i].DiskOperations = ProcessUtils.GetProcessIoOperations(allProcessorInfos[i].Pid);
+                
+                ulong currDiskOperations = allProcessorInfos[i].DiskOperations;
+
+                allProcessorInfos[i].DiskUsage = 
+                    (long)((double)(currDiskOperations - prevDiskOperations) * (1000.0 / (double)UpdateTimeInMs));
+                
+                systemStatistics.DiskUsage += allProcessorInfos[i].DiskUsage;
+            }
+            
+            systemStatistics.CpuPercentIdleTime = 100.0 - (systemStatistics.CpuPercentUserTime + systemStatistics.CpuPercentKernelTime);
+            systemStatistics.ProcessCount = processCount;
+            systemStatistics.ThreadCount = threadCount;
+
+            lock (@lock) {
+                allProcessorInfosCopy.Clear();
+
+                for (int i = 0; i < allProcessorInfos.Count; i++) {
+                    allProcessorInfosCopy.Add(new ProcessorInfo(allProcessorInfos[i]));
+                }
+            }
+        }
+    }
+
+    private void RunMonitorInternal(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested) {
+            lock (@lock) {
+                ProcessorEventArgs eventArgs = new(allProcessorInfosCopy, systemStatistics);
+                ProcessorUpdated?.Invoke(this, eventArgs);
+            }
+            
+            Thread.Sleep(UpdateTimeInMs);
+        }
+    }
+
+    public void Stop()
+    {
+        cancellationTokenSource?.Cancel();
+        WorkerTask[] workerTasks = { workerTask!, monitorTask! };
+
+        try {
+            WorkerTask.WaitAll(workerTasks);
+        }
+        catch (AggregateException aggEx) {
+            ExceptionHelper.HandleWaitAllException(aggEx);
+        }
+    }
+      
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryMapProcessTimeInfo(ProcessInfo processInfo, ref ProcessTimeInfo ptInfo)
+    {
+        ptInfo.DiskOperations = 0;
+         // On MacOS, these properties can still throw an Exception when running as root.
+        try {
+            ptInfo.KernelTime = processInfo.KernelTime;
+            ptInfo.UserTime = processInfo.UserTime;
+            return true;
+        }
+        catch (Exception ex) {
+            ExceptionHelper.HandleException(ex, $"Failed PrivilegedProcessorTime() {processInfo.ProcessName} {processInfo.Pid}");
+            return false;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryMapProcessInfo(ProcessInfo processInfo, ProcessorInfo procInfo)
+    {
+        try {
+            procInfo.Pid = processInfo.Pid;
+            procInfo.ParentPid = processInfo.ParentPid;
+            procInfo.ProcessName = processInfo.ProcessName;
+            procInfo.FileDescription = processInfo.FileDescription;
+            procInfo.UserName = processInfo.UserName;
+            procInfo.CmdLine = processInfo.CmdLine;
+            procInfo.StartTime = processInfo.StartTime;
+            procInfo.ThreadCount = processInfo.ThreadCount;
+            procInfo.HandleCount = processInfo.HandleCount;
+            procInfo.BasePriority = processInfo.BasePriority;
+            return true;
+        }
+        catch (Exception ex) {
+            ExceptionHelper.HandleException(ex, $"Failed TryMapProcessInfo() {processInfo.ProcessName} {processInfo.Pid}");
+            return false;
+        }
+    }
+
+    public int ThreadCount => threadCount;
+    
+    private bool TryGetProcessHandle(ProcessInfo processInfo, out IntPtr? processHandle)
+    {
+        try {
+             // On Windows (with elevated access) this call can still throw an
+             // "Access denied" Exception. This is usually for the "system"
+             // process assigned to Pid 4.
+            processHandle = processInfo.Handle;
+            return true;
+        }
+        catch (Exception ex) {
+            ExceptionHelper.HandleException(ex, $"Failed Handle() {processInfo.ProcessName} {processInfo.Pid}");
+            processHandle = null;
+            return false;
+        }
+    }
+
+    private bool TryGetProcessStartTime(ProcessInfo processInfo, out DateTime startTime)
+    {
+        try {
+            startTime = processInfo.StartTime;
+            return true;
+        }
+        catch (Exception ex) {
+            ExceptionHelper.HandleException(ex, $"Failed StartTime() {processInfo.ProcessName} {processInfo.Pid}");
+            startTime = DateTime.Now;
+            return false;
+        }
+    }
+}

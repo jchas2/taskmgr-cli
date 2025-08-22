@@ -11,7 +11,7 @@ public sealed class ModuleInfoTests
     public void Should_Return_Modules_For_Current_Process()
     {
         using var currentProcess = SysDiag::Process.GetCurrentProcess();
-        var modules = ModuleInfo.GetModules(currentProcess.Id);
+        var modules = new ModuleService().GetModules(currentProcess.Id);
         Assert.True(modules.Count > 0);
     }
 }

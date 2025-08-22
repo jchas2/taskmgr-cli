@@ -4,6 +4,8 @@ using Task.Manager.System;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
+using IProcessor = Task.Manager.Process.IProcessor;
+using ProcessorEventArgs = Task.Manager.Process.ProcessorEventArgs;
 
 namespace Task.Manager.Gui.Controls;
 
@@ -246,11 +248,7 @@ public sealed class HeaderControl : Control
         statisticsView.Items[4].SubItems[1].ForegroundColor = ForegroundColour;
         statisticsView.Items[4].SubItems[3].Text = systemStatistics.ThreadCount.ToString();
         statisticsView.Items[4].SubItems[3].ForegroundColor = ForegroundColour;
-#if DEBUG        
-        statisticsView.Items[4].SubItems[5].Text = systemStatistics.GhostProcessCount.ToString();
-#else
         statisticsView.Items[4].SubItems[5].Text = string.Empty;
-#endif
         statisticsView.Items[4].SubItems[5].ForegroundColor = ForegroundColour;
         statisticsView.Items[4].SubItems[7].Text = string.Empty;
         statisticsView.Items[4].SubItems[7].ForegroundColor = ForegroundColour;

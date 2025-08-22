@@ -6,11 +6,15 @@ using Task.Manager.System;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
+using WorkerTask = System.Threading.Tasks.Task;
 
 namespace Task.Manager.Gui.Controls;
 
 public partial class ProcessInfoControl : Control
 {
+    private readonly IProcessService processService;
+    private readonly IModuleService moduleService;
+    private readonly IThreadService threadService;
     private readonly Theme theme;
     private readonly ListView processInfoView;
     private readonly ListView menuView;
@@ -19,17 +23,25 @@ public partial class ProcessInfoControl : Control
     private readonly ListView handlesView;
     private readonly List<ListView> tabControls = [];
     private ListView focusedControl;
-    private Thread? workerThread;
+    private WorkerTask? workerTask;
+    
     private CancellationTokenSource? cancellationTokenSource;
-    private int selectedProcessId = -1;
 
     private const int ControlGutter = 1;
     private const int ProcessInfoViewHeight = 8;
     private const int MenuViewWidth = 10;
 
-    public ProcessInfoControl(ISystemTerminal terminal, Theme theme)
+    public ProcessInfoControl(
+        IProcessService processService,
+        IModuleService moduleService,
+        IThreadService threadService,
+        ISystemTerminal terminal, 
+        Theme theme) 
         : base(terminal)
     {
+        this.processService = processService;
+        this.moduleService = moduleService;
+        this.threadService = threadService;
         this.theme = theme;
         
         processInfoView = new ListView(terminal) {
@@ -182,7 +194,7 @@ public partial class ProcessInfoControl : Control
                     }
                     
                     focusedControl.Draw();
-
+ 
                     if (menuView.SelectedItem != null) {
                         ListViewItemEventArgs e = new(menuView.SelectedItem);
                         MenuViewOnItemClicked(this, e);
@@ -244,9 +256,8 @@ public partial class ProcessInfoControl : Control
         menuView.ItemClicked += MenuViewOnItemClicked;
         
         cancellationTokenSource = new CancellationTokenSource();
-
-        workerThread = new Thread(() => UpdateListViewItemsLoop(cancellationTokenSource.Token));
-        workerThread.Start();
+        
+        workerTask = WorkerTask.Run(() => UpdateListViewItemsLoop(cancellationTokenSource.Token));
     }
 
     protected override void OnResize()
@@ -296,10 +307,11 @@ public partial class ProcessInfoControl : Control
     {
         cancellationTokenSource?.Cancel();
 
-        if (workerThread != null) {
-            while (workerThread.IsAlive) {
-                Thread.Sleep(100);
-            }
+        try {
+            workerTask?.Wait();
+        }
+        catch (AggregateException aggEx) {
+            ExceptionHelper.HandleWaitAllException(aggEx);
         }
         
         processInfoView.Items.Clear();
@@ -315,27 +327,24 @@ public partial class ProcessInfoControl : Control
         menuView.ItemClicked -= MenuViewOnItemClicked;
     }
 
-    public int SelectedProcessId
-    {
-        get => selectedProcessId;
-        set => selectedProcessId = value;
-    }
-    
+    public int SelectedProcessId { get; set; } = -1;
+
     private void TryLoadProcessInfo()
     {
         try {
-            if (!ProcessUtils.TryGetProcessByPid(SelectedProcessId, out Process? process)) {
+            ProcessInfo? processInfo = processService.GetProcessById(SelectedProcessId);
+            if (processInfo == null) {
                 processInfoView.Items.Clear();
                 return;
             }
 
             processInfoView.Items.Add(
-                new(["Pid:", process!.Id.ToString()],
+                new(["Pid:", processInfo.Pid.ToString()],
                 theme.Background,
                 theme.Foreground));
             
             processInfoView.Items.Add(
-                new(["File:", process!.MainModule!.ModuleName],
+                new(["File:", processInfo.ModuleName],
                 theme.Background,
                 theme.Foreground));
                     
@@ -345,12 +354,12 @@ public partial class ProcessInfoControl : Control
                 theme.Foreground));
                     
             processInfoView.Items.Add(
-                new(["Path:", ProcessUtils.GetProcessCommandLine(process)],
+                new(["Path:", processInfo.CmdLine],
                 theme.Background,
                 theme.Foreground));
             
             processInfoView.Items.Add(
-                new(["User:", ProcessUtils.GetProcessUserName(process)],
+                new(["User:", processInfo.UserName],
                 theme.Background,
                 theme.Foreground));
             
@@ -378,7 +387,7 @@ public partial class ProcessInfoControl : Control
     private void TryUpdateListViewModuleItems()
     {
         try {
-            List<ModuleInfo> modules = ModuleInfo.GetModules(SelectedProcessId)
+            List<ModuleInfo> modules = moduleService.GetModules(SelectedProcessId)
                 .OrderBy(m => m.ModuleName)
                 .ToList();
 
@@ -396,7 +405,7 @@ public partial class ProcessInfoControl : Control
         try {
             Control.DrawingLockAcquire();
 
-            List<ThreadInfo> threads = ThreadInfo.GetThreads(SelectedProcessId)
+            List<ThreadInfo> threads = threadService.GetThreads(SelectedProcessId)
                 .OrderByDescending(t => t.CpuTotalTime.Ticks)
                 .ToList();
 

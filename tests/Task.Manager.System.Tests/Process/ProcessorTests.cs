@@ -20,7 +20,7 @@ public sealed class ProcessorTests
         const int numberOfIterations = 10;
         //const int maxTimeTakenInMilliseconds = 100;
 
-        var processor = new TaskMgrProcess::Processor();
+        //var processor = new TaskMgrProcess::Processor();
 
         for (int i = 0; i < numberOfIterations; i++) {
             //var timeTaken = Time(() => processor.GetAll());

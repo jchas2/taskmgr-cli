@@ -1,11 +1,14 @@
 ﻿using System.Numerics;
 using Task.Manager.Configuration;
 using Task.Manager.Extensions;
+using Task.Manager.Process;
 using Task.Manager.System;
 using Task.Manager.System.Configuration;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
+using IProcessor = Task.Manager.Process.IProcessor;
+using ProcessorEventArgs = Task.Manager.Process.ProcessorEventArgs;
 
 namespace Task.Manager.Gui.Controls;
 
@@ -17,7 +20,7 @@ public sealed partial class ProcessControl : Control
     private readonly ListView sortView;
     private readonly ListView processView;
 
-    private List<ProcessInfo> allProcesses = [];
+    private List<ProcessorInfo> allProcesses = [];
     private SystemStatistics systemStatistics;
     private ControlMode mode = ControlMode.None;
     private Columns sortColumn = Columns.Cpu;
@@ -104,7 +107,7 @@ public sealed partial class ProcessControl : Control
                 LoadSortItems();
             }
         
-            UpdateListViewItems(allProcesses, ref systemStatistics);
+            UpdateListViewItems();
         
             sortView.Visible = mode == ControlMode.SortSelection;
             sortView.Draw();
@@ -259,20 +262,20 @@ public sealed partial class ProcessControl : Control
         Draw();
     }
 
-    private void UpdateListViewItems(List<ProcessInfo> allProcesses, ref SystemStatistics systemStatistics)
+    private void UpdateListViewItems()
     {
         // .DynamicOrderBy in Utils.QueryableExtensions is not supported for .net native compilation targets
         // hence the manual build out of the query below.
         if (FilterText != string.Empty) {
             allProcesses = allProcesses
-                .Where(p => p.ExeName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
+                .Where(p => p.ProcessName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
                             p.FileDescription.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
                             p.CmdLine.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
                             p.UserName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase))
                 .ToList();
         }
 
-        List<ProcessInfo> sortedProcesses = sortColumn switch {
+        List<ProcessorInfo> sortedProcesses = sortColumn switch {
             Columns.Cpu         => allProcesses.OrderByDescending(p => p.CpuTimePercent).ToList(),
             Columns.Disk        => allProcesses.OrderByDescending(p => p.DiskUsage).ToList(),
             Columns.Memory      => allProcesses.OrderByDescending(p => p.UsedMemory).ToList(),

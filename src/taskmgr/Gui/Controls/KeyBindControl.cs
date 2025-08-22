@@ -22,7 +22,7 @@ public static class KeyBindControl
         
         terminal.BackgroundColor = theme.HeaderBackground;
         terminal.ForegroundColor = theme.HeaderForeground;
-        terminal.Write(text.CentreWithLength(width));
+        terminal.Write(text.CentreWithLength(width).ToBold());
         nchars += width;
         
         return nchars;

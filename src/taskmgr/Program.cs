@@ -9,6 +9,7 @@ using Task.Manager.System;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Internal.Abstractions;
 using Task.Manager.System.Process;
+using Processor = Task.Manager.Process.Processor;
 
 namespace Task.Manager;
 
@@ -64,8 +65,11 @@ class Program
         try {
             RunContext runContext = new(
                 new FileSystem(),
+                new ProcessService(),
+                new ModuleService(),
+                new ThreadService(),
                 new SystemInfo(),
-                new Processor(),
+                new Processor(new ProcessService()),
                 outputWriter: null);
 
             TaskMgrApp app = new(runContext);

@@ -13,8 +13,17 @@ public static class ExceptionHelper
         if (string.IsNullOrWhiteSpace(message)) {
             message = ex.Message;
         }
+        
         Trace.TraceError($"An exception occurred. Message: {message}");
         Trace.TraceError($"Exception: {ex}");
-        Debug.Assert(false, $"[DEBUG ASSERT]: Unexpected exception: {message}\n\n{ex}");
+    }
+
+    public static void HandleWaitAllException(AggregateException aggEx)
+    {
+        foreach (Exception ex in aggEx.InnerExceptions) {
+            if (ex is not OperationCanceledException) {
+                HandleException(ex, "An exception occurred while stopping worker Tasks");
+            }
+        }
     }
 }
