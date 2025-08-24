@@ -17,6 +17,13 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <DefineConstants>__WIN32__</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('MacOS'))">
+        <DefineConstants>__APPLE__</DefineConstants>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.0"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
@@ -30,6 +37,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Task.Manager.System\Task.Manager.System.csproj" />
+        <ProjectReference Include="..\Task.Manager.Tests.Common\Task.Manager.Tests.Common.csproj" />
     </ItemGroup>
 
     <ItemGroup>

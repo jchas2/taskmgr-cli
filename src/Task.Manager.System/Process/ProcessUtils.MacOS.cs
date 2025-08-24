@@ -7,20 +7,20 @@ namespace Task.Manager.System.Process;
 public static partial class ProcessUtils
 {
 #if __APPLE__
-    public static uint GetHandleCountInternal(SysDiag::Process process)
+    internal static uint GetHandleCountInternal(SysDiag::Process process)
     {
         return (uint)process.HandleCount;
     }
     
-    public static string GetProcessCommandLine(global::System.Diagnostics.Process process)
+    internal static string GetProcessCommandLine(in SysDiag::ProcessModule processModule, in string defaultValue)
     {
-        // TODO: Determine for Mach
+        // TODO: Determine for Mach. 
         try {
-            return process.MainModule?.FileName ?? process.ProcessName;
+            return processModule.FileName ?? defaultValue;
         }
         catch {
-            return process.ProcessName;
-        }
+            return defaultValue;
+        } 
     }
 
     public static ulong GetProcessIoOperations(in int pid)
@@ -53,7 +53,10 @@ public static partial class ProcessUtils
         return (result == size ? new ProcInfo.proc_taskallinfo?(info) : null);
     }
     
-    public static unsafe string GetProcessProductName(SysDiag::Process process)
+    internal static unsafe string GetProcessProductName(
+        in SysDiag::ProcessModule processModule,
+        in int pid,
+        string defaultValue)
     {
         // ReadOnlySpan<int> sysctlName = [
         //     (int)Sys.Selectors.CTL_KERN, 
@@ -81,10 +84,10 @@ public static partial class ProcessUtils
         //     perror("sysctl");
         // }
         
-        return process.ProcessName;
+        return defaultValue;
     }
 
-    public static unsafe string GetProcessUserName(global::System.Diagnostics.Process process)
+    internal static unsafe string GetProcessUserName(global::System.Diagnostics.Process process)
     {
         ProcInfo.proc_taskallinfo? info = GetProcessInfoById(process.Id);
 

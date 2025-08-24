@@ -40,27 +40,6 @@ public partial class Processor : IProcessor
         isWindows = OperatingSystem.IsWindows();
     }
     
-    private bool GetProcessTimes(in int pid, ref ProcessTimeInfo ptInfo)
-    {
-        try {
-            ProcessInfo? processInfo = processService.GetProcessById(pid);
-
-            if (processInfo == null){
-                return false;
-            }
-            
-            TryMapProcessTimeInfo(processInfo, ref ptInfo);
-            return true;
-        }
-        catch (ArgumentException) {
-            return false;
-        }
-        // TODO: Catch all here for a graceful exit of the process.
-        catch (Exception) {
-            return false;
-        }
-    }
-    
     private void GetSystemTimes(out SystemTimes systemTimes)
     {
         systemTimes = new SystemTimes();
@@ -187,7 +166,7 @@ public partial class Processor : IProcessor
 
                 currProcTimes.Clear();
 
-                if (!GetProcessTimes(allProcessorInfos[i].Pid, ref currProcTimes)) {
+                if (!TryGetProcessTimes(allProcessorInfos[i].Pid, ref currProcTimes)) {
                     continue;
                 }
                 
@@ -259,7 +238,27 @@ public partial class Processor : IProcessor
             ExceptionHelper.HandleWaitAllException(aggEx);
         }
     }
-      
+
+    private bool TryGetProcessTimes(in int pid, ref ProcessTimeInfo ptInfo)
+    {
+        try {
+            ProcessInfo? processInfo = processService.GetProcessById(pid);
+
+            if (processInfo == null){
+                return false;
+            }
+            
+            TryMapProcessTimeInfo(processInfo, ref ptInfo);
+            return true;
+        }
+        catch (Exception ex) {
+            ExceptionHelper.HandleException(ex, $"Failed TryGetProcessTimes() {pid}");
+            return false;
+        }
+
+
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryMapProcessTimeInfo(ProcessInfo processInfo, ref ProcessTimeInfo ptInfo)
     {
@@ -271,7 +270,7 @@ public partial class Processor : IProcessor
             return true;
         }
         catch (Exception ex) {
-            ExceptionHelper.HandleException(ex, $"Failed PrivilegedProcessorTime() {processInfo.ProcessName} {processInfo.Pid}");
+            ExceptionHelper.HandleException(ex, $"Failed TryMapProcessTimeInfo() {processInfo.ProcessName} {processInfo.Pid}");
             return false;
         }
     }

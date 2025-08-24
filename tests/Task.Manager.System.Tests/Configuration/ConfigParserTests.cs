@@ -1,15 +1,16 @@
-﻿using Task.Manager.System.Configuration;
+﻿using Task.Manager.Internal.Abstractions;
+using Task.Manager.System.Configuration;
 
 namespace Task.Manager.System.Tests.Configuration;
 
 public sealed class ConfigParserTests
 {
-    private static string MinConfigFile => @"
+    internal static string MinConfigFile => @"
 [section1]
 key1=value1
 key2=value2";
 
-    private static string MinConfigFileWithAllDataTypes = @"
+    internal static string MinConfigFileWithAllDataTypes = @"
 [data-types]
 string-key=string value
 bool-true=true
@@ -87,7 +88,34 @@ console-color-white=white
 // range-mid-foreground=black
 // process-header=darkgray
 // ";
+
+    [Fact]
+    public void Invalid_Config_File_Name_Should_Throw_FileNotFoundException()
+    {
+        Assert.Throws<FileNotFoundException>(() =>
+            new ConfigParser(
+                new FileSystem(),
+                "_file_does_not_exist.tmp"));
+    }
+
+    [Fact]
+    public void Empty_Config_File_Should_Load_Empty_Config()
+    {
+        ConfigParser configParser = new("");
+        configParser.Parse();
+
+        Assert.NotNull(configParser.Sections);
+        Assert.Empty(configParser.Sections);
+    }
     
+    [Fact]
+    public void Empty_Section_Name_Should_Throw_ConfigParsingException()
+    {
+        ConfigParser configParser = new("[]\nkey1=value1\n");
+        
+        Assert.Throws<ConfigParseException>(() => configParser.Parse());
+    }
+
     [Fact]
     public void Should_Parse_Min_Config_File()
     {

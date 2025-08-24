@@ -16,8 +16,8 @@ public sealed class ProcessTimeInfoTests
 
         var processTimeInfo = new ProcessTimeInfo() {
             DiskOperations = 78346578346,
-            KernelTime = 78346510925,
-            UserTime = 78346578346
+            KernelTime = 38346510925,
+            UserTime = 72346378346
         };
         
         processTimeInfo.Clear();

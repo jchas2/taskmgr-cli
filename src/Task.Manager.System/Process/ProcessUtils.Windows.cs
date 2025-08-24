@@ -15,7 +15,7 @@ public static partial class ProcessUtils
     private const string ServiceHost = "svchost.exe";
     private static readonly Dictionary<string, string> userMap = new();
 
-    public static uint GetHandleCountInternal(SysDiag::Process process)
+    internal static uint GetHandleCountInternal(SysDiag::Process process)
     {
         IntPtr processHandle = process.Handle;
         uint gdiHandleCount = WinUser.GetGuiResources(processHandle, WinUser.GR_GDIOBJECTS);
@@ -24,14 +24,14 @@ public static partial class ProcessUtils
         return (uint)process.HandleCount + (gdiHandleCount + usrHandleCount);
     }
 
-    public static string GetProcessCommandLine(global::System.Diagnostics.Process process)
+    internal static string GetProcessCommandLine(in SysDiag::ProcessModule processModule, in string defaultValue)
     {
         // TODO: Kernel PEB + Commandline offset. 
         try {
-            return process.MainModule?.FileName ?? process.ProcessName;
+            return processModule.FileName ?? defaultValue;
         }
         catch {
-            return process.ProcessName;
+            return defaultValue;
         } 
     }
 
@@ -55,33 +55,36 @@ public static partial class ProcessUtils
             }
 
             return counters.ReadTransferCount + counters.WriteTransferCount;
-        }
+        } 
         catch {
             return 0;
         }
     }
    
-    public static string GetProcessProductName(SysDiag::Process process)
+    internal static string GetProcessProductName(
+        in SysDiag::ProcessModule processModule,
+        in int pid,
+        string defaultValue)
     {
         try {
-            string? processPath = process.MainModule?.FileName;
+            string processPath = processModule.FileName;
             
             if (string.IsNullOrWhiteSpace(processPath)) {
-                return process.ProcessName;
+                return defaultValue;
             }
 
             if (processPath.EndsWith(ServiceHost, StringComparison.CurrentCultureIgnoreCase)) {
-                return GetProcessWin32ServiceName(process);
+                return GetProcessWin32ServiceName(pid, defaultValue);
             }
 
-            SysDiag.FileVersionInfo versionInfo = SysDiag.FileVersionInfo.GetVersionInfo(processPath);
+            SysDiag::FileVersionInfo versionInfo = SysDiag::FileVersionInfo.GetVersionInfo(processPath);
             
             return string.IsNullOrWhiteSpace(versionInfo.FileDescription) 
-                ? process.ProcessName 
+                ? defaultValue 
                 : versionInfo.FileDescription;
         }
         catch {
-            return process.ProcessName;            
+            return defaultValue;            
         }
     }
     
@@ -124,7 +127,7 @@ public static partial class ProcessUtils
     }
     
     
-    public static string GetProcessUserName(SysDiag::Process process)
+    internal static string GetProcessUserName(in SysDiag::Process process)
     {
         try {
             if (ProcessThreadsApi.OpenProcessToken(
@@ -157,7 +160,7 @@ public static partial class ProcessUtils
         return DefaultUser;
     }
 
-    private static string GetProcessWin32ServiceName(SysDiag::Process process)
+    private static string GetProcessWin32ServiceName(in int pid, string defaultValue)
     {
         /* TODO: Below code times out. Also, the thread continues to run on the
            timeout. Overlapped IO/IO Completion Ports would be good here.
@@ -169,7 +172,7 @@ public static partial class ProcessUtils
         try {
             var task = global::System.Threading.Tasks.Task.Run(() => {
                 var searcher = new ManagementObjectSearcher(
-                    string.Format(MO_WIN32_SERVICE, process.Id));
+                    string.Format(MO_WIN32_SERVICE, pid));
 
                 foreach (var obj in searcher.Get()) {
                     var name = obj["Name"]?.ToString();
@@ -191,9 +194,9 @@ public static partial class ProcessUtils
         
         return false == string.IsNullOrWhiteSpace(serviceName) 
             ? $"Service Host: {serviceName}" 
-            : process.ProcessName;
+            : defaultValue;
         */
-        return process.ProcessName;
+        return defaultValue;
     }
 #endif
 }
