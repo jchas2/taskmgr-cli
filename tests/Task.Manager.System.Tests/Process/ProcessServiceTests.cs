@@ -16,7 +16,7 @@ public sealed class ProcessServiceTests
     public void Should_Get_Process_Properties_For_Current_Process() 
     {
         using SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
-        ProcessInfo? processInfo = new ProcessService().GetProcessById(currentProcess.Id);
+        ProcessInfo? processInfo = new(currentProcess);
 
         Assert.NotNull(processInfo);
         ProcessInfoHelpers.AssertProcessInfoProperties(processInfo);
