@@ -32,6 +32,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\Task.Manager.Internal.Abstractions\Task.Manager.Internal.Abstractions.csproj" />
+      <ProjectReference Include="..\Task.Manager.Tests.Common\Task.Manager.Tests.Common.csproj" />
     </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@ namespace Task.Manager.System.Process;
 
 public class ThreadService : IThreadService
 {
-    public virtual List<ThreadInfo> GetThreads(int pid)
+    public virtual List<ThreadInfo>  GetThreads(int pid)
     {
         if (!ProcessUtils.TryGetProcessByPid(pid, out SysDiag::Process? process) ||
             process == null) {

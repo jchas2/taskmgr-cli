@@ -11,7 +11,9 @@ public sealed class ConfigSection
 
     public ConfigSection(string name)
     {
-        this.name = name ?? throw new ArgumentNullException(nameof(name));
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        this.name = name;
         keys = new Dictionary<string, string>();
     }
     

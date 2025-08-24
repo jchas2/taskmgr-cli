@@ -6,7 +6,7 @@ using Task.Manager.System.Controls;
 
 namespace Task.Manager.Gui.Controls;
 
-public sealed class CommandControl : Control
+public sealed class  CommandControl : Control
 {
     private readonly Theme theme;
     private const string CommandText = "          Help      Setup     Sort      Filter    Info      End Task  ";

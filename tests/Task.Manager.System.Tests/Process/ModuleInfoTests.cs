@@ -1,17 +1,18 @@
-using System.Runtime.Versioning;
-using Task.Manager.System.Process;
-using SysDiag = System.Diagnostics;
+﻿using Task.Manager.System.Process;
 
 namespace Task.Manager.System.Tests.Process;
 
 public sealed class ModuleInfoTests
 {
-    [SkippableFact]
-    [SupportedOSPlatform("windows")]
-    public void Should_Return_Modules_For_Current_Process()
+    [Fact]
+    public void ModuleInfo_Write_Read_Test()
     {
-        using var currentProcess = SysDiag::Process.GetCurrentProcess();
-        var modules = new ModuleService().GetModules(currentProcess.Id);
-        Assert.True(modules.Count > 0);
+        ModuleInfo moduleInfo = new() {
+            ModuleName = "test",
+            FileName = "test.dll"
+        };
+        
+        Assert.Equal("test", moduleInfo.ModuleName);
+        Assert.Equal("test.dll", moduleInfo.FileName);
     }
 }

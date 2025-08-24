@@ -1,6 +1,6 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
-namespace Task.Manager.Internal.Abstractions.Tests;
+namespace Task.Manager.Tests.Common;
 
 public sealed class FileCleanupHelper : IDisposable
 {
@@ -39,8 +39,8 @@ public sealed class FileCleanupHelper : IDisposable
             tempDirs.Add(tempDirectory);
             return tempDirectory;
         }
-    } 
-    
+    }
+
     public string GetTempDirectory([CallerMemberName] string memberName = "") => GetTempDirectoryInternal(memberName);
 
     public string GetTempFile(string extension)
@@ -52,7 +52,7 @@ public sealed class FileCleanupHelper : IDisposable
         string tempFile = Path.Combine(
             GetTempDirectoryInternal(),
             Path.GetRandomFileName() + extension);
-        
+
         return tempFile;
     }
 }

@@ -1,3 +1,4 @@
+using Task.Manager.Cli.Utils;
 using Task.Manager.Interop.Win32;
 using SysDiag = System.Diagnostics;
 
@@ -15,20 +16,18 @@ public static partial class ProcessUtils
         return process.WaitForExit(timeOutMilliseconds);
     }
     
-    public static uint GetHandleCount(SysDiag::Process process) => GetHandleCountInternal(process);
+    internal static uint GetHandleCount(SysDiag::Process process) => GetHandleCountInternal(process);
     
-    public static bool TryGetProcessByPid(int pid, out SysDiag::Process? process)
+    internal static bool TryGetProcessByPid(int pid, out SysDiag::Process? process)
     {
         try {
             process = SysDiag::Process.GetProcessById(pid);
             return true;
         }
-#pragma warning disable CS0168 // The variable is declared but never used
-        catch (Exception e) {
-            SysDiag::Debug.WriteLine($"Failed GetProcessById() for Pid {pid} with {e}");
+        catch (Exception ex) {
+            ExceptionHelper.HandleException(ex, $"Failed GetProcessById() for Pid {pid}");
             process = null;
             return false;
         }
-#pragma warning restore CS0168 // The variable is declared but never used
     }
 }
