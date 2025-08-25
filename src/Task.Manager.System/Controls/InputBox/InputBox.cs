@@ -4,12 +4,10 @@ namespace Task.Manager.System.Controls.InputBox;
 
 public sealed class InputBox(ISystemTerminal terminal) : Control(terminal)
 {
-    private const int MinWidth = 40;
+    private const int MinWidth = 10;
     private const int MinHeight = 1;
 
     private readonly TextBuffer textBuffer = new();
-    
-    // TODO: Theme.
     private readonly ConsoleColor boxColour = ConsoleColor.Gray;
 
     protected override void OnDraw()

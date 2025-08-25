@@ -40,7 +40,7 @@ public partial class ProcessUtilsTests
 
         bool terminated = ProcessUtils.EndTask(process.Id, timeOutMilliseconds: 500);
         Assert.True(terminated);
-    }
+    } 
     
     [SkippableFact]
     [SupportedOSPlatform("windows")]
