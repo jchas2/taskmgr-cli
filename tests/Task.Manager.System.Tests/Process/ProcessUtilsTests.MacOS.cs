@@ -1,4 +1,6 @@
-﻿namespace Task.Manager.System.Tests.Process;
+﻿using System.Runtime.InteropServices;
+
+namespace Task.Manager.System.Tests.Process;
 
 public partial class ProcessUtilsTests
 {
@@ -7,8 +9,10 @@ public partial class ProcessUtilsTests
     {
         string script = @"#!/bin/bash\nwhile true; do\n\sleep 1\ndone\n";
         File.WriteAllText(fileName, script);
-        
-        global::System.IO.File.SetUnixFileMode(fileName, UnixFileMode.UserExecute);
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+            global::System.IO.File.SetUnixFileMode(fileName, UnixFileMode.UserExecute);
+        }
     }
 #endif
 }
