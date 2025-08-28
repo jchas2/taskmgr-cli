@@ -17,8 +17,8 @@ public static class KeyBindControl
     {
         terminal.BackgroundColor = theme.Background;
         terminal.ForegroundColor = theme.Foreground;
-        terminal.Write(keyBinding);
-        int nchars = keyBinding.Length;
+        terminal.Write(keyBinding + " ");
+        int nchars = keyBinding.Length + 1;
         
         terminal.BackgroundColor = theme.HeaderBackground;
         terminal.ForegroundColor = theme.HeaderForeground;
