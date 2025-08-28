@@ -6,19 +6,10 @@ namespace Task.Manager.System.Tests.Controls.InputBox;
 
 public sealed class InputBoxTests
 {
-    private Mock<ISystemTerminal> SetupTerminalMock()
-    {
-        Mock<ISystemTerminal> terminal = new();
-        terminal.Setup(t => t.WindowHeight).Returns(24);
-        terminal.Setup(t => t.WindowWidth).Returns(80);
-        
-        return terminal;
-    }
-    
     [Fact]
     public void Should_Construct_Default()
     {
-        Mock<ISystemTerminal> terminal = SetupTerminalMock();
+        Mock<ISystemTerminal> terminal = TerminalMock.Setup();
         InputBoxControl control = new(terminal.Object);
         
         Assert.Equal(ConsoleColor.Black, control.BackgroundColour);
@@ -40,7 +31,7 @@ public sealed class InputBoxTests
     [Fact]
     public void Should_Set_Initial_Properties()
     {
-        Mock<ISystemTerminal> terminal = SetupTerminalMock();
+        Mock<ISystemTerminal> terminal = TerminalMock.Setup();
         
         InputBoxControl control = new(terminal.Object) {
             BackgroundColour = ConsoleColor.Gray,
@@ -66,20 +57,20 @@ public sealed class InputBoxTests
     public static TheoryData<ConsoleKeyInfo, InputBoxResult> KeyPressData()
         => new()
         {
-            { new ConsoleKeyInfo((char)ConsoleKey.Enter,      ConsoleKey.Enter,      shift: false, alt: false, control: false), InputBoxResult.Enter },
-            { new ConsoleKeyInfo((char)ConsoleKey.Escape,     ConsoleKey.Escape,     shift: false, alt: false, control: false), InputBoxResult.Cancel },
-            { new ConsoleKeyInfo((char)ConsoleKey.Backspace,  ConsoleKey.Backspace,  shift: false, alt: false, control: false), InputBoxResult.None },
-            { new ConsoleKeyInfo((char)ConsoleKey.Delete,     ConsoleKey.Delete,     shift: false, alt: false, control: false), InputBoxResult.None },
-            { new ConsoleKeyInfo((char)ConsoleKey.LeftArrow,  ConsoleKey.LeftArrow,  shift: false, alt: false, control: false), InputBoxResult.None },
-            { new ConsoleKeyInfo((char)ConsoleKey.RightArrow, ConsoleKey.RightArrow, shift: false, alt: false, control: false), InputBoxResult.None },
-            { new ConsoleKeyInfo((char)ConsoleKey.Insert,     ConsoleKey.Insert,     shift: false, alt: false, control: false), InputBoxResult.None }
+            { ControlHelper.GetConsoleKeyInfo(ConsoleKey.Enter),      InputBoxResult.Enter },
+            { ControlHelper.GetConsoleKeyInfo(ConsoleKey.Escape),     InputBoxResult.Cancel },
+            { ControlHelper.GetConsoleKeyInfo(ConsoleKey.Backspace),  InputBoxResult.None },
+            { ControlHelper.GetConsoleKeyInfo(ConsoleKey.Delete),     InputBoxResult.None },
+            { ControlHelper.GetConsoleKeyInfo(ConsoleKey.LeftArrow),  InputBoxResult.None },
+            { ControlHelper.GetConsoleKeyInfo(ConsoleKey.RightArrow), InputBoxResult.None },
+            { ControlHelper.GetConsoleKeyInfo(ConsoleKey.Insert),     InputBoxResult.None }
         };
     
     [Theory]
     [MemberData(nameof(KeyPressData))]
     public void KeyPress_Should_Set_InputBoxResult(ConsoleKeyInfo keyInfo, InputBoxResult expectedResult)
     {
-        Mock<ISystemTerminal> terminal = SetupTerminalMock();
+        Mock<ISystemTerminal> terminal = TerminalMock.Setup();
         
         InputBoxControl control = new(terminal.Object) {
             X = 0, 
@@ -99,7 +90,7 @@ public sealed class InputBoxTests
     [Fact]
     public void Should_Draw()
     {
-        Mock<ISystemTerminal> terminal = SetupTerminalMock();
+        Mock<ISystemTerminal> terminal = TerminalMock.Setup();
 
         InputBoxControl control = new(terminal.Object) {
             X = 0, 
@@ -108,6 +99,8 @@ public sealed class InputBoxTests
             Height = 1,
             Title = "Enter Text"
         };
+        
+        control.ShowInputBox();
         
         bool handled = false;
 
@@ -119,10 +112,9 @@ public sealed class InputBoxTests
                 alt: false, 
                 control: false), 
             ref handled);
-
-        control.ShowInputBox();
-        
+         
         terminal.Verify(t => t.SetCursorPosition(0, 0), Times.AtLeastOnce);
+        terminal.Verify(t => t.Write("H"), Times.Once);
         
         Assert.Equal("H", control.Text);
         Assert.True(handled);

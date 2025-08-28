@@ -34,7 +34,7 @@ public sealed class ListViewItemTests
         listview.Items.AddRange(GetListViewItemData().ToArray());
 
         foreach (var item in listview.Items) {
-            Assert.True(item != null);
+            Assert.NotNull(item);
         }
     }
 
@@ -44,7 +44,7 @@ public sealed class ListViewItemTests
         var listview = new ListView(terminalMock.Object);
         listview.Items.AddRange(GetListViewItemData().ToArray());
         
-        Assert.True(listview.SelectedItem != null);
+        Assert.NotNull(listview.SelectedItem);
         Assert.True(listview.SelectedItem.Text == "Item 1");
     }
     
