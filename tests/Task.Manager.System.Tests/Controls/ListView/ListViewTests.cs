@@ -1,24 +1,24 @@
 ﻿using Moq;
-using Task.Manager.System;
 using Task.Manager.System.Controls.ListView;
-using Task.Manager.System.Tests.Controls;
-using Xunit.Sdk;
 
-namespace Task.Manager.Tests.Controls;
+namespace Task.Manager.System.Tests.Controls.ListView;
 
 public sealed class ListViewTests
 {
-    private ListView GetDefaultListView()
+    private readonly Mock<ISystemTerminal> terminal;
+
+    public ListViewTests() =>
+        terminal = TerminalMock.Setup();
+    
+    private System.Controls.ListView.ListView GetDefaultListView()
     {
-        Mock<ISystemTerminal> terminal = TerminalMock.Setup();
-        
-        ListView listView = new(terminal.Object) {
+        System.Controls.ListView.ListView listView = new(terminal.Object) {
             Width = 80,
             Height = 24,
             X = 0,
             Y = 0
         };
-        
+ 
         return listView;
     }
     
@@ -26,7 +26,7 @@ public sealed class ListViewTests
     public void Should_Construct_Default()
     {
         Mock<ISystemTerminal> terminal = TerminalMock.Setup();
-        ListView listView = new(terminal.Object);
+        System.Controls.ListView.ListView listView = new(terminal.Object);
         
         Assert.Equal(ConsoleColor.Black, listView.BackgroundColour);
         Assert.Equal(ConsoleColor.White, listView.BackgroundHighlightColour);
@@ -56,7 +56,7 @@ public sealed class ListViewTests
     public void Should_Set_Initial_Properties()
     {
         Mock<ISystemTerminal> terminal = TerminalMock.Setup();
-        ListView listView = new(terminal.Object) {
+        System.Controls.ListView.ListView listView = new(terminal.Object) {
             BackgroundColour = ConsoleColor.Gray,
             BackgroundHighlightColour = ConsoleColor.DarkGray,
             EnableRowSelect = false,
@@ -90,7 +90,7 @@ public sealed class ListViewTests
     [Fact]
     public void SelectedIndex_Throws_ArgumentOutOfRangeException_For_Invalid_Index()
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
         ListViewItem item = new ("Item 0");
         listView.Items.Add(item);
 
@@ -101,7 +101,7 @@ public sealed class ListViewTests
     [Fact]
     public void SelectedIndex_Sets_Correctly()
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
         listView.Items.Add(new ListViewItem("Item 0"));
         listView.Items.Add(new ListViewItem("Item 1"));
         listView.SelectedIndex = 1;
@@ -112,7 +112,7 @@ public sealed class ListViewTests
     [Fact]
      public void SelectedItem_Returns_Correct_Item()
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
         ListViewItem item0 = new("Item 0");
         ListViewItem item1 = new("Item 1");
         listView.Items.Add(item0);
@@ -125,7 +125,7 @@ public sealed class ListViewTests
     [Fact]
     public void Item_Add_Should_Update_Item_Count()
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
 
         Assert.Equal(0, listView.ItemCount);
         
@@ -137,7 +137,7 @@ public sealed class ListViewTests
     [Fact]
     public void Item_Remove_Should_Update_Item_Count()
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
         ListViewItem item = new("Item 0");
         listView.Items.Add(item);
         
@@ -151,7 +151,7 @@ public sealed class ListViewTests
     [Fact]
     public void Get_Item_By_Index_Should_Return_Item()
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
         ListViewItem item0 = new("Item 0");
         ListViewItem item1 = new("Item 1");
         listView.Items.Add(item0);
@@ -164,7 +164,7 @@ public sealed class ListViewTests
     [Fact]
     public void Get_Item_By_Index_Throws_ArgumentOutOfRangeException_For_Invalid_Index()
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
         listView.Items.Add(new ListViewItem("Item 0"));
         
         Assert.Throws<ArgumentOutOfRangeException>(() => listView.GetItemByIndex(-1));
@@ -174,7 +174,7 @@ public sealed class ListViewTests
     [Fact]
     public void InsertItem_Inserts_At_Correct_Index()
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
         listView.Items.Add(new ListViewItem("Item 0"));
         listView.Items.Add(new ListViewItem("Item 2"));
         ListViewItem newItem = new("Item 1");
@@ -187,7 +187,7 @@ public sealed class ListViewTests
     [Fact]
     public void ClearColumnHeaders_Removes_All_Headers_From_List()
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
         listView.ColumnHeaders.Add(new ListViewColumnHeader("Header 0"));
         listView.ColumnHeaders.Add(new ListViewColumnHeader("Header 1"));
         listView.ClearColumnHeaders();
@@ -198,7 +198,7 @@ public sealed class ListViewTests
     [Fact]
     public void ColumnHeaders_Add_Should_Update_ColumnHeader_Count()
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
         listView.ColumnHeaders.Add(new ListViewColumnHeader("Header 0"));
         listView.ColumnHeaders.Add(new ListViewColumnHeader("Header 1"));
 
@@ -208,7 +208,7 @@ public sealed class ListViewTests
     [Fact]
     public void OnKeyPressed_Should_Return_False_With_No_Items()
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
         bool handled = false;
         listView.KeyPressed(ControlHelper.GetConsoleKeyInfo(ConsoleKey.A), ref handled);
         
@@ -230,7 +230,7 @@ public sealed class ListViewTests
     [MemberData(nameof(ArrowKeyScrollData))]
     public void Should_Scroll_On_Arrow_Keys(ConsoleKeyInfo keyInfo, int selectIndex, int selectedIndex)
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
 
         string[] items = new string[] { "Item 0", "Item 1", "Item 2", "Item 3", "Item 4" };
         foreach (var item in items) {
@@ -261,7 +261,7 @@ public sealed class ListViewTests
     [MemberData(nameof(ArrowKeyNoScrollData))]
     public void Should_Not_Scroll_When_EnableScroll_Is_False(ConsoleKeyInfo keyInfo, int selectIndex)
     {
-        ListView listView = GetDefaultListView();
+        System.Controls.ListView.ListView listView = GetDefaultListView();
         listView.EnableScroll = false;
         listView.Items.Add(new ListViewItem("Item 0"));
         listView.Items.Add(new ListViewItem("Item 1"));
@@ -275,5 +275,84 @@ public sealed class ListViewTests
         listView.KeyPressed(keyInfo, ref handled);
         
         Assert.Equal(selectIndex, listView.SelectedIndex);
+    }
+    
+    [Fact]
+    public void Should_Draw_Header_And_Items()
+    {
+        System.Controls.ListView.ListView listView = GetDefaultListView();
+
+        ListViewColumnHeader header0 = new("Header 0") {
+            Width = 16
+        };
+        ListViewColumnHeader header1 = new("Header 1") {
+            Width = 32
+        };
+        
+        listView.ColumnHeaders.AddRange(new[] { header0, header1 });
+        
+        listView.Items.AddRange(new[] {
+            new ListViewItem("Item 0"),
+            new ListViewItem("Item 1")
+        });
+
+        listView.Items[0].SubItems.Add(new ListViewSubItem(listView.Items[0], "Item 0 SubItem1"));
+        listView.Items[1].SubItems.Add(new ListViewSubItem(listView.Items[1], "Item 1 SubItem1"));
+        
+        listView.Draw();        
+        
+        terminal.Verify(t => t.SetCursorPosition(0, 0), Times.Once);
+        terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Header 0"))), Times.Once);
+        terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Header 1"))), Times.Once);
+        terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Item 0"))), Times.Once);
+        terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Item 0 SubItem1"))), Times.Once);
+        terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Item 1"))), Times.Once);
+        terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Item 1 SubItem1"))), Times.Once);
+    }
+
+    [Fact]
+    public void Should_Raise_ItemSelected_EventHandler()
+    {
+        System.Controls.ListView.ListView listView = GetDefaultListView();
+        ListViewItem item0 = new("Item 0");
+        ListViewItem item1 = new("Item 1");
+        listView.Items.Add(item0);
+        listView.Items.Add(item1);
+        listView.SelectedIndex = 1;
+
+        Mock<EventHandler<ListViewItemEventArgs>> mockHandler = new();
+        listView.ItemSelected += mockHandler.Object;        
+
+        // Enter key should raise ItemSelected event.
+        bool handled = false;
+        listView.KeyPressed(ControlHelper.GetConsoleKeyInfo(ConsoleKey.Enter), ref handled);
+        
+        mockHandler.Verify(
+            handler => handler(
+                It.IsAny<object>(),
+                It.Is<ListViewItemEventArgs>(args => args.Item == item1)));
+    }
+    
+    [Fact]
+    public void Should_Raise_ItemClicked_EventHandler()
+    {
+        System.Controls.ListView.ListView listView = GetDefaultListView();
+        ListViewItem item0 = new("Item 0");
+        ListViewItem item1 = new("Item 1");
+        listView.Items.Add(item0);
+        listView.Items.Add(item1);
+        listView.SelectedIndex = 0;
+
+        Mock<EventHandler<ListViewItemEventArgs>> mockHandler = new();
+        listView.ItemClicked += mockHandler.Object;        
+
+        // Arrow key should raise ItemClicked event.
+        bool handled = false;
+        listView.KeyPressed(ControlHelper.GetConsoleKeyInfo(ConsoleKey.DownArrow), ref handled);
+        
+        mockHandler.Verify(
+            handler => handler(
+                It.IsAny<object>(),
+                It.Is<ListViewItemEventArgs>(args => args.Item == item1)));
     }
 }

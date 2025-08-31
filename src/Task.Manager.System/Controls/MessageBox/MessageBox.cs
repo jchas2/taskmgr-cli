@@ -20,7 +20,7 @@ public sealed class MessageBox : Control
     
     public MessageBox(ISystemTerminal terminal) : base(terminal) { }
 
-    public MessageBoxButtons Buttons { get; set; }
+    public MessageBoxButtons Buttons { get; set; } = MessageBoxButtons.OkCancel;
 
     private void DrawButton(
         int x,
@@ -187,7 +187,7 @@ public sealed class MessageBox : Control
         OnDraw();
     }
 
-    public MessageBoxResult Result { get; private set; } = MessageBoxResult.Ok;
+    public MessageBoxResult Result { get; private set; } = MessageBoxResult.None;
 
     public void ShowMessageBox()
     {

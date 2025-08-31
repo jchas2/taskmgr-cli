@@ -37,7 +37,9 @@ public class ConfigParser : IDisposable
         Dispose();
     
     public void Dispose() =>
-        reader.Dispose();
+        // TODO: Unit Tests crash with Null Ref Exception here unless reader? nullable check performed
+        // even though ctor guarantees non-null.
+        reader?.Dispose();  
 
     public void Parse()
     {
