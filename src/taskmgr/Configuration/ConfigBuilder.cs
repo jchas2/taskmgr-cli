@@ -76,6 +76,23 @@ public static class ConfigBuilder
         { Constants.Keys.HeaderBackground, "blue" },
         { Constants.Keys.HeaderForeground, "magenta" } };
 
+    private static readonly string[,] matrixMap = {
+        { Constants.Keys.Background, "black" },
+        { Constants.Keys.BackgroundHighlight, "green" },
+        { Constants.Keys.Error, "red" },
+        { Constants.Keys.Foreground, "green" },
+        { Constants.Keys.ForegroundHighlight, "black" },
+        { Constants.Keys.MenubarForeground, "black" },
+        { Constants.Keys.MenubarBackground, "darkgreen" },
+        { Constants.Keys.RangeHighBackground, "darkgreen" },
+        { Constants.Keys.RangeLowBackground, "green" },
+        { Constants.Keys.RangeMidBackground, "darkgreen" },
+        { Constants.Keys.RangeHighForeground, "black" },
+        { Constants.Keys.RangeLowForeground, "black" },
+        { Constants.Keys.RangeMidForeground, "black" },
+        { Constants.Keys.HeaderBackground, "green" },
+        { Constants.Keys.HeaderForeground, "black" } };
+
     public static Config BuildDefault() =>
         new Config()
             .AddConfigSection(BuildConfigSection(Constants.Sections.Filter))
@@ -86,7 +103,8 @@ public static class ConfigBuilder
             .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeColour))
             .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeMono))
             .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeMsDos))
-            .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeTokyoNight));
+            .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeTokyoNight))
+            .AddConfigSection(BuildConfigSection(Constants.Sections.ThemeMatrix));
 
     public static ConfigSection BuildConfigSection(string name)
     {
@@ -133,6 +151,10 @@ public static class ConfigBuilder
                 ConfigSection themeTokyoNightSection = new(Constants.Sections.ThemeTokyoNight);
                 MapColours(themeTokyoNightSection, tokyoNightMap);
                 return themeTokyoNightSection;
+            case Constants.Sections.ThemeMatrix:
+                ConfigSection themeMatrixSection = new(Constants.Sections.ThemeMatrix);
+                MapColours(themeMatrixSection, matrixMap);
+                return themeMatrixSection;
             default:
                 throw new InvalidOperationException();
         }

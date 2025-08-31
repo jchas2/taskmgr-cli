@@ -47,13 +47,10 @@ public partial class ProcessControl
 
         private Theme Theme { get; }
 
-        private void UpdateSubItem(ListViewSubItem subItem, Func<bool> lowCondition, Func<bool> highCondition)
+        private void UpdateSubItem(ListViewSubItem subItem, Func<bool> condition)
         {
-            if (lowCondition.Invoke()) {
-                subItem.ForegroundColor = Theme.RangeLowForeground;
-            }
-            else if (highCondition.Invoke()) {
-                subItem.ForegroundColor = Theme.RangeHighForeground;
+            if (condition.Invoke()) {
+                subItem.ForegroundColor = Theme.RangeMidForeground;
             }
         }
         
@@ -78,9 +75,8 @@ public partial class ProcessControl
             SubItems[(int)Columns.Priority].Text = processorInfo.BasePriority.ToString();
 
             UpdateSubItem(
-                SubItems[(int)Columns.Priority], 
-                () => processorInfo.BasePriority < lastBasePriority,
-                () => processorInfo.BasePriority > lastBasePriority);
+                SubItems[(int)Columns.Priority],
+                () => processorInfo.BasePriority != lastBasePriority);
             
             SubItems[(int)Columns.Cpu].Text = (processorInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
 
@@ -103,17 +99,15 @@ public partial class ProcessControl
             }
             else {
                 UpdateSubItem(
-                    SubItems[(int)Columns.Cpu], 
-                    () => processorInfo.CpuTimePercent < lastCpu,
-                    () => processorInfo.CpuTimePercent > lastCpu);
+                    SubItems[(int)Columns.Cpu],
+                    () => processorInfo.CpuTimePercent != lastCpu);
             }
             
             SubItems[(int)Columns.Threads].Text = processorInfo.ThreadCount.ToString();
 
             UpdateSubItem(
                 SubItems[(int)Columns.Threads], 
-                () => processorInfo.ThreadCount < lastThreadCount,
-                () => processorInfo.ThreadCount > lastThreadCount);
+                () => processorInfo.ThreadCount != lastThreadCount);
             
             SubItems[(int)Columns.Memory].Text = processorInfo.UsedMemory.ToFormattedByteSize();
 
@@ -134,8 +128,7 @@ public partial class ProcessControl
             else {
                 UpdateSubItem(
                     SubItems[(int)Columns.Memory], 
-                    () => processorInfo.UsedMemory < lastUsedMemory,
-                    () => processorInfo.UsedMemory > lastUsedMemory);
+                    () => processorInfo.UsedMemory != lastUsedMemory);
             }
             
             SubItems[(int)Columns.Disk].Text = processorInfo.DiskUsage.ToFormattedMbpsFromBytes();
@@ -158,8 +151,7 @@ public partial class ProcessControl
             else {
                 UpdateSubItem(
                     SubItems[(int)Columns.Disk], 
-                    () => processorInfo.DiskUsage < lastDiskUsage,
-                    () => processorInfo.DiskUsage > lastDiskUsage);
+                    () => processorInfo.DiskUsage != lastDiskUsage);
             }
 
             SubItems[(int)Columns.CommandLine].Text = processorInfo.CmdLine ?? string.Empty;

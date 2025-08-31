@@ -1,55 +1,52 @@
-﻿using Moq;
-using Task.Manager.System;
-using Task.Manager.System.Controls.ListView;
+﻿using Task.Manager.System.Controls.ListView;
 
-namespace Task.Manager.Tests.Controls;
+namespace Task.Manager.System.Tests.Controls.ListView;
 
 public sealed class ListViewItemTests
 {
-    private readonly Mock<ISystemTerminal> terminalMock = new();
-    
-    public static List<ListViewItem> GetListViewItemData()
-        => new() {
-            new ListViewItem("Item 1"),
-            new ListViewItem("Item 2"),
-            new ListViewItem("Item 3")
-        };
-
     [Fact]
-    public void Should_Add_All_Items()
+    public void Constructor_With_Text_Initialises_Correctly()
     {
-        var listview = new ListView(terminalMock.Object);
-        listview.Items.AddRange(GetListViewItemData().ToArray());
+        ListViewItem item = new ListViewItem("Item");
         
-        Assert.True(listview.Items.Count == 3);
-        Assert.True(listview.Items[0].Text == "Item 1");
-        Assert.True(listview.Items[1].Text == "Item 2");
-        Assert.True(listview.Items[2].Text == "Item 3");
+        Assert.Equal("Item", item.Text);
     }
     
     [Fact]
-    public void Should_Enumerate_All_Items()
+    public void Constructor_With_Text_And_Colours_Initialises_Correctly()
     {
-        var listview = new ListView(terminalMock.Object);
-        listview.Items.AddRange(GetListViewItemData().ToArray());
-
-        foreach (var item in listview.Items) {
-            Assert.NotNull(item);
-        }
-    }
-
-    [Fact]
-    public void Should_Get_Selected_Item()
-    {
-        var listview = new ListView(terminalMock.Object);
-        listview.Items.AddRange(GetListViewItemData().ToArray());
+        ListViewItem item = new ListViewItem("Item", ConsoleColor.Green, ConsoleColor.Yellow);
         
-        Assert.NotNull(listview.SelectedItem);
-        Assert.True(listview.SelectedItem.Text == "Item 1");
+        Assert.Equal("Item", item.Text);
+        Assert.Equal(ConsoleColor.Green, item.BackgroundColour);
+        Assert.Equal(ConsoleColor.Yellow, item.ForegroundColour);
     }
     
-    // TODO: Tests for enumerating empty listview
-    
-    // Tests for calling Draw() etc on empty listview
+    [Fact]
+    public void Constructor_With_Text_Array_Initialises_Correctly()
+    {
+        ListViewItem item = new ListViewItem(new[] { "Apples", "Oranges", "Bananas" });
+        
+        Assert.Equal("Apples", item.Text);
+        Assert.Equal("Apples", item.SubItems[0].Text);
+        Assert.Equal("Oranges", item.SubItems[1].Text);
+        Assert.Equal("Bananas", item.SubItems[2].Text);
+    }
+
+    [Fact]
+    public void Constructor_With_Text_Array_And_Colours_Initialises_Correctly()
+    {
+        ListViewItem item = new ListViewItem(
+            new[] { "Apples", "Oranges", "Bananas" },
+            ConsoleColor.Green,
+            ConsoleColor.Yellow);
+        
+        Assert.Equal("Apples", item.Text);
+        Assert.Equal("Apples", item.SubItems[0].Text);
+        Assert.Equal("Oranges", item.SubItems[1].Text);
+        Assert.Equal("Bananas", item.SubItems[2].Text);
+        Assert.Equal(ConsoleColor.Green, item.BackgroundColour);
+        Assert.Equal(ConsoleColor.Yellow, item.ForegroundColour);
+    }
 }
 

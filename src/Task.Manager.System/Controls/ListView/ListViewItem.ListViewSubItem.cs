@@ -20,6 +20,7 @@ public class ListViewSubItem
     {
         this.owner = owner;
         this.text = text;
+        
         style = new SubItemStyle {
             BackgroundColour = backgroundColor,
             ForegroundColour = foregroundColor

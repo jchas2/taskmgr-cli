@@ -95,7 +95,7 @@ public class ListView : Control
                     viewPort.SelectedIndex++;
                     
                     if (viewPort.SelectedIndex - viewPort.CurrentIndex >= viewPort.RowCount) {
-                        if (viewPort.CurrentIndex <= items.Count - viewPort.Height + 1) {
+                        if (viewPort.CurrentIndex <= items.Count - viewPort.Bounds.Height + 1) {
                             viewPort.CurrentIndex++;
                             redrawAllItems = true;
                         }
@@ -275,8 +275,7 @@ public class ListView : Control
 
     private void DrawItems()
     {
-        viewPort.Height = viewPort.Bounds.Height;
-        viewPort.RowCount = viewPort.Height - 1;
+        viewPort.RowCount = viewPort.Bounds.Height - 1;
 
         int n = 0;
 
