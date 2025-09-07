@@ -3,10 +3,10 @@ using Task.Manager.System.Screens;
 
 namespace Task.Manager.Commands;
 
-public sealed class HelpCommand : AbstractCommand
+public sealed class HelpCommand(ScreenApplication screenApp) : AbstractCommand
 {
     public override void Execute() =>
-        ScreenApplication.ShowScreen<HelpScreen>();
+        screenApp.ShowScreen<HelpScreen>();
     
     public override bool IsEnabled => true;
 }

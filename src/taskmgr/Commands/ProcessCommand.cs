@@ -6,7 +6,7 @@ namespace Task.Manager.Commands;
 public class ProcessCommand(MainScreen mainScreen) : AbstractCommand
 {
     protected MainScreen MainScreen { get; } = mainScreen;
-
+    
     public override void Execute() => throw new NotImplementedException();
 
     public override bool IsEnabled =>

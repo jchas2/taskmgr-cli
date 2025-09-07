@@ -6,8 +6,6 @@ namespace Task.Manager.Commands;
 
 public sealed class FilterCommand(MainScreen mainScreen) : AbstractCommand()
 {
-    private MainScreen MainScreen { get; } = mainScreen;
-
     public override void Execute()
     {
         if (!IsEnabled) {
@@ -23,16 +21,16 @@ public sealed class FilterCommand(MainScreen mainScreen) : AbstractCommand()
                 ProcessControl.FilterText = string.Empty;
             }
 
-            MainScreen.ShowCommandControl();
-            MainScreen.Draw();
+            mainScreen.ShowCommandControl();
+            mainScreen.Draw();
         }
 
-        MainScreen.ShowFilterControl(FilterAction);
+        mainScreen.ShowFilterControl(FilterAction);
     }
 
     public override bool IsEnabled
-        => MainScreen.GetActiveControl is ProcessControl;
+        => mainScreen.GetActiveControl is ProcessControl;
 
     private ProcessControl ProcessControl
-        => MainScreen.GetControl<ProcessControl>();
+        => mainScreen.GetControl<ProcessControl>();
 }
