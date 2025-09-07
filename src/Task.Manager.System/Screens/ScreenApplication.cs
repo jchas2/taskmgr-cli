@@ -5,7 +5,7 @@ namespace Task.Manager.System.Screens;
 
 public sealed class ScreenApplication
 {
-    public sealed class ScreenApplicationContext
+    public sealed class ScreenApplicationContext(ISystemTerminal terminal)
     {
         private Screen? ownerScreen;
         private Stack<Screen> screenStack = new();
@@ -44,15 +44,15 @@ public sealed class ScreenApplication
         {
             screen.X = 0;
             screen.Y = 0;
-            screen.Width = Console.WindowWidth;
-            screen.Height = Console.WindowHeight;
+            screen.Width = terminal.WindowWidth;
+            screen.Height = terminal.WindowHeight;
         }
         
         public void RunApplicationLoop()
         {
             var consoleKey = ConsoleKey.None;
-            int screenWidth = Console.WindowWidth;
-            int screenHeight = Console.WindowHeight;
+            int screenWidth = terminal.WindowWidth;
+            int screenHeight = terminal.WindowHeight;
 
             // Main application loop.
             // Blocks the main thread and dispatches events to the loaded screen.
@@ -62,18 +62,18 @@ public sealed class ScreenApplication
                     Screen ownerScreen = screenStack.Peek();
 
                     // Resize Events.
-                    if (screenWidth != Console.WindowWidth || screenHeight != Console.WindowHeight) {
+                    if (screenWidth != terminal.WindowWidth || screenHeight != terminal.WindowHeight) {
                         FitScreenToConsole(ownerScreen);
                         ownerScreen.Resize();
                         ownerScreen.Draw();
-                        screenWidth = Console.WindowWidth;
-                        screenHeight = Console.WindowHeight;
+                        screenWidth = terminal.WindowWidth;
+                        screenHeight = terminal.WindowHeight;
                         continue;
                     }
 
                     // Key Events.
-                    if (Console.KeyAvailable) {
-                        ConsoleKeyInfo consoleKeyInfo = Console.ReadKey(intercept: true);
+                    if (terminal.KeyAvailable) {
+                        ConsoleKeyInfo consoleKeyInfo = terminal.ReadKey();
                         consoleKey = consoleKeyInfo.Key;
                         var handled = false;
                         ownerScreen.KeyPressed(consoleKeyInfo, ref handled);
@@ -96,7 +96,7 @@ public sealed class ScreenApplication
                     }
                 }
 
-                if (Console.KeyAvailable) {
+                if (terminal.KeyAvailable) {
                     continue;
                 }
 
@@ -111,11 +111,17 @@ public sealed class ScreenApplication
         }
     }
 
-    private static readonly Dictionary<Type, Screen> registeredScreens = new();
-    private static readonly ScreenApplicationContext applicationContext = new();
-    private static int invocationCount = 0;
+    private readonly Dictionary<Type, Screen> registeredScreens;
+    private readonly ScreenApplicationContext applicationContext;
+    private int invocationCount = 0;
 
-    public static void RegisterScreen(Screen screen)
+    public ScreenApplication(ISystemTerminal terminal)
+    {
+        registeredScreens = new Dictionary<Type, Screen>();
+        applicationContext = new ScreenApplicationContext(terminal);
+    }
+    
+    public void RegisterScreen(Screen screen)
     {
         if (registeredScreens.ContainsKey(screen.GetType())) {
             throw new InvalidOperationException($"Screen {screen.GetType()} is already registered.");
@@ -124,7 +130,7 @@ public sealed class ScreenApplication
         registeredScreens.Add(screen.GetType(), screen);
     }
     
-    public static void Run(Screen screen)
+    public void Run(Screen screen)
     {
         ArgumentNullException.ThrowIfNull(screen, nameof(screen));
 
@@ -140,7 +146,7 @@ public sealed class ScreenApplication
         applicationContext.RunApplicationLoop();
     }
 
-    public static void ShowScreen<T>() where T : Screen
+    public void ShowScreen<T>() where T : Screen
     {
         if (!registeredScreens.ContainsKey(typeof(T))) {
             throw new InvalidOperationException($"Screen {typeof(T)} is not registered.");

@@ -31,6 +31,7 @@ public sealed class MainScreen : Screen
     private const int FooterHeight = 1;
     
     public MainScreen(
+        ScreenApplication screenApp,
         RunContext runContext,
         ISystemTerminal terminal,
         Theme theme,
@@ -42,12 +43,12 @@ public sealed class MainScreen : Screen
         this.config = config ?? throw new ArgumentNullException(nameof(config));
 
         commandMap = new Dictionary<Type, AbstractCommand>() {
-            [typeof(HelpCommand)] = new HelpCommand(),
-            [typeof(SetupCommand)] = new SetupCommand(),
+            [typeof(HelpCommand)]        = new HelpCommand(screenApp),
+            [typeof(SetupCommand)]       = new SetupCommand(screenApp),
             [typeof(ProcessSortCommand)] = new ProcessSortCommand(this),
-            [typeof(FilterCommand)] = new FilterCommand(this),
+            [typeof(FilterCommand)]      = new FilterCommand(this),
             [typeof(ProcessInfoCommand)] = new ProcessInfoCommand(this),
-            [typeof(EndTaskCommand)] = new EndTaskCommand(this)
+            [typeof(EndTaskCommand)]     = new EndTaskCommand(this)
         };
 
         headerControl = new HeaderControl(

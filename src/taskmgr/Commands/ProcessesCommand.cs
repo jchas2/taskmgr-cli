@@ -5,12 +5,10 @@ namespace Task.Manager.Commands;
 
 public sealed class ProcessesCommand(MainScreen mainScreen) : AbstractCommand
 {
-    private MainScreen MainScreen { get; } = mainScreen;
-
     public override void Execute()
     {
-        _ = MainScreen.SetActiveControl<ProcessControl>();
-        MainScreen.Draw();
+        _ = mainScreen.SetActiveControl<ProcessControl>();
+        mainScreen.Draw();
     }
 
     public override bool IsEnabled => true;

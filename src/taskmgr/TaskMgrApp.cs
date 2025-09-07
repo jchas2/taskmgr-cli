@@ -156,8 +156,10 @@ public sealed class TaskMgrApp
         Theme theme)
     {
         SystemTerminal terminal = new();
+        ScreenApplication screenApp = new(terminal);
         
         MainScreen mainScreen = new(
+            screenApp,
             runContext, 
             terminal, 
             theme, 
@@ -166,11 +168,11 @@ public sealed class TaskMgrApp
         HelpScreen helpScreen = new(terminal);
         SetupScreen setupScreen = new(terminal);
         
-        ScreenApplication.RegisterScreen(mainScreen);
-        ScreenApplication.RegisterScreen(helpScreen);
-        ScreenApplication.RegisterScreen(setupScreen);
+        screenApp.RegisterScreen(mainScreen);
+        screenApp.RegisterScreen(helpScreen);
+        screenApp.RegisterScreen(setupScreen);
         
-        ScreenApplication.Run(mainScreen);
+        screenApp.Run(mainScreen);
         
         return 0;
     }
@@ -183,7 +185,7 @@ public sealed class TaskMgrApp
             return -1;
         }
 #endif
-        var createdMutex = true;
+        bool createdMutex = true;
 
         try {
             mutex = new Mutex(initiallyOwned: false, name: MutexId, out createdMutex);
