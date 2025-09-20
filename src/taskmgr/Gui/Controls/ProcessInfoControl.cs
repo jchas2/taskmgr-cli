@@ -338,6 +338,9 @@ public partial class ProcessInfoControl : Control
                 return;
             }
 
+            FileInfo finfo = new(processInfo.FileName);
+            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(finfo.FullName);
+            
             processInfoView.Items.Add(
                 new(["Pid:", processInfo.Pid.ToString()],
                 theme.Background,
@@ -349,7 +352,7 @@ public partial class ProcessInfoControl : Control
                 theme.Foreground));
                     
             processInfoView.Items.Add(
-                new(["Description:", ""],
+                new(["Description:", processInfo.FileDescription],
                 theme.Background,
                 theme.Foreground));
                     
@@ -364,12 +367,12 @@ public partial class ProcessInfoControl : Control
                 theme.Foreground));
             
             processInfoView.Items.Add(
-                new(["Version:", ""],
+                new(["Version:", fvi.FileVersion ?? string.Empty],
                 theme.Background,
                 theme.Foreground));
             
             processInfoView.Items.Add(
-                new(["Size:", ""],
+                new(["Size:", finfo.Length.ToFormattedByteSize()],
                 theme.Background,
                 theme.Foreground));
             

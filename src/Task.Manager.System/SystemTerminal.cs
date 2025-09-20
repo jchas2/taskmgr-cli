@@ -48,7 +48,7 @@ public partial class SystemTerminal : ISystemTerminal
     public TextReader StdIn => Console.In;
     public TextWriter StdOut => Console.Out;
     public void Clear() => Console.Clear();
-    public ConsoleKeyInfo ReadKey() => Console.ReadKey();
+    public ConsoleKeyInfo ReadKey() => Console.ReadKey(intercept: true);
     public void SetCursorPosition(int left, int top) => Console.SetCursorPosition(left, top);
     public int WindowWidth => Console.WindowWidth;
     public int WindowHeight => Console.WindowHeight;
