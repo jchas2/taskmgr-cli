@@ -8,6 +8,7 @@ public class ProcessInfo(SysDiag::Process process)
     private SysDiag::ProcessModule? mainModule;
     private bool mainModuleInspected = false;
     private string? fileDescription;
+    private string? fileName;
     private string? moduleName;
     private string? userName;
     private string? cmdLine;
@@ -40,30 +41,32 @@ public class ProcessInfo(SysDiag::Process process)
     {
         get {
             if (string.IsNullOrEmpty(moduleName)) {
-                if (MainModule != null) {
-                    moduleName = MainModule.ModuleName;
-                }
-                else {
-                    moduleName = ProcessName;
-                }
+                moduleName = MainModule?.ModuleName ?? ProcessName;
             }
             return moduleName;
         }
-    } 
+    }
+
+    public string FileName
+    {
+        get {
+            if (string.IsNullOrEmpty(fileName)) {
+                fileName = MainModule?.FileName ?? ProcessName;
+            }
+            return fileName;
+        }
+    }
 
     public string FileDescription 
     {
         get {
             if (string.IsNullOrEmpty(fileDescription)) {
-                if (MainModule != null) {
-                    fileDescription = ProcessUtils.GetProcessProductName(
+                fileDescription = MainModule != null 
+                    ? ProcessUtils.GetProcessProductName(
                         MainModule,
                         Pid,
-                        ProcessName);
-                }
-                else {
-                    fileDescription = ProcessName;
-                }
+                        ProcessName)
+                    : ProcessName;
             }
             return fileDescription;
         }
@@ -83,12 +86,9 @@ public class ProcessInfo(SysDiag::Process process)
     {
         get {
             if (string.IsNullOrEmpty(cmdLine)) {
-                if (MainModule != null) {
-                    cmdLine = ProcessUtils.GetProcessCommandLine(MainModule, ProcessName);    
-                }
-                else {
-                    cmdLine = ProcessName;
-                }
+                cmdLine = MainModule != null 
+                    ? ProcessUtils.GetProcessCommandLine(MainModule, ProcessName)
+                    : ProcessName;
             }
             return cmdLine;
         }

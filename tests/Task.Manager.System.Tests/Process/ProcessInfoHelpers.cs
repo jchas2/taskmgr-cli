@@ -28,6 +28,9 @@ public static class ProcessInfoHelpers
         Assert.NotNull(processInfo.ModuleName);
         Assert.NotEmpty(processInfo.ModuleName);
         
+        Assert.NotNull(processInfo.FileName);
+        Assert.NotEmpty(processInfo.FileName);
+        
         Assert.NotNull(processInfo.FileDescription);
         Assert.NotEmpty(processInfo.FileDescription);
         
