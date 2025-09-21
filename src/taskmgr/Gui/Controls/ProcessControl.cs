@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices.Marshalling;
 using Task.Manager.Configuration;
 using Task.Manager.Extensions;
 using Task.Manager.Process;
@@ -14,11 +15,20 @@ namespace Task.Manager.Gui.Controls;
 
 public sealed partial class ProcessControl : Control
 {
+    private class CmdLineFilters
+    {
+        public int Pid { get; init; }
+        public string UserName { get; init; } = string.Empty;
+        public string Process { get; init; } = string.Empty;
+        public int NumProcs { get; init; }
+    }
+    
     private readonly IProcessor processor;
     private readonly Theme theme;
     private readonly Config config;
     private readonly ListView sortView;
     private readonly ListView processView;
+    private readonly CmdLineFilters cmdLineFilters;
 
     private List<ProcessorInfo> allProcesses = [];
     private SystemStatistics systemStatistics;
@@ -41,6 +51,16 @@ public sealed partial class ProcessControl : Control
         this.theme = theme ?? throw new ArgumentNullException(nameof(theme));
         this.config = config ?? throw new ArgumentNullException(nameof(config));
 
+        ConfigSection csFilter = config.GetConfigSection(Constants.Sections.Filter);
+        ConfigSection statsFilter = config.GetConfigSection(Constants.Sections.Stats);
+        
+        cmdLineFilters = new CmdLineFilters {
+            Pid = csFilter.Contains(Constants.Keys.Pid) ? csFilter.GetInt(Constants.Keys.Pid, -1) : -1,
+            UserName = csFilter.Contains(Constants.Keys.UserName) ? csFilter.GetString(Constants.Keys.UserName, string.Empty) : string.Empty,
+            Process = csFilter.Contains(Constants.Keys.Process) ? csFilter.GetString(Constants.Keys.Process, string.Empty) : string.Empty,
+            NumProcs = statsFilter.Contains(Constants.Keys.NProcs) ? statsFilter.GetInt(Constants.Keys.NProcs, -1) : -1
+        };
+        
         sortView = new ListView(terminal) {
             BackgroundHighlightColour = theme.BackgroundHighlight,
             ForegroundHighlightColour = theme.ForegroundHighlight,
@@ -266,7 +286,24 @@ public sealed partial class ProcessControl : Control
     {
         // .DynamicOrderBy in Utils.QueryableExtensions is not supported for .net native compilation targets
         // hence the manual build out of the query below.
-        if (FilterText != string.Empty) {
+
+        if (cmdLineFilters.Pid > -1) {
+            allProcesses = allProcesses
+                .Where(p => p.Pid == cmdLineFilters.Pid)
+                .ToList();
+        }
+        else if (!string.IsNullOrWhiteSpace(cmdLineFilters.UserName)) {
+            allProcesses = allProcesses
+                .Where(p => p.UserName.Contains(cmdLineFilters.UserName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        else if (!string.IsNullOrWhiteSpace(cmdLineFilters.Process)) {
+            allProcesses = allProcesses
+                .Where(p => p.ProcessName.Contains(cmdLineFilters.Process, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(FilterText)) {
             allProcesses = allProcesses
                 .Where(p => p.ProcessName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
                             p.FileDescription.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
@@ -288,6 +325,12 @@ public sealed partial class ProcessControl : Control
             _                   => []
         };
 
+        if (cmdLineFilters.NumProcs > -1) {
+            sortedProcesses = sortedProcesses
+                .Take(cmdLineFilters.NumProcs)
+                .ToList();
+        }
+        
         if (sortedProcesses.Count == 0) {
             processView.Items.Clear();
             return;
