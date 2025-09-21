@@ -9,8 +9,14 @@ public class HelpScreen : Screen
 
     protected override void OnDraw()
     {
+        DrawRectangle(
+            X,
+            Y,
+            Width,
+            Height,
+            BackgroundColour);
+
         Terminal.SetCursorPosition(X, Y);
-        Terminal.Clear();
         Terminal.WriteLine("Task manager Help Screen");
     }
 

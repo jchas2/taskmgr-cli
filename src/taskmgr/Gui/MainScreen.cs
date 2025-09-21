@@ -162,8 +162,6 @@ public sealed class MainScreen : Screen
         headerControl.Load();
         activeControl.Load();
         footerControl.Load();
-        
-        runContext.Processor.Run();
     }
     
     protected override void OnResize()
@@ -187,6 +185,12 @@ public sealed class MainScreen : Screen
         footerControl.Width = Width;
         footerControl.Height = FooterHeight;
         footerControl.Resize();
+    }
+
+    protected override void OnShown()
+    {
+        base.OnShown();
+        runContext.Processor.Run();
     }
 
     protected override void OnUnload()

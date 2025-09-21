@@ -108,7 +108,7 @@ public sealed partial class ProcessControl : Control
             }
         
             UpdateListViewItems();
-        
+            
             sortView.Visible = mode == ControlMode.SortSelection;
             sortView.Draw();
             processView.Draw();
