@@ -7,7 +7,6 @@ public sealed class ScreenApplication
 {
     public sealed class ScreenApplicationContext(ISystemTerminal terminal)
     {
-        private Screen? ownerScreen;
         private Stack<Screen> screenStack = new();
         private Lock @lock = new();
 
@@ -15,7 +14,7 @@ public sealed class ScreenApplication
         {
             get {
                 lock (@lock) {
-                    return ownerScreen;
+                    return screenStack.Peek();
                 }
             }
             set {
@@ -31,11 +30,9 @@ public sealed class ScreenApplication
                     }
 
                     screenStack.Push(value);
-                    ownerScreen = value;
-                    
-                    FitScreenToConsole(ownerScreen);
-                    
-                    ownerScreen.Show();
+                    Screen currScreen = value;
+                    FitScreenToConsole(currScreen);
+                    currScreen.Show();
                 }
             }
         }
@@ -59,13 +56,13 @@ public sealed class ScreenApplication
             while (consoleKey != ConsoleKey.F10) {
 
                 lock (@lock) {
-                    Screen ownerScreen = screenStack.Peek();
+                    Screen currScreen = screenStack.Peek();
 
                     // Resize Events.
                     if (screenWidth != terminal.WindowWidth || screenHeight != terminal.WindowHeight) {
-                        FitScreenToConsole(ownerScreen);
-                        ownerScreen.Resize();
-                        ownerScreen.Draw();
+                        FitScreenToConsole(currScreen);
+                        currScreen.Resize();
+                        currScreen.Draw();
                         screenWidth = terminal.WindowWidth;
                         screenHeight = terminal.WindowHeight;
                         continue;
@@ -76,20 +73,19 @@ public sealed class ScreenApplication
                         ConsoleKeyInfo consoleKeyInfo = terminal.ReadKey();
                         consoleKey = consoleKeyInfo.Key;
                         var handled = false;
-                        ownerScreen.KeyPressed(consoleKeyInfo, ref handled);
+                        currScreen.KeyPressed(consoleKeyInfo, ref handled);
 
-                        if (!handled && consoleKey == ConsoleKey.Escape) {
-                            Debug.Assert(this.ownerScreen != null);
-                            
-                            this.ownerScreen.Close();
+                        if (!handled && (consoleKey == ConsoleKey.Escape || consoleKey == ConsoleKey.Q)) {
+                            currScreen.Close();
                             _ = screenStack.Pop();
-
+                            
                             if (screenStack.Count == 0) {
                                 break;
                             }
                             
-                            this.ownerScreen = screenStack.Peek();
-                            this.ownerScreen.Show();
+                            currScreen = screenStack.Peek();
+                            FitScreenToConsole(currScreen);
+                            currScreen.Show();
                             
                             continue;
                         }
@@ -104,9 +100,11 @@ public sealed class ScreenApplication
                 Thread.Sleep(30);
             }
 
-            while (screenStack.Count > 0) {
-                Screen screen = screenStack.Pop();
-                screen.Close();
+            lock (@lock) {
+                while (screenStack.Count > 0) {
+                    Screen screen = screenStack.Pop();
+                    screen.Close();
+                }
             }
         }
     }

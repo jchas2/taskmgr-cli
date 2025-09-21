@@ -128,6 +128,8 @@ public partial class Screen : Control
         messageBox.Resize();
     }
     
+    protected virtual void OnShown() { }
+
     protected override void OnUnload()
     {
         base.OnUnload();
@@ -142,6 +144,7 @@ public partial class Screen : Control
         Clear();
         Resize();
         Draw();
+        OnShown();
         IsActive = true;
     }
 

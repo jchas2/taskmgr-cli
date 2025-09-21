@@ -281,16 +281,18 @@ public sealed class HeaderControl : Control
             statisticsView.ColumnHeaders[i].RightAligned = (i + 1) % 2 == 0;
         }
 
-        statisticsView.Items.Add(new(["Cpu:   ",       "", "Mem:    ",      "", "Vir:   ",    "", "Disk:", ""]));
-        statisticsView.Items.Add(new(["User:  ",       "", "Total:  ",      "", "Total: ",    "", "Peak:", ""]));
-        statisticsView.Items.Add(new(["Kernel:",       "", "Used:   ",      "", "Used:  ",    "", "",      ""]));
-        statisticsView.Items.Add(new(["Idle:  ",       "", "Free:   ",      "", "Free:  ",    "", "",      ""]));
-#if DEBUG        
-        statisticsView.Items.Add(new(["Proc:  ",       "", "Threads:",      "", "Ghosts:",    "", "",      ""]));
+        if (statisticsView.Items.Count == 0) {
+            statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Vir:   ", "", "Disk:", ""]));
+            statisticsView.Items.Add(new(["User:  ", "", "Total:  ", "", "Total: ", "", "Peak:", ""]));
+            statisticsView.Items.Add(new(["Kernel:", "", "Used:   ", "", "Used:  ", "", "", ""]));
+            statisticsView.Items.Add(new(["Idle:  ", "", "Free:   ", "", "Free:  ", "", "", ""]));
+#if DEBUG
+            statisticsView.Items.Add(new(["Proc:  ", "", "Threads:", "", "Ghosts:", "", "", ""]));
 #else
         statisticsView.Items.Add(new(["Procs  :",       "", "Threads:",      "", "",         "", "",      ""]));
 #endif
-        
+        }
+
         processor.ProcessorUpdated += OnProcessorUpdated; 
     }
 
@@ -329,20 +331,20 @@ public sealed class HeaderControl : Control
         statisticsView.Resize();
     }
 
+    private void OnProcessorUpdated(object? sender, ProcessorEventArgs e)
+    {
+        systemStatistics = e.SystemStatistics;
+        Draw();
+    }
+    
     protected override void OnUnload()
     {
+        processor.ProcessorUpdated -= OnProcessorUpdated;
+
         statisticsView.Items.Clear();
         
         foreach (Control control in Controls) {
             control.Unload();
         }
-
-        processor.ProcessorUpdated -= OnProcessorUpdated;
-    }
-
-    private void OnProcessorUpdated(object? sender, ProcessorEventArgs e)
-    {
-        systemStatistics = e.SystemStatistics;
-        Draw();
     }
 }
