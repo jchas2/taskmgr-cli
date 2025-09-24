@@ -165,7 +165,7 @@ public sealed class TaskMgrApp
             theme, 
             config);
 
-        HelpScreen helpScreen = new(terminal);
+        HelpScreen helpScreen = new(terminal, theme);
         SetupScreen setupScreen = new(terminal);
         
         screenApp.RegisterScreen(mainScreen);

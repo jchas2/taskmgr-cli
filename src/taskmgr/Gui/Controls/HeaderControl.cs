@@ -163,7 +163,7 @@ public sealed class HeaderControl : Control
             : theme.RangeHighBackground;
 
         var virColour = virRatio < 0.5 ? theme.RangeLowBackground
-            : virRatio < 0.75 ? theme.RangeMidForeground
+            : virRatio < 0.75 ? theme.RangeMidBackground
             : theme.RangeHighBackground;
         
         double mbps = systemStatistics.DiskUsage.ToMbpsFromBytes();
@@ -188,14 +188,21 @@ public sealed class HeaderControl : Control
         
         memoryMetre.PercentageSeries1 = memRatio;
         memoryMetre.ColourSeries1 = memColour;
+        memoryMetre.LabelSeries1 =
+            (systemStatistics.TotalPhysical - systemStatistics.AvailablePhysical).ToFormattedByteSize() + "/" +
+             systemStatistics.TotalPhysical.ToFormattedByteSize();
         memoryMetre.Draw();
 
         virtualMemoryMetre.PercentageSeries1 = virRatio;
         virtualMemoryMetre.ColourSeries1 = virColour;
+        virtualMemoryMetre.LabelSeries1 =
+            (systemStatistics.TotalPageFile - systemStatistics.AvailablePageFile).ToFormattedByteSize() + "/" +
+             systemStatistics.TotalPageFile.ToFormattedByteSize();
         virtualMemoryMetre.Draw();
 
         diskMetre.PercentageSeries1 = mbpsRatio;
         diskMetre.ColourSeries1 = mbpsColour;
+        diskMetre.LabelSeries1 = $"{mbps} MB/s";
         diskMetre.Draw();
 
         for (int i = 0; i < statisticsView.Items.Count; i++) {

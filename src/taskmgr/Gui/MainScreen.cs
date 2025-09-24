@@ -48,7 +48,8 @@ public sealed class MainScreen : Screen
             [typeof(ProcessSortCommand)] = new ProcessSortCommand(this),
             [typeof(FilterCommand)]      = new FilterCommand(this),
             [typeof(ProcessInfoCommand)] = new ProcessInfoCommand(this),
-            [typeof(EndTaskCommand)]     = new EndTaskCommand(this)
+            [typeof(EndTaskCommand)]     = new EndTaskCommand(this),
+            [typeof(AboutCommand)]       = new AboutCommand(this)
         };
 
         headerControl = new HeaderControl(
@@ -146,6 +147,7 @@ public sealed class MainScreen : Screen
             ConsoleKey.F4 => GetCommandInstance<FilterCommand>(),
             ConsoleKey.F5 => GetCommandInstance<ProcessInfoCommand>(),
             ConsoleKey.F6 => GetCommandInstance<EndTaskCommand>(),
+            ConsoleKey.F7 => GetCommandInstance<AboutCommand>(),
             _ => null
         };
 
@@ -162,8 +164,16 @@ public sealed class MainScreen : Screen
         headerControl.Load();
         activeControl.Load();
         footerControl.Load();
+        
+        processControl.ProcessItemSelected += OnProcessItemSelected;
     }
-    
+
+    private void OnProcessItemSelected(object? sender, ListViewItemEventArgs e)
+    {
+        AbstractCommand infoCommand = GetCommandInstance<ProcessInfoCommand>();
+        infoCommand.Execute();
+    }
+
     protected override void OnResize()
     {
         base.OnResize();
@@ -196,6 +206,7 @@ public sealed class MainScreen : Screen
     protected override void OnUnload()
     {
         runContext.Processor.Stop();
+        processControl.ProcessItemSelected -= OnProcessItemSelected;
 
         foreach (Control control in Controls) {
             control.Unload();
@@ -205,7 +216,7 @@ public sealed class MainScreen : Screen
     public T SetActiveControl<T>() where T : Control
     {
         Debug.Assert(activeControl != null);
-        
+       
         Control? nextControl = Controls.ToList().SingleOrDefault(c => c.GetType() == typeof(T));
         
         if (nextControl == null) {

@@ -9,7 +9,7 @@ namespace Task.Manager.Gui.Controls;
 public sealed class  CommandControl : Control
 {
     private readonly Theme theme;
-    private const string CommandText = "          Help      Setup     Sort      Filter    Info      End Task  ";
+    private const string CommandText = "          Help      Setup     Sort      Filter    Info      End Task  About     ";
     private const int CommandLength = 10;
 
     public CommandControl(ISystemTerminal terminal, Theme theme) : base(terminal) => this.theme = theme;
