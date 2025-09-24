@@ -3,8 +3,14 @@ namespace Task.Manager.Cli.Utils;
 public static class IntegerExtensions
 {
     public static string ToFormattedByteSize(this int num) => ToFormattedByteSize((long)num);
-    
-    public static string ToFormattedByteSize(this long num)
+
+    public static string ToFormattedByteSize(this long num) =>
+        ToFormattedByteSizeInternal((ulong)num);
+
+    public static string ToFormattedByteSize(this ulong num) =>
+        ToFormattedByteSizeInternal(num);
+
+    private static string ToFormattedByteSizeInternal(this ulong num)
     {
         string[] byteFormatters = ["B", "KB", "MB", "GB", "TB"];
         int index = 0;

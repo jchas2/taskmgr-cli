@@ -40,6 +40,8 @@ public sealed partial class ProcessControl : Control
 
     private const int InvalidSelectedItemIndex = -1;
     
+    public event EventHandler<ListViewItemEventArgs>? ProcessItemSelected;
+    
     public ProcessControl(
         IProcessor processor, 
         ISystemTerminal terminal, 
@@ -162,6 +164,7 @@ public sealed partial class ProcessControl : Control
         processView.Load();
         
         sortView.ItemSelected += SortViewOnItemSelected;
+        processView.ItemSelected += ProcessViewOnItemSelected;
         processor.ProcessorUpdated += ProcessorOnProcessorUpdated;
     }
     
@@ -224,9 +227,10 @@ public sealed partial class ProcessControl : Control
         processView.Unload();
         
         sortView.ItemSelected -= SortViewOnItemSelected;
+        processView.ItemSelected -= ProcessViewOnItemSelected;
         processor.ProcessorUpdated -= ProcessorOnProcessorUpdated;
     }
-    
+
     private void ProcessorOnProcessorUpdated(object? sender, ProcessorEventArgs e)
     {
         allProcesses = e.ProcessInfos;
@@ -234,7 +238,10 @@ public sealed partial class ProcessControl : Control
         
         Draw();
     }
-    
+
+    private void ProcessViewOnItemSelected(object? sender, ListViewItemEventArgs e) =>
+        ProcessItemSelected?.Invoke(sender, e);
+
     public int SelectedProcessId
     {
         get {

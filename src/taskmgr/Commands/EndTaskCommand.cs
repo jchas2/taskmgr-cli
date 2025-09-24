@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using Task.Manager.Gui;
-using Task.Manager.Gui.Controls;
+﻿using Task.Manager.Gui;
 using Task.Manager.System.Controls.MessageBox;
 using Task.Manager.System.Process;
 

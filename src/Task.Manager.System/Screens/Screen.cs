@@ -184,6 +184,7 @@ public partial class Screen : Control
         this.onMessageBoxResult = onMessageBoxResult;
 
         messageBox.Visible = true;
+        messageBox.Buttons = buttons;
         messageBox.Text = text;
         messageBox.Title = title;
         
