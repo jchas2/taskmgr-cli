@@ -40,6 +40,7 @@ public class FilterControl : Control
             Y,
             CommandLength,
             theme,
+            enabled: true,
             Terminal);
 
         nchars += KeyBindControl.Draw(
@@ -49,6 +50,7 @@ public class FilterControl : Control
             Y,
             CommandLength,
             theme,
+            enabled: true,
             Terminal);
 
         Terminal.WriteEmptyLineTo(Width - nchars);
@@ -62,8 +64,8 @@ public class FilterControl : Control
         Terminal.Write(spacer);
         nchars += spacer.Length;
         
-        Terminal.BackgroundColor = theme.HeaderBackground;
-        Terminal.ForegroundColor = theme.HeaderForeground;
+        Terminal.BackgroundColor = theme.BackgroundHighlight;
+        Terminal.ForegroundColor = theme.ForegroundHighlight;
         Terminal.Write(filterCommand);
         nchars += filterCommand.Length;
         

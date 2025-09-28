@@ -21,6 +21,7 @@ public partial class Processor : IProcessor
     private CancellationTokenSource? cancellationTokenSource;
     private readonly Lock @lock;
     private readonly bool isWindows = false;
+    private bool dataInitialised = false;
     private int processCount = 0;
     private int threadCount = 0;
     
@@ -211,18 +212,26 @@ public partial class Processor : IProcessor
                     allProcessorInfosCopy.Add(new ProcessorInfo(allProcessorInfos[i]));
                 }
             }
+
+            if (!dataInitialised) {
+                dataInitialised = true;
+            }
         }
     }
 
     private void RunMonitorInternal(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested) {
+            Thread.Sleep(UpdateTimeInMs);
+
+            if (!dataInitialised) {
+                continue;
+            }
+            
             lock (@lock) {
                 ProcessorEventArgs eventArgs = new(allProcessorInfosCopy, systemStatistics);
                 ProcessorUpdated?.Invoke(this, eventArgs);
             }
-            
-            Thread.Sleep(UpdateTimeInMs);
         }
     }
 

@@ -3,7 +3,7 @@ using Task.Manager.Gui.Controls;
 
 namespace Task.Manager.Commands;
 
-public sealed class ProcessInfoCommand(MainScreen mainScreen) : ProcessCommand(mainScreen)
+public sealed class ProcessInfoCommand(string text, MainScreen mainScreen) : ProcessCommand(text, mainScreen)
 {
     public override void Execute()
     {

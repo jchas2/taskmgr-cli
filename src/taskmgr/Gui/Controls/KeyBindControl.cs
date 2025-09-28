@@ -1,4 +1,5 @@
-﻿using Task.Manager.Cli.Utils;
+﻿using System.Drawing;
+using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.System;
 
@@ -13,15 +14,16 @@ public static class KeyBindControl
         int y,
         int width,
         Theme theme,
+        bool enabled,
         ISystemTerminal terminal)
     {
         terminal.BackgroundColor = theme.Background;
-        terminal.ForegroundColor = theme.Foreground;
+        terminal.ForegroundColor = enabled ? theme.ForegroundHighlight : ConsoleColor.DarkGray;
         terminal.Write(keyBinding + " ");
         int nchars = keyBinding.Length + 1;
         
-        terminal.BackgroundColor = theme.HeaderBackground;
-        terminal.ForegroundColor = theme.HeaderForeground;
+        terminal.BackgroundColor = theme.BackgroundHighlight;
+        terminal.ForegroundColor = enabled ? theme.ForegroundHighlight : ConsoleColor.DarkGray;
         terminal.Write(text.CentreWithLength(width).ToBold());
         nchars += width;
         
