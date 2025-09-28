@@ -25,8 +25,6 @@ public sealed class MainScreen : Screen
     private Control activeControl;
     private Control footerControl;
     
-    private readonly Dictionary<Type, AbstractCommand> commandMap;
-
     private const int HeaderHeight = 9;
     private const int FooterHeight = 1;
     
@@ -41,16 +39,6 @@ public sealed class MainScreen : Screen
         this.runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
         this.theme = theme ?? throw new ArgumentNullException(nameof(theme));
         this.config = config ?? throw new ArgumentNullException(nameof(config));
-
-        commandMap = new Dictionary<Type, AbstractCommand>() {
-            [typeof(HelpCommand)]        = new HelpCommand(screenApp),
-            [typeof(SetupCommand)]       = new SetupCommand(screenApp),
-            [typeof(ProcessSortCommand)] = new ProcessSortCommand(this),
-            [typeof(FilterCommand)]      = new FilterCommand(this),
-            [typeof(ProcessInfoCommand)] = new ProcessInfoCommand(this),
-            [typeof(EndTaskCommand)]     = new EndTaskCommand(this),
-            [typeof(AboutCommand)]       = new AboutCommand(this)
-        };
 
         headerControl = new HeaderControl(
             this.runContext.Processor,
@@ -83,8 +71,15 @@ public sealed class MainScreen : Screen
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground
         };
-
-
+        
+        commandControl.AddCommand(ConsoleKey.F1, () => new HelpCommand("Help", screenApp));
+        commandControl.AddCommand(ConsoleKey.F2, () => new SetupCommand("Setup", screenApp));
+        commandControl.AddCommand(ConsoleKey.F3, () => new ProcessSortCommand("Sort", this));
+        commandControl.AddCommand(ConsoleKey.F4, () => new FilterCommand("Filter", this));
+        commandControl.AddCommand(ConsoleKey.F5, () => new ProcessInfoCommand("Info", this));
+        commandControl.AddCommand(ConsoleKey.F6, () => new EndTaskCommand("End Task", this));
+        commandControl.AddCommand(ConsoleKey.F7, () => new AboutCommand("About", this));
+        
         filterControl = new FilterControl(terminal, this.theme) {
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground
@@ -101,8 +96,6 @@ public sealed class MainScreen : Screen
     public Control? GetActiveControl => activeControl;
 
     public T GetControl<T>() where T : Control => (T)Controls.Single(ctrl => ctrl is T);
-    
-    private AbstractCommand GetCommandInstance<T>() where T : AbstractCommand => commandMap[typeof(T)];
     
     protected override void OnDraw()
     {
@@ -125,8 +118,6 @@ public sealed class MainScreen : Screen
             return;
         }
         
-        Control? activeControl = GetActiveControl;
-
         if (keyInfo.Key == ConsoleKey.Escape && activeControl != processControl) {
             SetActiveControl<ProcessControl>();
             Draw();
@@ -134,27 +125,13 @@ public sealed class MainScreen : Screen
             return;
         }
         
-        activeControl?.KeyPressed(keyInfo, ref handled);
+        activeControl.KeyPressed(keyInfo, ref handled);
 
         if (handled) {
             return;
         }
-        
-        AbstractCommand? command = keyInfo.Key switch {
-            ConsoleKey.F1 => GetCommandInstance<HelpCommand>(),
-            ConsoleKey.F2 => GetCommandInstance<SetupCommand>(),
-            ConsoleKey.F3 => GetCommandInstance<ProcessSortCommand>(),
-            ConsoleKey.F4 => GetCommandInstance<FilterCommand>(),
-            ConsoleKey.F5 => GetCommandInstance<ProcessInfoCommand>(),
-            ConsoleKey.F6 => GetCommandInstance<EndTaskCommand>(),
-            ConsoleKey.F7 => GetCommandInstance<AboutCommand>(),
-            _ => null
-        };
 
-        if (command != null && command.IsEnabled) {
-            command.Execute();
-            handled = true;
-        }
+        commandControl.KeyPressed(keyInfo, ref handled);
     }
 
     protected override void OnLoad()
@@ -170,8 +147,16 @@ public sealed class MainScreen : Screen
 
     private void OnProcessItemSelected(object? sender, ListViewItemEventArgs e)
     {
-        AbstractCommand infoCommand = GetCommandInstance<ProcessInfoCommand>();
-        infoCommand.Execute();
+        // Send the F5 key to the command control to invoke the Process Info Command.
+        ConsoleKeyInfo keyInfo = new(
+            (char)ConsoleKey.F5, 
+            ConsoleKey.F5, 
+            shift: false, 
+            alt: false, 
+            control: false);
+        
+        bool handled = false;        
+        commandControl.KeyPressed(keyInfo, ref handled);
     }
 
     protected override void OnResize()

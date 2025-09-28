@@ -4,7 +4,7 @@ using Task.Manager.System.Process;
 
 namespace Task.Manager.Commands;
 
-public sealed class AboutCommand(MainScreen mainScreen) : AbstractCommand
+public sealed class AboutCommand(string text, MainScreen mainScreen) : AbstractCommand(text)
 {
     public override void Execute()
     {

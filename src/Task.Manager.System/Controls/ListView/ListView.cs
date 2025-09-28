@@ -153,6 +153,31 @@ public class ListView : Control
                 break;
         }
     }
+
+    private void DrawEmptyListView()
+    {
+        using TerminalColourRestorer _ = new();
+        
+        terminal.BackgroundColor = BackgroundColour;
+
+        for (int i = 0; i < Height - 1; i++) {
+            terminal.SetCursorPosition(viewPort.Bounds.X, viewPort.Bounds.Y + i);
+            terminal.WriteEmptyLineTo(viewPort.Bounds.Width);
+        }
+
+        if (string.IsNullOrWhiteSpace(EmptyListViewText)) {
+            return;
+        }
+
+        if (EmptyListViewText.Length > Width) {
+            EmptyListViewText = EmptyListViewText.Substring(0, Width);
+        }
+        
+        Point p = new Point((Width - EmptyListViewText.Length) / 2, Height / 2);
+        
+        terminal.SetCursorPosition(p.X, p.Y);
+        terminal.Write(EmptyListViewText);
+    }
     
     private void DrawHeader()
     {
@@ -304,6 +329,8 @@ public class ListView : Control
         }
     }
 
+    public string EmptyListViewText { get; set; } = string.Empty;
+    
     public bool EnableRowSelect { get; set; }
     
     public bool EnableScroll { get; set; }
@@ -398,8 +425,13 @@ public class ListView : Control
         if (ShowColumnHeaders) {
             DrawHeader();
         }
-        
-        DrawItems();
+
+        if (Items.Count > 0) {
+            DrawItems();
+        }
+        else {
+            DrawEmptyListView();
+        }
     }
 
     protected void OnItemClicked(ListViewItem item) =>

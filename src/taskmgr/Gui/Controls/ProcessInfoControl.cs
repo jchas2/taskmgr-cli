@@ -114,6 +114,7 @@ public partial class ProcessInfoControl : Control
             ForegroundColour = theme.Foreground,
             HeaderBackgroundColour = theme.HeaderBackground,
             HeaderForegroundColour = theme.HeaderForeground,
+            EmptyListViewText = "Not yet implemented on this OS",
             Visible = false
         };
 

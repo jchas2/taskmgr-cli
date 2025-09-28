@@ -3,7 +3,7 @@ using Task.Manager.Gui.Controls;
 
 namespace Task.Manager.Commands;
 
-public class ProcessCommand(MainScreen mainScreen) : AbstractCommand
+public class ProcessCommand(string text, MainScreen mainScreen) : AbstractCommand(text)
 {
     protected MainScreen MainScreen { get; } = mainScreen;
     

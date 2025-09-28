@@ -3,7 +3,7 @@ using Task.Manager.System.Screens;
 
 namespace Task.Manager.Commands;
 
-public sealed class SetupCommand(ScreenApplication screenApp) : AbstractCommand
+public sealed class SetupCommand(string text, ScreenApplication screenApp) : AbstractCommand(text)
 {
     public override void Execute() =>
         screenApp.ShowScreen<SetupScreen>();

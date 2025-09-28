@@ -4,7 +4,7 @@ using Task.Manager.System.Controls.InputBox;
 
 namespace Task.Manager.Commands;
 
-public sealed class FilterCommand(MainScreen mainScreen) : AbstractCommand()
+public sealed class FilterCommand(string text, MainScreen mainScreen) : AbstractCommand(text)
 {
     public override void Execute()
     {

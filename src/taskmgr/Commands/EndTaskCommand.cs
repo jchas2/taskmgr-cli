@@ -4,7 +4,7 @@ using Task.Manager.System.Process;
 
 namespace Task.Manager.Commands;
 
-public sealed class EndTaskCommand(MainScreen mainScreen) : ProcessCommand(mainScreen)
+public sealed class EndTaskCommand(string text, MainScreen mainScreen) : ProcessCommand(text, mainScreen)
 {
     private const int EndTaskTimeout = 3000;
 
