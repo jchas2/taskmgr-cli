@@ -334,7 +334,7 @@ public sealed class HeaderControl : Control
         statisticsView.X = X + cpuMetre.Width + 2;
         statisticsView.Y = cpuMetre.Y;
         statisticsView.Width = Width - MetreWidth - 2;
-        statisticsView.Height = statisticsView.Items.Count;
+        statisticsView.Height = statisticsView.Items.Count + 1;
         statisticsView.Resize();
     }
 

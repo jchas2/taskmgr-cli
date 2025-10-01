@@ -34,6 +34,8 @@ public sealed class Constants
         /* Theme keys. */
         public const string Background = "background";
         public const string BackgroundHighlight = "background-highlight";
+        public const string CommandBackground = "command-background";
+        public const string CommandForeground = "command-foreground";
         public const string Error = "error";
         public const string Foreground = "foreground";
         public const string ForegroundHighlight = "foreground-highlight";

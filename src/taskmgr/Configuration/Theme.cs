@@ -13,6 +13,8 @@ public sealed class Theme
         
         Background = themeSection.GetColour(Constants.Keys.Background, ConsoleColor.Black);
         BackgroundHighlight = themeSection.GetColour(Constants.Keys.BackgroundHighlight, ConsoleColor.Cyan);
+        CommandBackground = themeSection.GetColour(Constants.Keys.CommandBackground, ConsoleColor.Cyan);
+        CommandForeground = themeSection.GetColour(Constants.Keys.CommandForeground, ConsoleColor.White);
         Error = themeSection.GetColour(Constants.Keys.Error, ConsoleColor.Red);
         Foreground = themeSection.GetColour(Constants.Keys.Foreground, ConsoleColor.White);
         ForegroundHighlight = themeSection.GetColour(Constants.Keys.ForegroundHighlight, ConsoleColor.Black);
@@ -30,6 +32,8 @@ public sealed class Theme
 
     public ConsoleColor Background { get; private set; }
     public ConsoleColor BackgroundHighlight { get; private set; }
+    public ConsoleColor CommandBackground { get; private set; }
+    public ConsoleColor CommandForeground { get; private set; }
     public ConsoleColor Error  { get; private set; }
     public ConsoleColor Foreground { get; private set; }
     public ConsoleColor ForegroundHighlight { get; private set; }

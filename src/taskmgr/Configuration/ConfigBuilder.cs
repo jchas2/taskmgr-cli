@@ -11,6 +11,8 @@ public static class ConfigBuilder
     private static readonly string[,] colourMap = {
         { Constants.Keys.Background, "black" },
         { Constants.Keys.BackgroundHighlight, "cyan" },
+        { Constants.Keys.CommandForeground, "white" },
+        { Constants.Keys.CommandBackground, "cyan" },
         { Constants.Keys.Error, "red" },
         { Constants.Keys.Foreground, "white" },
         { Constants.Keys.ForegroundHighlight, "white" },
@@ -28,6 +30,8 @@ public static class ConfigBuilder
     private static readonly string[,] monoMap = {
         { Constants.Keys.Background, "black" },
         { Constants.Keys.BackgroundHighlight, "darkgray" },
+        { Constants.Keys.CommandForeground, "black" },
+        { Constants.Keys.CommandBackground, "gray" },
         { Constants.Keys.Error, "gray" },
         { Constants.Keys.Foreground, "darkgray" },
         { Constants.Keys.ForegroundHighlight, "white" },
@@ -45,6 +49,8 @@ public static class ConfigBuilder
     private static readonly string[,] msDosMap = {
         { Constants.Keys.Background, "darkblue" },
         { Constants.Keys.BackgroundHighlight, "cyan" },
+        { Constants.Keys.CommandForeground, "yellow" },
+        { Constants.Keys.CommandBackground, "darkblue" },
         { Constants.Keys.Error, "red" },
         { Constants.Keys.Foreground, "darkgrey" },
         { Constants.Keys.ForegroundHighlight, "white" },
@@ -62,6 +68,8 @@ public static class ConfigBuilder
     private static readonly string[,] tokyoNightMap = {
         { Constants.Keys.Background, "black" },
         { Constants.Keys.BackgroundHighlight, "cyan" },
+        { Constants.Keys.CommandForeground, "magenta" },
+        { Constants.Keys.CommandBackground, "darkblue" },
         { Constants.Keys.Error, "red" },
         { Constants.Keys.Foreground, "cyan" },
         { Constants.Keys.ForegroundHighlight, "darkmagenta" },
@@ -79,6 +87,8 @@ public static class ConfigBuilder
     private static readonly string[,] matrixMap = {
         { Constants.Keys.Background, "black" },
         { Constants.Keys.BackgroundHighlight, "green" },
+        { Constants.Keys.CommandForeground, "black" },
+        { Constants.Keys.CommandBackground, "darkgreen" },
         { Constants.Keys.Error, "red" },
         { Constants.Keys.Foreground, "green" },
         { Constants.Keys.ForegroundHighlight, "black" },
