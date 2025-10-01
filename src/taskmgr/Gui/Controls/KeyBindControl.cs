@@ -22,8 +22,8 @@ public static class KeyBindControl
         terminal.Write(keyBinding + " ");
         int nchars = keyBinding.Length + 1;
         
-        terminal.BackgroundColor = theme.BackgroundHighlight;
-        terminal.ForegroundColor = enabled ? theme.ForegroundHighlight : ConsoleColor.DarkGray;
+        terminal.BackgroundColor = theme.CommandBackground;
+        terminal.ForegroundColor = enabled ? theme.CommandForeground : ConsoleColor.DarkGray;
         terminal.Write(text.CentreWithLength(width).ToBold());
         nchars += width;
         

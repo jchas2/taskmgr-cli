@@ -173,7 +173,7 @@ public class ListView : Control
             EmptyListViewText = EmptyListViewText.Substring(0, Width);
         }
         
-        Point p = new Point((Width - EmptyListViewText.Length) / 2, Height / 2);
+        Point p = new Point((X + (Width - EmptyListViewText.Length)) / 2, Y + (Height / 2));
         
         terminal.SetCursorPosition(p.X, p.Y);
         terminal.Write(EmptyListViewText);
