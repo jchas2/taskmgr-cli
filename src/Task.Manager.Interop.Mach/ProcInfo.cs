@@ -6,7 +6,7 @@ namespace Task.Manager.Interop.Mach;
 
 public sealed class ProcInfo
 {
-    private const int MAXCOMLEN = 16;
+    public const int MAXCOMLEN = 16;
     public const int PROC_PIDTASKALLINFO = 2;
 
     [StructLayout(LayoutKind.Sequential)]

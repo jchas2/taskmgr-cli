@@ -1,4 +1,6 @@
 ﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.JavaScript;
+using System.Text;
 using Task.Manager.Interop.Mach;
 using SysDiag = System.Diagnostics;
 
@@ -50,7 +52,9 @@ public static partial class ProcessUtils
             &info, 
             size);
         
-        return (result == size ? new ProcInfo.proc_taskallinfo?(info) : null);
+        return result == size 
+            ? new ProcInfo.proc_taskallinfo?(info) 
+            : null;
     }
     
     internal static unsafe string GetProcessProductName(
@@ -58,33 +62,17 @@ public static partial class ProcessUtils
         in int pid,
         string defaultValue)
     {
-        // ReadOnlySpan<int> sysctlName = [
-        //     (int)Sys.Selectors.CTL_KERN, 
-        //     Sys.KERN_PROC, 
-        //     Sys.KERN_PROC_PATHNAME, 
-        //     process.Id];
-        //
-        // byte* buffer = null;
-        // int bytesLength = 0;
-        //
-        // if (Sys.Sysctl(sysctlName, ref buffer, ref bytesLength)) {
-        //     /* Byte array returned contains a null terminator byte. */
-        //     return Encoding.UTF8.GetString(buffer, bytesLength - 1);
-        //     // TODO: NativeMemory.Free(pBuffer);
-        // }
+        // For now, will simply return the process display name as per proc_bsdinfo.
+        ProcInfo.proc_taskallinfo? info = GetProcessInfoById(pid);
 
-        // Try:
-        // struct kinfo_proc proc;
-        // size_t proc_size = sizeof(proc);
-        // int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
-        //
-        // if (sysctl(mib, 4, &proc, &proc_size, NULL, 0) == 0) {
-        //     printf("Application Name: %s\n", proc.kp_proc.p_comm);
-        // } else {
-        //     perror("sysctl");
-        // }
+        if (null == info) {
+            return string.Empty;
+        }
         
-        return defaultValue;
+        ProcInfo.proc_taskallinfo ti = info.Value;
+        string? processName = Marshal.PtrToStringUTF8(new IntPtr(ti.pbsd.pbi_name));
+
+        return processName ?? defaultValue;
     }
 
     internal static unsafe string GetProcessUserName(global::System.Diagnostics.Process process)
