@@ -114,29 +114,15 @@ public partial class SystemInfo
         systemStatistics.TotalPhysical = 0;
         systemStatistics.TotalVirtual = 0;
         
-        ReadOnlySpan<int> sysctlName = [(int)Sys.Selectors.CTL_HW, (int)Sys.Hardware.HW_MEMSIZE];
-
-        byte* buffer = null;
-        int bytesLength = 0;
-
-        if (false == Sys.Sysctl(sysctlName, ref buffer, ref bytesLength)) {
-            return false;
-        }
-
-        if (bytesLength == 8) {
-            systemStatistics.TotalPhysical = *(ulong*)buffer;
-        }
-        
         IntPtr host = MachHost.host_self();
         int count = (int)(Marshal.SizeOf(typeof(MachHost.VmStatistics64)) / sizeof(int));
-        
         IntPtr vmStatisticsPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(MachHost.VmStatistics64)));
         
         if (0 != MachHost.host_statistics64(
-            host,
-            MachHost.HOST_VM_INFO64,
-            vmStatisticsPtr,
-            ref count)) {
+                host,
+                MachHost.HOST_VM_INFO64,
+                vmStatisticsPtr,
+                ref count)) {
             
             Marshal.FreeHGlobal(vmStatisticsPtr);
             return false;
@@ -144,7 +130,22 @@ public partial class SystemInfo
 
         var info = Marshal.PtrToStructure<MachHost.VmStatistics64>(vmStatisticsPtr);
         int pageSize = GetPageSize();
-        systemStatistics.AvailableVirtual = info.free_count * (uint)pageSize;        
+        
+        ReadOnlySpan<int> sysctlName = [(int)Sys.Selectors.CTL_HW, (int)Sys.Hardware.HW_MEMSIZE];
+
+        byte* buffer = null;
+        int bytesLength = 0;
+
+        if (!Sys.Sysctl(sysctlName, ref buffer, ref bytesLength) || bytesLength != 8) {
+            return false;
+        }
+        
+        ulong totalPhysical = *(ulong*)buffer;
+        long totalUsedCount = info.wire_count + info.inactive_count + info.active_count + info.compressor_page_count;
+        long totalUsed = totalUsedCount * pageSize;
+
+        systemStatistics.TotalPhysical = totalPhysical;
+        systemStatistics.AvailablePhysical = totalPhysical - (ulong)totalUsed;
         
         Marshal.FreeHGlobal(vmStatisticsPtr);
         
