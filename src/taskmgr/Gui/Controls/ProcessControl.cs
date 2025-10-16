@@ -53,14 +53,14 @@ public sealed partial class ProcessControl : Control
         this.theme = theme ?? throw new ArgumentNullException(nameof(theme));
         this.config = config ?? throw new ArgumentNullException(nameof(config));
 
-        ConfigSection csFilter = config.GetConfigSection(Constants.Sections.Filter);
-        ConfigSection statsFilter = config.GetConfigSection(Constants.Sections.Stats);
+        ConfigSection csFilter = config.GetConfigSection(Configuration.Constants.Sections.Filter);
+        ConfigSection statsFilter = config.GetConfigSection(Configuration.Constants.Sections.Stats);
         
         cmdLineFilters = new CmdLineFilters {
-            Pid = csFilter.Contains(Constants.Keys.Pid) ? csFilter.GetInt(Constants.Keys.Pid, -1) : -1,
-            UserName = csFilter.Contains(Constants.Keys.UserName) ? csFilter.GetString(Constants.Keys.UserName, string.Empty) : string.Empty,
-            Process = csFilter.Contains(Constants.Keys.Process) ? csFilter.GetString(Constants.Keys.Process, string.Empty) : string.Empty,
-            NumProcs = statsFilter.Contains(Constants.Keys.NProcs) ? statsFilter.GetInt(Constants.Keys.NProcs, -1) : -1
+            Pid = csFilter.Contains(Configuration.Constants.Keys.Pid) ? csFilter.GetInt(Configuration.Constants.Keys.Pid, -1) : -1,
+            UserName = csFilter.Contains(Configuration.Constants.Keys.UserName) ? csFilter.GetString(Configuration.Constants.Keys.UserName, string.Empty) : string.Empty,
+            Process = csFilter.Contains(Configuration.Constants.Keys.Process) ? csFilter.GetString(Configuration.Constants.Keys.Process, string.Empty) : string.Empty,
+            NumProcs = statsFilter.Contains(Configuration.Constants.Keys.NProcs) ? statsFilter.GetInt(Configuration.Constants.Keys.NProcs, -1) : -1
         };
         
         sortView = new ListView(terminal) {
