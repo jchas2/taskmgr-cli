@@ -63,6 +63,8 @@ public partial class Processor : IProcessor
 
     private void RunInternal(CancellationToken cancellationToken)
     {
+        TimeSpan ts = new TimeSpan(0, 0, 0, 0, Constants.ProcessDelayInMilliseconds);
+
         while (!cancellationToken.IsCancellationRequested) {
             ProcessInfo[] processInfos = processService.GetProcesses();
             int index = 0;
@@ -181,10 +183,16 @@ public partial class Processor : IProcessor
                     continue;
                 }
 
-                allProcessorInfos[i].CpuTimePercent = 100 * (double)totalProc / totalSysTime;
-                allProcessorInfos[i].CpuKernelTimePercent = 100 * (double)procKernelDiff / totalSysTime;
-                allProcessorInfos[i].CpuUserTimePercent = 100 * (double)procUserDiff / totalSysTime;
-                
+#if __WIN32__
+                allProcessorInfos[i].CpuTimePercent = (double)totalProc / totalSysTime;
+                allProcessorInfos[i].CpuKernelTimePercent = (double)procKernelDiff / totalSysTime;
+                allProcessorInfos[i].CpuUserTimePercent = (double)procUserDiff / totalSysTime;
+#endif
+#if __APPLE__
+                allProcessorInfos[i].CpuTimePercent = 10 * (double)totalProc / (double)(ts.Ticks * (long)Environment.ProcessorCount);
+                allProcessorInfos[i].CpuKernelTimePercent = 10 * (double)procKernelDiff / (double)(ts.Ticks * (long)Environment.ProcessorCount);
+                allProcessorInfos[i].CpuUserTimePercent = 10 * (double)procUserDiff / (double)(ts.Ticks * (long)Environment.ProcessorCount);
+#endif
                 systemStatistics.CpuPercentUserTime += allProcessorInfos[i].CpuUserTimePercent;
                 systemStatistics.CpuPercentKernelTime += allProcessorInfos[i].CpuKernelTimePercent;
                 

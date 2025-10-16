@@ -78,7 +78,7 @@ public partial class ProcessControl
                 SubItems[(int)Columns.Priority],
                 () => processorInfo.BasePriority != lastBasePriority);
             
-            SubItems[(int)Columns.Cpu].Text = (processorInfo.CpuTimePercent / 100).ToString("00.00%", CultureInfo.InvariantCulture);
+            SubItems[(int)Columns.Cpu].Text = processorInfo.CpuTimePercent.ToString("00.00%", CultureInfo.InvariantCulture);
 
             if (processorInfo.CpuTimePercent > 1.0) {
                 if (processorInfo.CpuTimePercent < 10.0) {

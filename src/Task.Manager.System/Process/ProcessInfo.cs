@@ -101,16 +101,8 @@ public class ProcessInfo(SysDiag::Process process)
     public uint HandleCount => ProcessUtils.GetHandleCount(process);
     public long BasePriority => process.BasePriority;
     public long UsedMemory => process.WorkingSet64;
-#if __WIN32__             
     public long KernelTime => process.PrivilegedProcessorTime.Ticks;
     public long UserTime => process.UserProcessorTime.Ticks;
-#endif
-#if __APPLE__
-    public long KernelTime => 
-        process.PrivilegedProcessorTime.Ticks / (Constants.ProcessDelayInMilliseconds * Environment.ProcessorCount) * 100;
-    public long UserTime => 
-        process.UserProcessorTime.Ticks / (Constants.ProcessDelayInMilliseconds * Environment.ProcessorCount) * 100;
-#endif
     public ulong DiskOperations => ProcessUtils.GetProcessIoOperations(process);
 }
 
