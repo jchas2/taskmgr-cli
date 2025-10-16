@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Task.Manager.Cli.Utils;
+using Task.Manager.Commands;
 using Task.Manager.System;
 using Task.Manager.System.Process;
 using WorkerTask = System.Threading.Tasks.Task;
@@ -25,8 +26,6 @@ public partial class Processor : IProcessor
     private int processCount = 0;
     private int threadCount = 0;
     
-    public const int UpdateTimeInMs = 1500;
-
     public event EventHandler<ProcessorEventArgs>? ProcessorUpdated;
     
     public Processor(IProcessService processService)
@@ -139,7 +138,7 @@ public partial class Processor : IProcessor
             }
 
             GetSystemTimes(out SystemTimes prevSysTimes);
-            Thread.Sleep(UpdateTimeInMs);
+            Thread.Sleep(Constants.ProcessDelayInMilliseconds);
             GetSystemTimes(out SystemTimes currSysTimes);
             
             SystemTimes sysTimesDeltas = new() {
@@ -196,7 +195,7 @@ public partial class Processor : IProcessor
                 ulong currDiskOperations = allProcessorInfos[i].DiskOperations;
 
                 allProcessorInfos[i].DiskUsage = 
-                    (long)((double)(currDiskOperations - prevDiskOperations) * (1000.0 / (double)UpdateTimeInMs));
+                    (long)((double)(currDiskOperations - prevDiskOperations) * (1000.0 / (double)Constants.ProcessDelayInMilliseconds));
                 
                 systemStatistics.DiskUsage += allProcessorInfos[i].DiskUsage;
             }
@@ -222,7 +221,7 @@ public partial class Processor : IProcessor
     private void RunMonitorInternal(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested) {
-            Thread.Sleep(UpdateTimeInMs);
+            Thread.Sleep(Constants.ProcessDelayInMilliseconds);
 
             if (!dataInitialised) {
                 continue;

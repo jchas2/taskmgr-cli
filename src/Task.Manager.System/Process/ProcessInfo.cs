@@ -1,4 +1,5 @@
-﻿using Task.Manager.Cli.Utils;
+﻿using System.Reflection;
+using Task.Manager.Cli.Utils;
 using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
@@ -105,10 +106,10 @@ public class ProcessInfo(SysDiag::Process process)
     public long UserTime => process.UserProcessorTime.Ticks;
 #endif
 #if __APPLE__
-    // NOTE: The calls to host_statistics64() for System CPU don't align
-    // with the framework calls below. To align the tick results * 1000. 
-    public long KernelTime => process.PrivilegedProcessorTime.Ticks * 1000;
-    public long UserTime => process.UserProcessorTime.Ticks * 1000;
+    public long KernelTime => 
+        process.PrivilegedProcessorTime.Ticks / (Constants.ProcessDelayInMilliseconds * Environment.ProcessorCount) * 100;
+    public long UserTime => 
+        process.UserProcessorTime.Ticks / (Constants.ProcessDelayInMilliseconds * Environment.ProcessorCount) * 100;
 #endif
     public ulong DiskOperations => ProcessUtils.GetProcessIoOperations(process);
 }

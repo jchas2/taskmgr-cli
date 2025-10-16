@@ -20,16 +20,17 @@ public sealed class Constants
     public sealed class Keys
     {
         /* General keys. */
-        public const string Pid = "pid";
-        public const string UserName = "username";
-        public const string Process = "process";
-        public const string Bars = "bars";
-        public const string Cols = "cols";
-        public const string Col = "col";
         public const string Asc = "asc";
+        public const string Bars = "bars";
+        public const string Col = "col";
+        public const string Cols = "cols";
+        public const string DefaultTheme = "default-theme";
+        public const string Delay = "delay";
         public const string Limit = "limit";
         public const string NProcs = "nprocs";
-        public const string DefaultTheme = "default-theme";
+        public const string Pid = "pid";
+        public const string Process = "process";
+        public const string UserName = "username";
         
         /* Theme keys. */
         public const string Background = "background";
