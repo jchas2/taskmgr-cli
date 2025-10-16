@@ -180,8 +180,8 @@ public sealed class HeaderControl : Control
             : mbps < 100.0 ? theme.RangeMidBackground
             : theme.RangeHighBackground;
 
-        cpuMetre.PercentageSeries1 = systemStatistics.CpuPercentKernelTime / 100;
-        cpuMetre.PercentageSeries2 = systemStatistics.CpuPercentUserTime / 100;
+        cpuMetre.PercentageSeries1 = systemStatistics.CpuPercentKernelTime;
+        cpuMetre.PercentageSeries2 = systemStatistics.CpuPercentUserTime;
         cpuMetre.ColourSeries1 = kernelColour;
         cpuMetre.ColourSeries2 = userColour;
         cpuMetre.Draw();
@@ -215,7 +215,7 @@ public sealed class HeaderControl : Control
             } 
         }
 
-        statisticsView.Items[0].SubItems[1].Text = (totalCpu / 100).ToString("000.0%");
+        statisticsView.Items[0].SubItems[1].Text = totalCpu.ToString("000.0%");
         statisticsView.Items[0].SubItems[1].ForegroundColor = userColour;
         statisticsView.Items[0].SubItems[3].Text = memRatio.ToString("000.0%");
         statisticsView.Items[0].SubItems[3].ForegroundColor = memColour;
@@ -224,7 +224,7 @@ public sealed class HeaderControl : Control
         statisticsView.Items[0].SubItems[7].Text = string.Format("{0,5:####0.0} MB/s", mbps);
         statisticsView.Items[0].SubItems[7].ForegroundColor = mbpsColour;
 
-        statisticsView.Items[1].SubItems[1].Text = (systemStatistics.CpuPercentUserTime / 100).ToString("000.0%");
+        statisticsView.Items[1].SubItems[1].Text = systemStatistics.CpuPercentUserTime.ToString("000.0%");
         statisticsView.Items[1].SubItems[1].ForegroundColor = userColour;
         statisticsView.Items[1].SubItems[3].Text = ((double)(systemStatistics.TotalPhysical) / 1024 / 1024 / 1024).ToString("0000.0GB");
         statisticsView.Items[1].SubItems[3].ForegroundColor = ForegroundColour;
@@ -233,7 +233,7 @@ public sealed class HeaderControl : Control
         statisticsView.Items[1].SubItems[7].Text = string.Format("{0,5:####0.0} MB/s", maxMbps);
         statisticsView.Items[1].SubItems[7].ForegroundColor = mbpsColour;
 
-        statisticsView.Items[2].SubItems[1].Text = (systemStatistics.CpuPercentKernelTime / 100).ToString("000.0%");
+        statisticsView.Items[2].SubItems[1].Text = systemStatistics.CpuPercentKernelTime.ToString("000.0%");
         statisticsView.Items[2].SubItems[1].ForegroundColor = kernelColour;
         statisticsView.Items[2].SubItems[3].Text = ((double)(systemStatistics.TotalPhysical - systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB");
         statisticsView.Items[2].SubItems[3].ForegroundColor = ForegroundColour;
@@ -242,7 +242,7 @@ public sealed class HeaderControl : Control
         statisticsView.Items[2].SubItems[7].Text = string.Empty;
         statisticsView.Items[2].SubItems[7].ForegroundColor = ForegroundColour;
         
-        statisticsView.Items[3].SubItems[1].Text = (systemStatistics.CpuPercentIdleTime / 100).ToString("000.0%");
+        statisticsView.Items[3].SubItems[1].Text = systemStatistics.CpuPercentIdleTime.ToString("000.0%");
         statisticsView.Items[3].SubItems[1].ForegroundColor = ForegroundColour;
         statisticsView.Items[3].SubItems[3].Text = ((double)(systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB");
         statisticsView.Items[3].SubItems[3].ForegroundColor = ForegroundColour;

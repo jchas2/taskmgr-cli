@@ -184,17 +184,21 @@ public partial class Processor : IProcessor
                 }
 
 #if __WIN32__
-                allProcessorInfos[i].CpuTimePercent = (double)totalProc / totalSysTime;
-                allProcessorInfos[i].CpuKernelTimePercent = (double)procKernelDiff / totalSysTime;
-                allProcessorInfos[i].CpuUserTimePercent = (double)procUserDiff / totalSysTime;
+                allProcessorInfos[i].CpuTimePercent = (double)totalProc / (double)totalSysTime;
+                allProcessorInfos[i].CpuKernelTimePercent = (double)procKernelDiff / (double)totalSysTime;
+                allProcessorInfos[i].CpuUserTimePercent = (double)procUserDiff / (double)totalSysTime;
+                
+                systemStatistics.CpuPercentUserTime += allProcessorInfos[i].CpuUserTimePercent;
+                systemStatistics.CpuPercentKernelTime += allProcessorInfos[i].CpuKernelTimePercent;
 #endif
 #if __APPLE__
                 allProcessorInfos[i].CpuTimePercent = 10 * (double)totalProc / (double)(ts.Ticks * (long)Environment.ProcessorCount);
                 allProcessorInfos[i].CpuKernelTimePercent = 10 * (double)procKernelDiff / (double)(ts.Ticks * (long)Environment.ProcessorCount);
                 allProcessorInfos[i].CpuUserTimePercent = 10 * (double)procUserDiff / (double)(ts.Ticks * (long)Environment.ProcessorCount);
+                
+                systemStatistics.CpuPercentUserTime += (double)procUserDiff / (double)totalSysTime;
+                systemStatistics.CpuPercentKernelTime += (double)procKernelDiff / (double)totalSysTime;
 #endif
-                systemStatistics.CpuPercentUserTime += allProcessorInfos[i].CpuUserTimePercent;
-                systemStatistics.CpuPercentKernelTime += allProcessorInfos[i].CpuKernelTimePercent;
                 
                 ulong prevDiskOperations = allProcessorInfos[i].DiskOperations;
                 
@@ -208,7 +212,7 @@ public partial class Processor : IProcessor
                 systemStatistics.DiskUsage += allProcessorInfos[i].DiskUsage;
             }
             
-            systemStatistics.CpuPercentIdleTime = 100.0 - (systemStatistics.CpuPercentUserTime + systemStatistics.CpuPercentKernelTime);
+            systemStatistics.CpuPercentIdleTime = 1.0 - (systemStatistics.CpuPercentUserTime + systemStatistics.CpuPercentKernelTime);
             systemStatistics.ProcessCount = processCount;
             systemStatistics.ThreadCount = threadCount;
 
