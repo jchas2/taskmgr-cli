@@ -157,7 +157,7 @@ public partial class Processor : IProcessor
             systemInfo.GetSystemInfo(ref systemStatistics);
             systemInfo.GetSystemMemory(ref systemStatistics);
 
-            long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User;
+            long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User + sysTimesDeltas.Idle;
             ProcessTimeInfo currProcTimes = new();
 
             for (int i = 0; i < allProcessorInfos.Count; i++) {
@@ -192,12 +192,12 @@ public partial class Processor : IProcessor
                 systemStatistics.CpuPercentKernelTime += allProcessorInfos[i].CpuKernelTimePercent;
 #endif
 #if __APPLE__
-                allProcessorInfos[i].CpuTimePercent = 10 * (double)totalProc / (double)(ts.Ticks * (long)Environment.ProcessorCount);
-                allProcessorInfos[i].CpuKernelTimePercent = 10 * (double)procKernelDiff / (double)(ts.Ticks * (long)Environment.ProcessorCount);
-                allProcessorInfos[i].CpuUserTimePercent = 10 * (double)procUserDiff / (double)(ts.Ticks * (long)Environment.ProcessorCount);
+                allProcessorInfos[i].CpuTimePercent = Environment.ProcessorCount * (double)totalProc / (double)(ts.Ticks * (long)Environment.ProcessorCount);
+                allProcessorInfos[i].CpuKernelTimePercent = Environment.ProcessorCount * (double)procKernelDiff / (double)(ts.Ticks * (long)Environment.ProcessorCount);
+                allProcessorInfos[i].CpuUserTimePercent = Environment.ProcessorCount * (double)procUserDiff / (double)(ts.Ticks * (long)Environment.ProcessorCount);
                 
-                systemStatistics.CpuPercentUserTime += (double)procUserDiff / (double)totalSysTime;
-                systemStatistics.CpuPercentKernelTime += (double)procKernelDiff / (double)totalSysTime;
+                // systemStatistics.CpuPercentUserTime += (double)procUserDiff / (double)totalSysTime;
+                // systemStatistics.CpuPercentKernelTime += (double)procKernelDiff / (double)totalSysTime;
 #endif
                 
                 ulong prevDiskOperations = allProcessorInfos[i].DiskOperations;
@@ -211,8 +211,16 @@ public partial class Processor : IProcessor
                 
                 systemStatistics.DiskUsage += allProcessorInfos[i].DiskUsage;
             }
-            
+
+#if __WIN32__
             systemStatistics.CpuPercentIdleTime = 1.0 - (systemStatistics.CpuPercentUserTime + systemStatistics.CpuPercentKernelTime);
+#endif
+#if __APPLE__
+            
+            systemStatistics.CpuPercentUserTime = (double)sysTimesDeltas.User / (double)totalSysTime;
+            systemStatistics.CpuPercentKernelTime = (double)sysTimesDeltas.Kernel / (double)totalSysTime;
+            systemStatistics.CpuPercentIdleTime = (double)sysTimesDeltas.Idle / (double)totalSysTime;
+#endif
             systemStatistics.ProcessCount = processCount;
             systemStatistics.ThreadCount = threadCount;
 
