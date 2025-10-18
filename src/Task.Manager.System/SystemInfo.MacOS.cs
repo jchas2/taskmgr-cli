@@ -54,38 +54,50 @@ public partial class SystemInfo
 
     private static bool GetCpuTimesInternal(ref SystemTimes systemTimes)
     {
-        IntPtr host = MachHost.host_self();
-        int count = (int)(Marshal.SizeOf(typeof(MachHost.HostCpuLoadInfo)) / sizeof(int));
-        
-        IntPtr cpuInfoPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(MachHost.HostCpuLoadInfo)));
-        
-        if (0 != MachHost.host_statistics64(
-            host,
-            MachHost.HOST_CPU_LOAD_INFO,
-            cpuInfoPtr,
-            ref count)) {
+        uint numCpus = 0;
+        uint numCpuInfo = 0;
+        IntPtr cpuInfo = IntPtr.Zero;
+
+        if (0 != MachHost.host_processor_info(
+            MachHost.mach_host_self(),
+            MachHost.PROCESSOR_CPU_LOAD_INFO,
+            out numCpus,
+            out cpuInfo,
+            out numCpuInfo)) {
             
-            Marshal.FreeHGlobal(cpuInfoPtr);
             return false;
         }
 
-        var info = Marshal.PtrToStructure<MachHost.HostCpuLoadInfo>(cpuInfoPtr);
-
-        long idleTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_IDLE]).Ticks;
-        long kernelTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_SYSTEM]).Ticks;
-        long userTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_USER]).Ticks;
-        long niceTicks = CalculateSystemTime(info.cpu_ticks[MachHost.CPU_STATE_NICE]).Ticks;
+        long idleTicks = 0;
+        long kernelTicks = 0;
+        long userTicks = 0;
         
-        systemTimes.Idle = (long)idleTicks;
-        systemTimes.Kernel = (long)kernelTicks;
-        systemTimes.User = (long)userTicks + (long)niceTicks;
+        int cpuTicksPerCpu = MachHost.CPU_STATE_MAX;
+        uint[] ticks = new uint[cpuTicksPerCpu];
 
-        Debug.WriteLine($"idleTicks = {idleTicks}, kernelTicks = {kernelTicks}, userTicks = {userTicks}, niceTicks = {niceTicks}");
-        
-        Marshal.FreeHGlobal(cpuInfoPtr);
+        for (int i = 0; i < numCpus; i++)
+        {
+            for (int j = 0; j < cpuTicksPerCpu; j++)
+            {
+                IntPtr tickPtr = IntPtr.Add(cpuInfo, (i * cpuTicksPerCpu + j) * sizeof(uint));
+                ticks[j] = (uint)Marshal.ReadInt32(tickPtr);
+            }
+
+            userTicks += ticks[MachHost.CPU_STATE_USER] + ticks[MachHost.CPU_STATE_NICE];
+            kernelTicks += ticks[MachHost.CPU_STATE_SYSTEM];
+            idleTicks += ticks[MachHost.CPU_STATE_IDLE];
+        }
+
+        systemTimes.Idle = idleTicks;
+        systemTimes.Kernel = kernelTicks;
+        systemTimes.User = userTicks;
+
+        IntPtr size = new IntPtr((int)numCpuInfo * sizeof(int));
+        MachHost.vm_deallocate(MachHost.mach_task_self(), cpuInfo, size);
+
         return true;
     }
-
+    
     private static unsafe int GetPageSize()
     {
         int pageSize = 0;
