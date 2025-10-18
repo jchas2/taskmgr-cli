@@ -194,9 +194,9 @@ public partial class Processor : IProcessor
 #endif
 #if __APPLE__
                 // Irix mode to be consistent with Activity Monitor, where 100% is full utilisation of a SINGLE cpu core on the system.
-                allProcessorInfos[i].CpuTimePercent = Environment.ProcessorCount * (double)totalProc / (double)(ts.Ticks * (long)Environment.ProcessorCount);
-                allProcessorInfos[i].CpuKernelTimePercent = Environment.ProcessorCount * (double)procKernelDiff / (double)(ts.Ticks * (long)Environment.ProcessorCount);
-                allProcessorInfos[i].CpuUserTimePercent = Environment.ProcessorCount * (double)procUserDiff / (double)(ts.Ticks * (long)Environment.ProcessorCount);
+                allProcessorInfos[i].CpuTimePercent = Environment.ProcessorCount * (double)totalProc / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
+                allProcessorInfos[i].CpuKernelTimePercent = Environment.ProcessorCount * (double)procKernelDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
+                allProcessorInfos[i].CpuUserTimePercent = Environment.ProcessorCount * (double)procUserDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
 #endif
                 ulong prevDiskOperations = allProcessorInfos[i].DiskOperations;
                 
