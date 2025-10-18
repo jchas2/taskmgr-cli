@@ -60,7 +60,7 @@ public partial class SystemInfo
         MinWinBase.FILETIME lpKernelFileTime;
         MinWinBase.FILETIME lpUserFileTime;
 
-        if (!ProcessThreadsApi.GetSystemTimes(
+        if (!ProcessThreadsApi.GetSystemTimes( 
             &lpIdleFileTime,
             &lpKernelFileTime,
             &lpUserFileTime)) {
@@ -69,7 +69,8 @@ public partial class SystemInfo
         }
 
         systemTimes.Idle = lpIdleFileTime.ToLong();
-        systemTimes.Kernel = lpKernelFileTime.ToLong();
+        // On Windows, Kernel time also includes Idle time.
+        systemTimes.Kernel = lpKernelFileTime.ToLong() - systemTimes.Idle;
         systemTimes.User = lpUserFileTime.ToLong();
         
         return true;
