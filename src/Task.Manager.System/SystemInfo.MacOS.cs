@@ -142,9 +142,9 @@ public partial class SystemInfo
 
         var info = Marshal.PtrToStructure<MachHost.VmStatistics64>(vmStatisticsPtr);
         int pageSize = GetPageSize();
-        
-        ReadOnlySpan<int> sysctlName = [(int)Sys.Selectors.CTL_HW, (int)Sys.Hardware.HW_MEMSIZE];
 
+        // TODO: byte* buffer needs to be freed, or does sysctl stack alloc.
+        ReadOnlySpan<int> sysctlName = [(int)Sys.Selectors.CTL_HW, (int)Sys.Hardware.HW_MEMSIZE];
         byte* buffer = null;
         int bytesLength = 0;
 
@@ -158,6 +158,20 @@ public partial class SystemInfo
 
         systemStatistics.TotalPhysical = totalPhysical;
         systemStatistics.AvailablePhysical = totalPhysical - (ulong)totalUsed;
+
+        // TODO: byte* buffer needs to be freed, or does sysctl stack alloc.
+        sysctlName = [(int)Sys.Selectors.CTL_VM, Sys.VM_SWAPUSAGE];
+        buffer = null;
+        bytesLength = 0;
+
+        if (!Sys.Sysctl(sysctlName, ref buffer, ref bytesLength) || bytesLength != 32) {
+            return false;
+        }
+        
+        Sys.XswUsage* xswUsage = (Sys.XswUsage*)buffer;
+
+        systemStatistics.TotalPageFile = xswUsage->total;
+        systemStatistics.AvailablePageFile = xswUsage->avail;
         
         Marshal.FreeHGlobal(vmStatisticsPtr);
         
