@@ -65,11 +65,21 @@ public sealed class HeaderControl : Control
         };
 
         virtualMemoryMetre = new MetreControl(terminal) {
+#if __WIN32__            
             Text = "Vir",
+#endif
+#if __APPLE__            
+            Text = "Swp",
+#endif
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground,
             DrawStacked = false,
+#if __WIN32__            
             LabelSeries1 = "v"
+#endif
+#if __APPLE__            
+            LabelSeries2 = "s"
+#endif
         };
 
         diskMetre = new MetreControl(terminal) {
@@ -146,8 +156,16 @@ public sealed class HeaderControl : Control
         Terminal.WriteEmptyLine();
         
         double totalCpu = systemStatistics.CpuPercentKernelTime + systemStatistics.CpuPercentUserTime;
-        double memRatio = 1.0 - ((double)(systemStatistics.AvailablePhysical) / (double)(systemStatistics.TotalPhysical));
-        double virRatio = 1.0 - ((double)(systemStatistics.AvailablePageFile) / (double)(systemStatistics.TotalPageFile));
+
+        double memRatio = 0.0;
+        if (systemStatistics.TotalPhysical > 0) {
+            memRatio = 1.0 - ((double)(systemStatistics.AvailablePhysical) / (double)(systemStatistics.TotalPhysical));    
+        }
+        
+        double virRatio = 0.0;
+        if (systemStatistics.TotalPageFile > 0) {
+            virRatio = 1.0 - ((double)(systemStatistics.AvailablePageFile) / (double)(systemStatistics.TotalPageFile));    
+        }
 
         var userColour = totalCpu < 50.0 ? theme.RangeLowBackground
             : totalCpu < 75.0 ? theme.RangeMidBackground
@@ -289,7 +307,12 @@ public sealed class HeaderControl : Control
         }
 
         if (statisticsView.Items.Count == 0) {
+#if __WIN32__
             statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Vir:   ", "", "Disk:", ""]));
+#endif
+#if __APPLE__
+            statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Swap:  ", "", "Disk:", ""]));
+#endif
             statisticsView.Items.Add(new(["User:  ", "", "Total:  ", "", "Total: ", "", "Peak:", ""]));
             statisticsView.Items.Add(new(["Kernel:", "", "Used:   ", "", "Used:  ", "", "", ""]));
             statisticsView.Items.Add(new(["Idle:  ", "", "Free:   ", "", "Free:  ", "", "", ""]));

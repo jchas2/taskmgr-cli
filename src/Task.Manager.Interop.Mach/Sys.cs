@@ -10,6 +10,7 @@ public static unsafe class Sys
     public enum Selectors
     {
         CTL_KERN = 0x01,
+        CTL_VM = 0x02,              /* Virtual Memory */
         CTL_HW = 0x06,              /* Hardware */
     }
 
@@ -21,6 +22,8 @@ public static unsafe class Sys
         HW_MEMSIZE = 0x18,          /* Memory size in bytes */
     }
 
+    public const int VM_SWAPUSAGE = 5;
+
     public const int KERN_PROC_PATHNAME = 12;
     public const int KERN_PROC = 14;
     public const int KERN_PROC_PID = 1;
@@ -28,6 +31,16 @@ public static unsafe class Sys
     private enum Error
     {
         ENOMEM = 0x10031,           /* Not enough space */
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct XswUsage
+    {
+        public ulong total;
+        public ulong avail;
+        public ulong used;
+        public uint pagesize;
+        public uint encrypted;
     }
     
     [DllImport(Libraries.LibSystemNative, EntryPoint = "SystemNative_Sysctl", SetLastError = true)]

@@ -51,16 +51,26 @@ public class HelpScreen : Screen
                             " / mid".ToColour(theme.RangeMidBackground, theme.Background) + 
                             " / high".ToColour(theme.RangeHighBackground, theme.Background) + 
                             " used / total]".ToColour(theme.Foreground, theme.Background));
+#if __WIN32__        
         helpText.AppendLine("Virtual metre: [".ToColour(theme.Foreground, theme.Background) +
+#endif
+#if __APPLE__        
+        helpText.AppendLine("Swap metre:    [".ToColour(theme.Foreground, theme.Background) +
+#endif
                             "low".ToColour(theme.RangeLowBackground, theme.Background) + 
                             " / mid".ToColour(theme.RangeMidBackground, theme.Background) + 
                             " / high".ToColour(theme.RangeHighBackground, theme.Background) + 
+#if __WIN32__        
+                            " used / total] Commit Memory".ToColour(theme.Foreground, theme.Background));
+#endif
+#if __APPLE__        
                             " used / total] Page File".ToColour(theme.Foreground, theme.Background));
+#endif
         helpText.AppendLine("Disk metre:    [".ToColour(theme.Foreground, theme.Background) +
-                            "low".ToColour(theme.RangeLowBackground, theme.Background) + 
-                            " / mid".ToColour(theme.RangeMidBackground, theme.Background) + 
-                            " / high".ToColour(theme.RangeHighBackground, theme.Background) + 
-                            " ] Mbps".ToColour(theme.Foreground, theme.Background));
+                                                "low".ToColour(theme.RangeLowBackground, theme.Background) + 
+                                                " / mid".ToColour(theme.RangeMidBackground, theme.Background) + 
+                                                " / high".ToColour(theme.RangeHighBackground, theme.Background) + 
+                                                " ] Mbps".ToColour(theme.Foreground, theme.Background));
         helpText.AppendLine();
         helpText.AppendLine("Screen Navigation".ToColour(theme.Foreground, theme.Background));
         helpText.AppendLine("\u2190    Tab left to next screen component".ToColour(theme.Foreground, theme.Background));
