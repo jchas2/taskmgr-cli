@@ -39,8 +39,8 @@ public static unsafe class Sys
         public ulong total;
         public ulong avail;
         public ulong used;
-        public uint pagesize;
-        public uint encrypted;
+        public uint  pagesize;
+        public uint  encrypted;
     }
     
     [DllImport(Libraries.LibSystemNative, EntryPoint = "SystemNative_Sysctl", SetLastError = true)]
