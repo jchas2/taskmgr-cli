@@ -25,19 +25,22 @@ public static partial class ProcessUtils
         } 
     }
 
-    public static ulong GetProcessIoOperations(in int pid)
+    public static ulong GetProcessIoOperations(in int pid) => 
+        GetProcessIoOperationsInternal(pid);
+
+    public static ulong GetProcessIoOperations(in SysDiag::Process process) =>
+        GetProcessIoOperationsInternal(process.Id);
+
+    private static unsafe ulong GetProcessIoOperationsInternal(in int pid)
     {
-        if (!TryGetProcessByPid(pid, out SysDiag::Process? process)) {
+        SysResource.rusage_info_v3 info = new();
+
+        int result = LibProc.proc_pid_rusage(pid, SysResource.RUSAGE_INFO_V3, &info);
+        if (result < 0) {
             return 0;
         }
-        
-        return GetProcessIoOperations(process!);
-    }
 
-    public static ulong GetProcessIoOperations(in SysDiag::Process process)
-    {
-        // TODO:
-        return 0;
+        return info.ri_diskio_bytesread + info.ri_diskio_byteswritten;
     }
 
     private static unsafe ProcInfo.proc_taskallinfo? GetProcessInfoById(int pid)
