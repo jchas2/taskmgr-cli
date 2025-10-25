@@ -88,7 +88,7 @@ public class ProcessInfo(SysDiag::Process process)
         get {
             if (string.IsNullOrEmpty(cmdLine)) {
                 cmdLine = MainModule != null 
-                    ? ProcessUtils.GetProcessCommandLine(MainModule, ProcessName)
+                    ? ProcessUtils.GetProcessCommandLine(Pid, MainModule, ProcessName)
                     : ProcessName;
             }
             return cmdLine;

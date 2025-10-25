@@ -24,7 +24,7 @@ public partial class SystemInfo
         systemStatistics.CpuFrequency = 0;
         systemStatistics.CpuName = string.Empty;
 
-        RegistryKey? key = Registry.LocalMachine.OpenSubKey(RegPath);
+        using RegistryKey? key = Registry.LocalMachine.OpenSubKey(RegPath);
 #if DEBUG
         Debug.Assert(null != key, $"Failed OpenSubKey() {RegPath}");
 #endif
@@ -34,6 +34,7 @@ public partial class SystemInfo
         
         /* REG_SZ */
         object? processorName = key.GetValue(RegKeyProcessorName);
+        
         if (null == processorName) {
             return false;
         }
@@ -42,6 +43,7 @@ public partial class SystemInfo
 
         /* Reg DWORD */
         object? frequency = key.GetValue(RegKeyFrequencyMhz);
+        
         if (null == frequency) {
             return false;
         }

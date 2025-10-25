@@ -65,7 +65,7 @@ public partial class ProcessUtilsTests
     public void Should_Get_Process_Command_Line()
     {
         SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
-        string commandLine = ProcessUtils.GetProcessCommandLine(currentProcess.MainModule!, string.Empty);
+        string commandLine = ProcessUtils.GetProcessCommandLine(currentProcess.Id, currentProcess.MainModule!, string.Empty);
         
         Assert.NotEmpty(commandLine);
     }

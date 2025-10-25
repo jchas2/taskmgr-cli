@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
 using Task.Manager.Interop.Win32;
 using SysDiag = System.Diagnostics;
@@ -14,7 +15,7 @@ public static partial class ProcessUtils
     private const string DefaultUser = "SYSTEM";
     private const string ServiceHost = "svchost.exe";
     private static readonly Dictionary<string, string> userMap = new();
-
+    
     internal static uint GetHandleCountInternal(SysDiag::Process process)
     {
         IntPtr processHandle = process.Handle;
@@ -24,11 +25,16 @@ public static partial class ProcessUtils
         return (uint)process.HandleCount + (gdiHandleCount + usrHandleCount);
     }
 
-    internal static string GetProcessCommandLine(in SysDiag::ProcessModule processModule, in string defaultValue)
+    internal static string GetProcessCommandLine(in int pid, in SysDiag::ProcessModule processModule, in string defaultValue)
     {
-        // TODO: Kernel PEB + Commandline offset. 
         try {
-            return processModule.FileName ?? defaultValue;
+            if (ServiceUtils.GetService(pid, out ServiceController? serviceController)) {
+                string imagePath = ServiceUtils.GetServiceImagePath(serviceController!.ServiceName) ?? defaultValue;
+                return Environment.ExpandEnvironmentVariables(imagePath);
+            }
+
+            // TODO: Kernel PEB + Commandline offset. 
+            return processModule.FileName;
         }
         catch {
             return defaultValue;
@@ -73,8 +79,8 @@ public static partial class ProcessUtils
                 return defaultValue;
             }
 
-            if (processPath.EndsWith(ServiceHost, StringComparison.CurrentCultureIgnoreCase)) {
-                return GetProcessWin32ServiceName(pid, defaultValue);
+            if (ServiceUtils.GetService(pid, out ServiceController? serviceController)) {
+                return serviceController?.DisplayName ?? defaultValue;
             }
 
             SysDiag::FileVersionInfo versionInfo = SysDiag::FileVersionInfo.GetVersionInfo(processPath);
@@ -160,44 +166,6 @@ public static partial class ProcessUtils
         return DefaultUser;
     }
 
-    private static string GetProcessWin32ServiceName(in int pid, string defaultValue)
-    {
-        /* TODO: Below code times out. Also, the thread continues to run on the
-           timeout. Overlapped IO/IO Completion Ports would be good here.
-         */
-        
-        /*
-        string? serviceName = process.ProcessName;
-
-        try {
-            var task = global::System.Threading.Tasks.Task.Run(() => {
-                var searcher = new ManagementObjectSearcher(
-                    string.Format(MO_WIN32_SERVICE, pid));
-
-                foreach (var obj in searcher.Get()) {
-                    var name = obj["Name"]?.ToString();
-                    if (false == string.IsNullOrWhiteSpace(serviceName)) {
-                        serviceName = name;
-                        break;
-                    }
-                    else {
-                        break;
-                    }
-                }
-            });
-
-            task.Wait(20);
-        }
-        catch {
-            
-        }
-        
-        return false == string.IsNullOrWhiteSpace(serviceName) 
-            ? $"Service Host: {serviceName}" 
-            : defaultValue;
-        */
-        return defaultValue;
-    }
 #endif
 }
 

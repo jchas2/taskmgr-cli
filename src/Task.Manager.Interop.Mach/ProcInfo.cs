@@ -2,8 +2,6 @@ using System.Runtime.InteropServices;
 
 namespace Task.Manager.Interop.Mach;
 
-// Following declarations are found in the Mach Kernel header file proc_info.h
-
 public sealed class ProcInfo
 {
     public const int MAXCOMLEN = 16;
