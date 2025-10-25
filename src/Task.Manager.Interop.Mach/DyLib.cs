@@ -2,8 +2,6 @@ using System.Runtime.InteropServices;
 
 namespace Task.Manager.Interop.Mach;
 
-// Following declarations are found in the Mach Kernel header file dylib.h
-
 public sealed class DyLib
 {
     [DllImport(Libraries.LibSystemDyLib)]

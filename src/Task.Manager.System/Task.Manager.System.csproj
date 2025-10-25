@@ -29,6 +29,7 @@
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="System.Management" Version="10.0.0-preview.1.25080.5" />
+      <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.0-rc.2.25502.107" />
     </ItemGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="Task.Manager.System.Tests" />
