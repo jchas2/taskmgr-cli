@@ -11,7 +11,6 @@ public class RunContext(
     IProcessService processService,
     IModuleService moduleService,
     IThreadService threadService,
-    ISystemInfo systemInfo,
     IProcessor processor,
     IOutputWriter? outputWriter = null)
 {
@@ -20,6 +19,5 @@ public class RunContext(
     public IModuleService ModuleService { get; } = moduleService ?? throw new ArgumentNullException(nameof(moduleService));
     public IThreadService ThreadService { get; } = threadService ?? throw new ArgumentNullException(nameof(threadService));
     public IProcessor Processor { get; } = processor ?? throw new ArgumentNullException(nameof(processor));
-    public ISystemInfo SystemInfo { get; } = systemInfo ?? throw new ArgumentNullException(nameof(systemInfo));
     public IOutputWriter OutputWriter { get; } = outputWriter ?? Cli.Utils.OutputWriter.Out;
 }

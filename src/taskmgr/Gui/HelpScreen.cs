@@ -38,7 +38,7 @@ public class HelpScreen : Screen
         helpText.AppendLine("Released under the <whatever> license".ToColour(theme.BackgroundHighlight, theme.Background));
         helpText.AppendLine();
         // Note kernel colours are swapped for contrast and should match what's in HeaderControl.cs
-        helpText.AppendLine("CPU metre:     [".ToColour(theme.Foreground, theme.Background) +
+        helpText.AppendLine("Cpu metre:     [".ToColour(theme.Foreground, theme.Background) +
                             "k low".ToColour(theme.RangeMidBackground, theme.Background) + 
                             " / k mid".ToColour(theme.RangeLowBackground, theme.Background) + 
                             " / k high".ToColour(theme.RangeMidBackground, theme.Background) + 
@@ -71,6 +71,12 @@ public class HelpScreen : Screen
                                                 " / mid".ToColour(theme.RangeMidBackground, theme.Background) + 
                                                 " / high".ToColour(theme.RangeHighBackground, theme.Background) + 
                                                 " ] Mbps".ToColour(theme.Foreground, theme.Background));
+        helpText.AppendLine();
+        helpText.AppendLine("Process and Path Colours");
+        helpText.AppendLine("Normal process".ToColour(theme.ColumnCommandNormalUserSpace, theme.Background));
+        helpText.AppendLine("Low priority (nice) process".ToColour(theme.ColumnCommandLowPriority, theme.Background));
+        helpText.AppendLine("High Cpu usage (> 1 core)".ToColour(theme.ColumnCommandHighCpu, theme.Background));
+        helpText.AppendLine("I/O bound process".ToColour(theme.ColumnCommandIoBound, theme.Background));
         helpText.AppendLine();
         helpText.AppendLine("Screen Navigation".ToColour(theme.Foreground, theme.Background));
         helpText.AppendLine("\u2190    Tab left to next screen component".ToColour(theme.Foreground, theme.Background));

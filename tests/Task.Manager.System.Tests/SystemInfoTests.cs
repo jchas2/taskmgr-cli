@@ -13,7 +13,7 @@ public sealed class SystemInfoTests
     public void Should_Get_Cpu_Times()
     {
         SystemTimes systemTimes = new();
-        bool result = new SystemInfo().GetCpuTimes(ref systemTimes);
+        bool result = SystemInfo.GetCpuTimes(ref systemTimes);
         Assert.True(result);
     }
 
@@ -22,7 +22,7 @@ public sealed class SystemInfoTests
     {
         // Just invoke the function call for now. Need to determine an alternate way to 
         // verify if we are running under sudo in MacOS. Windows has a number of alternatives.
-        var result = new SystemInfo().IsRunningAsRoot();
+        var result = SystemInfo.IsRunningAsRoot();
         Assert.True(true);
     }
     
@@ -30,9 +30,8 @@ public sealed class SystemInfoTests
     public void Should_Get_System_Statistics()
     {
         SystemStatistics systemStatistics = new();
-        SystemInfo systemInfo = new();
         
-        bool result = systemInfo.GetSystemInfo(ref systemStatistics);
+        bool result = SystemInfo.GetSystemInfo(ref systemStatistics);
         Assert.True(result);
 
         testOutputHelper.WriteLine($"CPU    : {systemStatistics.CpuName}");
@@ -44,7 +43,7 @@ public sealed class SystemInfoTests
         testOutputHelper.WriteLine($"Priv IP: {systemStatistics.PrivateIPv4Address}");
         testOutputHelper.WriteLine($"Pub IP : {systemStatistics.PublicIPv4Address}");
         
-        result = systemInfo.GetSystemMemory(ref systemStatistics);
+        result = SystemInfo.GetSystemMemory(ref systemStatistics);
         Assert.True(result);
         
         testOutputHelper.WriteLine($"Avail Phys: {systemStatistics.AvailablePhysical}");

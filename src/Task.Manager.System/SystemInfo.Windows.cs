@@ -11,9 +11,15 @@ namespace Task.Manager.System;
 
 #pragma warning disable CA1416 // Validate platform compatibility        
 
-public partial class SystemInfo
+public static partial class SystemInfo
 {
 #if __WIN32__
+    private static bool GetCpuHighCoreUsageInternal(double processUsagePercent)
+    {
+        double cpuCoreMaxPercent = (100.0 / (double)Environment.ProcessorCount) / 100.0;
+        return (processUsagePercent >= cpuCoreMaxPercent);
+    }
+    
     private static bool GetCpuInfoInternal(ref SystemStatistics systemStatistics)
     {
         const string RegPath = @"HARDWARE\DESCRIPTION\System\CentralProcessor\0\";

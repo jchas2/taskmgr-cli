@@ -291,9 +291,6 @@ public sealed partial class ProcessControl : Control
 
     private void UpdateListViewItems()
     {
-        // .DynamicOrderBy in Utils.QueryableExtensions is not supported for .net native compilation targets
-        // hence the manual build out of the query below.
-
         if (cmdLineFilters.Pid > -1) {
             allProcesses = allProcesses
                 .Where(p => p.Pid == cmdLineFilters.Pid)
@@ -318,6 +315,9 @@ public sealed partial class ProcessControl : Control
                             p.UserName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase))
                 .ToList();
         }
+
+        // .DynamicOrderBy in Utils.QueryableExtensions is not supported for .net native compilation targets
+        // hence the manual build out of the sorting below.
 
         List<ProcessorInfo> sortedProcesses = sortColumn switch {
             Columns.Cpu         => allProcesses.OrderByDescending(p => p.CpuTimePercent).ToList(),

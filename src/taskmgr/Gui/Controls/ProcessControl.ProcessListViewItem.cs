@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.Process;
@@ -79,23 +80,12 @@ public partial class ProcessControl
                 () => processorInfo.BasePriority != lastBasePriority);
             
             SubItems[(int)Columns.Cpu].Text = processorInfo.CpuTimePercent.ToString("00.00%", CultureInfo.InvariantCulture);
-
-            if (processorInfo.CpuTimePercent > 1.0) {
-                if (processorInfo.CpuTimePercent < 10.0) {
-                    SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeLowBackground;
-                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.ForegroundHighlight;
-                    SubItems[(int)Columns.Cpu].BackgroundColor = Theme.RangeLowBackground;
-                }
-                else if (processorInfo.CpuTimePercent < 50.0) {
-                    SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeMidBackground;
-                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.ForegroundHighlight;
-                    SubItems[(int)Columns.Cpu].BackgroundColor = Theme.RangeMidBackground;
-                }
-                else {
-                    SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeHighBackground;
-                    SubItems[(int)Columns.Cpu].ForegroundColor = Theme.ForegroundHighlight;
-                    SubItems[(int)Columns.Cpu].BackgroundColor = Theme.RangeHighBackground;
-                }
+            bool cpuHighCoreUsage = SystemInfo.GetCpuHighCoreUsage(processorInfo.CpuTimePercent);
+            
+            if (cpuHighCoreUsage) {
+                SubItems[(int)Columns.Process].ForegroundColor = Theme.RangeHighBackground;
+                SubItems[(int)Columns.Cpu].ForegroundColor = Theme.ForegroundHighlight;
+                SubItems[(int)Columns.Cpu].BackgroundColor = Theme.RangeHighBackground;
             }
             else {
                 UpdateSubItem(
@@ -149,13 +139,31 @@ public partial class ProcessControl
                 }
             }
             else {
-                UpdateSubItem(
+                UpdateSubItem( 
                     SubItems[(int)Columns.Disk], 
                     () => processorInfo.DiskUsage != lastDiskUsage);
             }
 
-            SubItems[(int)Columns.CommandLine].Text = processorInfo.CmdLine ?? string.Empty;
-            
+            if (!processorInfo.IsDaemon) {
+                SubItems[(int)Columns.Process].ForegroundColor = Theme.ColumnCommandNormalUserSpace;
+                SubItems[(int)Columns.CommandLine].ForegroundColor = Theme.ColumnCommandNormalUserSpace;
+            }
+
+            if (processorInfo.BasePriority < 8) {
+                SubItems[(int)Columns.Process].ForegroundColor = Theme.ColumnCommandLowPriority;
+                SubItems[(int)Columns.CommandLine].ForegroundColor = Theme.ColumnCommandLowPriority;
+            }
+
+            if (mbps >= 100.0) {
+                SubItems[(int)Columns.Process].ForegroundColor = Theme.ColumnCommandIoBound;
+                SubItems[(int)Columns.CommandLine].ForegroundColor = Theme.ColumnCommandIoBound;
+            }
+
+            if (cpuHighCoreUsage) {
+                SubItems[(int)Columns.Process].ForegroundColor = Theme.ColumnCommandHighCpu;
+                SubItems[(int)Columns.CommandLine].ForegroundColor = Theme.ColumnCommandHighCpu;
+            }            
+
             lastCpu = processorInfo.CpuTimePercent;
             lastBasePriority = processorInfo.BasePriority;
             lastThreadCount = processorInfo.ThreadCount;

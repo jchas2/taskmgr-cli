@@ -11,6 +11,17 @@ public static class ConfigBuilder
     private static readonly string[,] colourMap = {
         { Constants.Keys.Background, "black" },
         { Constants.Keys.BackgroundHighlight, "cyan" },
+
+        { Constants.Keys.ColCmdNormalUserSpace, "green" },
+        { Constants.Keys.ColCmdLowPriority, "blue" },
+        { Constants.Keys.ColCmdHighCpu, "red" },
+        { Constants.Keys.ColCmdIoBound, "cyan" },
+        { Constants.Keys.ColCmdScript, "yellow" },
+        { Constants.Keys.ColUserCurrentNonRoot, "green" },
+        { Constants.Keys.ColUserOtherNonRoot, "magenta" },
+        { Constants.Keys.ColUserSystem, "gray" },
+        { Constants.Keys.ColUserRoot, "white" },
+        
         { Constants.Keys.CommandForeground, "white" },
         { Constants.Keys.CommandBackground, "cyan" },
         { Constants.Keys.Error, "red" },
@@ -30,6 +41,17 @@ public static class ConfigBuilder
     private static readonly string[,] monoMap = {
         { Constants.Keys.Background, "black" },
         { Constants.Keys.BackgroundHighlight, "darkgray" },
+
+        { Constants.Keys.ColCmdNormalUserSpace, "gray" },
+        { Constants.Keys.ColCmdLowPriority, "darkgray" },
+        { Constants.Keys.ColCmdHighCpu, "white" },
+        { Constants.Keys.ColCmdIoBound, "white" },
+        { Constants.Keys.ColCmdScript, "darkgray" },
+        { Constants.Keys.ColUserCurrentNonRoot, "darkgray" },
+        { Constants.Keys.ColUserOtherNonRoot, "darkgray" },
+        { Constants.Keys.ColUserSystem, "gray" },
+        { Constants.Keys.ColUserRoot, "white" },
+        
         { Constants.Keys.CommandForeground, "black" },
         { Constants.Keys.CommandBackground, "gray" },
         { Constants.Keys.Error, "gray" },
@@ -49,6 +71,17 @@ public static class ConfigBuilder
     private static readonly string[,] msDosMap = {
         { Constants.Keys.Background, "darkblue" },
         { Constants.Keys.BackgroundHighlight, "cyan" },
+
+        { Constants.Keys.ColCmdNormalUserSpace, "yellow" },
+        { Constants.Keys.ColCmdLowPriority, "gray" },
+        { Constants.Keys.ColCmdHighCpu, "red" },
+        { Constants.Keys.ColCmdIoBound, "red" },
+        { Constants.Keys.ColCmdScript, "yellow" },
+        { Constants.Keys.ColUserCurrentNonRoot, "gray" },
+        { Constants.Keys.ColUserOtherNonRoot, "darkgray" },
+        { Constants.Keys.ColUserSystem, "yellow" },
+        { Constants.Keys.ColUserRoot, "red" },
+        
         { Constants.Keys.CommandForeground, "yellow" },
         { Constants.Keys.CommandBackground, "darkblue" },
         { Constants.Keys.Error, "red" },
@@ -68,6 +101,17 @@ public static class ConfigBuilder
     private static readonly string[,] tokyoNightMap = {
         { Constants.Keys.Background, "black" },
         { Constants.Keys.BackgroundHighlight, "cyan" },
+
+        { Constants.Keys.ColCmdNormalUserSpace, "darkgray" },
+        { Constants.Keys.ColCmdLowPriority, "gray" },
+        { Constants.Keys.ColCmdHighCpu, "red" },
+        { Constants.Keys.ColCmdIoBound, "cyan" },
+        { Constants.Keys.ColCmdScript, "yellow" },
+        { Constants.Keys.ColUserCurrentNonRoot, "yellow" },
+        { Constants.Keys.ColUserOtherNonRoot, "magenta" },
+        { Constants.Keys.ColUserSystem, "gray" },
+        { Constants.Keys.ColUserRoot, "white" },
+        
         { Constants.Keys.CommandForeground, "magenta" },
         { Constants.Keys.CommandBackground, "darkblue" },
         { Constants.Keys.Error, "red" },
@@ -87,6 +131,17 @@ public static class ConfigBuilder
     private static readonly string[,] matrixMap = {
         { Constants.Keys.Background, "black" },
         { Constants.Keys.BackgroundHighlight, "green" },
+
+        { Constants.Keys.ColCmdNormalUserSpace, "green" },
+        { Constants.Keys.ColCmdLowPriority, "darkgreen" },
+        { Constants.Keys.ColCmdHighCpu, "green" },
+        { Constants.Keys.ColCmdIoBound, "green" },
+        { Constants.Keys.ColCmdScript, "darkgreen" },
+        { Constants.Keys.ColUserCurrentNonRoot, "darkgreen" },
+        { Constants.Keys.ColUserOtherNonRoot, "darkgreen" },
+        { Constants.Keys.ColUserSystem, "gray" },
+        { Constants.Keys.ColUserRoot, "green" },
+        
         { Constants.Keys.CommandForeground, "black" },
         { Constants.Keys.CommandBackground, "darkgreen" },
         { Constants.Keys.Error, "red" },

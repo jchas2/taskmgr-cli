@@ -4,11 +4,13 @@ using System.Net.Sockets;
 
 namespace Task.Manager.System;
 
-public partial class SystemInfo : ISystemInfo
+public static partial class SystemInfo
 {
-    public bool GetCpuTimes(ref SystemTimes systemTimes) => GetCpuTimesInternal(ref systemTimes);
+    public static bool GetCpuHighCoreUsage(double processUsagePercent) => GetCpuHighCoreUsageInternal(processUsagePercent); 
 
-    private IPAddress? GetPreferredIpAddress()
+    public static bool GetCpuTimes(ref SystemTimes systemTimes) => GetCpuTimesInternal(ref systemTimes);
+
+    private static IPAddress? GetPreferredIpAddress()
     {
         List<IPAddress> ipAddresses = GetIpAddresses(NetworkInterfaceType.Ethernet).ToList();
         
@@ -25,7 +27,7 @@ public partial class SystemInfo : ISystemInfo
         return null;
     }
 
-    private IEnumerable<IPAddress> GetIpAddresses(NetworkInterfaceType networkInterfaceType)
+    private static IEnumerable<IPAddress> GetIpAddresses(NetworkInterfaceType networkInterfaceType)
     {
         List<NetworkInterface> activeNics = NetworkInterface
             .GetAllNetworkInterfaces()
@@ -41,9 +43,9 @@ public partial class SystemInfo : ISystemInfo
         }
     }
 
-    public bool GetSystemMemory(ref SystemStatistics systemStatistics) => GetSystemMemoryInternal(ref systemStatistics);
+    public static bool GetSystemMemory(ref SystemStatistics systemStatistics) => GetSystemMemoryInternal(ref systemStatistics);
 
-    public bool GetSystemInfo(ref SystemStatistics systemStatistics)
+    public static bool GetSystemInfo(ref SystemStatistics systemStatistics)
     {
         systemStatistics.MachineName = Environment.MachineName;
         systemStatistics.CpuCores = (ulong)Environment.ProcessorCount;
@@ -62,5 +64,5 @@ public partial class SystemInfo : ISystemInfo
         return result;
     }
     
-    public bool IsRunningAsRoot() => IsRunningAsRootInternal();
+    public static bool IsRunningAsRoot() => IsRunningAsRootInternal();
 }

@@ -6,7 +6,7 @@ using Task.Manager.Interop.Mach;
 
 namespace Task.Manager.System;
 
-public partial class SystemInfo
+public static partial class SystemInfo
 {
 #if __APPLE__
     private const int NanosecondsTo100NanosecondsFactor = 100;
@@ -27,6 +27,9 @@ public partial class SystemInfo
             (Convert.ToInt64(systemTime / NanosecondsTo100NanosecondsFactor * timeBase.numer / timeBase.denom)));
     }
     
+    private static bool GetCpuHighCoreUsageInternal(double processUsagePercent) =>
+        processUsagePercent >= 100.0;
+
     private static unsafe bool GetCpuInfoInternal(ref SystemStatistics systemStatistics)
     {
         systemStatistics.CpuCores = (ulong)Environment.ProcessorCount;

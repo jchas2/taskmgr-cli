@@ -7,6 +7,7 @@ public class ProcessorInfo
     public uint HandleCount { get; set; }
     public long BasePriority { get; set; }
     public int ParentPid { get; set; }
+    public bool IsDaemon { get; set; }
     public DateTime StartTime { get; set; }
 
     public string ProcessName { get; set; } = string.Empty;
@@ -39,6 +40,7 @@ public class ProcessorInfo
         HandleCount = other.HandleCount;
         BasePriority = other.BasePriority;
         ParentPid = other.ParentPid;
+        IsDaemon = other.IsDaemon;
         StartTime = other.StartTime;
         ProcessName = other.ProcessName;
         FileDescription = other.FileDescription;
@@ -64,6 +66,7 @@ public class ProcessorInfo
             HandleCount == other.HandleCount && 
             BasePriority == other.BasePriority && 
             ParentPid == other.ParentPid && 
+            IsDaemon == other.IsDaemon &&
             StartTime.Equals(other.StartTime) && 
             ProcessName == other.ProcessName && 
             FileDescription == other.FileDescription && 
@@ -106,6 +109,7 @@ public class ProcessorInfo
         hashCode.Add(HandleCount);
         hashCode.Add(BasePriority);
         hashCode.Add(ParentPid);
+        hashCode.Add(IsDaemon);
         hashCode.Add(StartTime);
         hashCode.Add(ProcessName);
         hashCode.Add(FileDescription);
