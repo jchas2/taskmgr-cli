@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.ServiceProcess;
 using Task.Manager.Cli.Utils;
 using SysDiag = System.Diagnostics;
 
@@ -8,6 +9,7 @@ public class ProcessInfo(SysDiag::Process process)
 {
     private SysDiag::ProcessModule? mainModule;
     private bool mainModuleInspected = false;
+    private bool? isDaemon = null;
     private string? fileDescription;
     private string? fileName;
     private string? moduleName;
@@ -70,6 +72,16 @@ public class ProcessInfo(SysDiag::Process process)
                     : ProcessName;
             }
             return fileDescription;
+        }
+    }
+
+    public bool IsDaemon
+    {
+        get {
+            if (!isDaemon.HasValue) {
+                isDaemon = ServiceUtils.GetService(Pid, out ServiceController? _);
+            }
+            return isDaemon.Value;
         }
     }
     

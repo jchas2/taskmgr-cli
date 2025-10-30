@@ -13,6 +13,15 @@ public sealed class Theme
         
         Background = themeSection.GetColour(Constants.Keys.Background, ConsoleColor.Black);
         BackgroundHighlight = themeSection.GetColour(Constants.Keys.BackgroundHighlight, ConsoleColor.Cyan);
+        ColumnCommandNormalUserSpace = themeSection.GetColour(Constants.Keys.ColCmdNormalUserSpace, ConsoleColor.Green);
+        ColumnCommandLowPriority = themeSection.GetColour(Constants.Keys.ColCmdLowPriority, ConsoleColor.Blue);
+        ColumnCommandHighCpu = themeSection.GetColour(Constants.Keys.ColCmdHighCpu, ConsoleColor.Red);
+        ColumnCommandIoBound = themeSection.GetColour(Constants.Keys.ColCmdIoBound, ConsoleColor.Cyan);
+        ColumnCommandScript = themeSection.GetColour(Constants.Keys.ColCmdScript, ConsoleColor.Yellow);
+        ColumnUserCurrentNonRoot = themeSection.GetColour(Constants.Keys.ColUserCurrentNonRoot, ConsoleColor.Green);
+        ColumnUserOtherNonRoot = themeSection.GetColour(Constants.Keys.ColUserOtherNonRoot, ConsoleColor.Magenta);
+        ColumnUserSystem = themeSection.GetColour(Constants.Keys.ColUserSystem, ConsoleColor.Gray);
+        ColumnUserRoot = themeSection.GetColour(Constants.Keys.ColUserRoot, ConsoleColor.White);
         CommandBackground = themeSection.GetColour(Constants.Keys.CommandBackground, ConsoleColor.Cyan);
         CommandForeground = themeSection.GetColour(Constants.Keys.CommandForeground, ConsoleColor.White);
         Error = themeSection.GetColour(Constants.Keys.Error, ConsoleColor.Red);
@@ -32,6 +41,17 @@ public sealed class Theme
 
     public ConsoleColor Background { get; private set; }
     public ConsoleColor BackgroundHighlight { get; private set; }
+    
+    public ConsoleColor ColumnCommandNormalUserSpace { get; private set; }
+    public ConsoleColor ColumnCommandLowPriority { get; private set; }
+    public ConsoleColor ColumnCommandHighCpu { get; private set; }
+    public ConsoleColor ColumnCommandIoBound { get; private set; }
+    public ConsoleColor ColumnCommandScript { get; private set; }
+    public ConsoleColor ColumnUserCurrentNonRoot { get; private set; }
+    public ConsoleColor ColumnUserOtherNonRoot { get; private set; }
+    public ConsoleColor ColumnUserSystem { get; private set; }
+    public ConsoleColor ColumnUserRoot { get; private set; }
+    
     public ConsoleColor CommandBackground { get; private set; }
     public ConsoleColor CommandForeground { get; private set; }
     public ConsoleColor Error  { get; private set; }

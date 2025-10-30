@@ -31,7 +31,7 @@ public class ServiceUtilsTests
                 if (ServiceUtils.GetService(p.Pid, out ServiceController? sc)) {
                     return sc;
                 }
-                return null;
+                return null; 
             })
             .Where(sc => sc != null)
             .Any(sc => !string.IsNullOrEmpty(ServiceUtils.GetServiceImagePath(sc!.ServiceName)));
@@ -39,3 +39,4 @@ public class ServiceUtilsTests
         Assert.True(foundAnyService);
     }
 }
+

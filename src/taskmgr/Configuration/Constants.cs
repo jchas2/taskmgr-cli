@@ -35,6 +35,17 @@ public sealed class Constants
         /* Theme keys. */
         public const string Background = "background";
         public const string BackgroundHighlight = "background-highlight";
+
+        public const string ColCmdNormalUserSpace = "col-cmd-normal-user-space";
+        public const string ColCmdLowPriority = "col-cmd-low-priority";
+        public const string ColCmdHighCpu = "col-cmd-high-cpu";
+        public const string ColCmdIoBound = "col-cmd-io-bound";
+        public const string ColCmdScript = "col-cmd-script";
+        public const string ColUserCurrentNonRoot  = "col-user-current-non-root";
+        public const string ColUserOtherNonRoot  = "col-user-other-non-root";
+        public const string ColUserSystem = "col-user-system";
+        public const string ColUserRoot = "col-user-root";
+
         public const string CommandBackground = "command-background";
         public const string CommandForeground = "command-foreground";
         public const string Error = "error";
@@ -50,5 +61,6 @@ public sealed class Constants
         public const string RangeHighForeground = "range-high-foreground";
         public const string RangeLowForeground = "range-low-foreground";
         public const string RangeMidForeground = "range-mid-foreground";
+        
     }
 }

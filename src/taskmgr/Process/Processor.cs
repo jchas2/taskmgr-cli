@@ -12,7 +12,6 @@ public partial class Processor : IProcessor
     private const int InitialBufferSize = 512;
 
     private readonly IProcessService processService;
-    private readonly ISystemInfo systemInfo;
     private SystemStatistics systemStatistics;
     private readonly List<ProcessorInfo> allProcessorInfos;
     private readonly List<ProcessorInfo> allProcessorInfosCopy;
@@ -31,7 +30,6 @@ public partial class Processor : IProcessor
     public Processor(IProcessService processService)
     {
         this.processService = processService;
-        systemInfo = new SystemInfo();
         systemStatistics = new SystemStatistics();
         allProcessorInfos = new List<ProcessorInfo>(InitialBufferSize);
         allProcessorInfosCopy = new List<ProcessorInfo>(InitialBufferSize);
@@ -44,7 +42,7 @@ public partial class Processor : IProcessor
     {
         systemTimes = new SystemTimes();
 
-        if (!systemInfo.GetCpuTimes(ref systemTimes)) {
+        if (!SystemInfo.GetCpuTimes(ref systemTimes)) {
             systemTimes.Idle = 0;
             systemTimes.Kernel = 0;
             systemTimes.User = 0;
@@ -154,8 +152,8 @@ public partial class Processor : IProcessor
             systemStatistics.CpuPercentKernelTime = 0.0;
             systemStatistics.DiskUsage = 0;
 
-            systemInfo.GetSystemInfo(ref systemStatistics);
-            systemInfo.GetSystemMemory(ref systemStatistics);
+            SystemInfo.GetSystemInfo(ref systemStatistics);
+            SystemInfo.GetSystemMemory(ref systemStatistics);
 #if __WIN32__
             long totalSysTime = Environment.ProcessorCount * delayInMs.Ticks;
 #endif              
@@ -296,19 +294,20 @@ public partial class Processor : IProcessor
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool TryMapProcessInfo(ProcessInfo processInfo, ProcessorInfo procInfo)
+    private bool TryMapProcessInfo(ProcessInfo processInfo, ProcessorInfo processorInfo)
     {
         try {
-            procInfo.Pid = processInfo.Pid;
-            procInfo.ParentPid = processInfo.ParentPid;
-            procInfo.ProcessName = processInfo.ProcessName;
-            procInfo.FileDescription = processInfo.FileDescription;
-            procInfo.UserName = processInfo.UserName;
-            procInfo.CmdLine = processInfo.CmdLine;
-            procInfo.StartTime = processInfo.StartTime;
-            procInfo.ThreadCount = processInfo.ThreadCount;
-            procInfo.HandleCount = processInfo.HandleCount;
-            procInfo.BasePriority = processInfo.BasePriority;
+            processorInfo.Pid = processInfo.Pid;
+            processorInfo.ParentPid = processInfo.ParentPid;
+            processorInfo.IsDaemon = processInfo.IsDaemon;
+            processorInfo.ProcessName = processInfo.ProcessName;
+            processorInfo.FileDescription = processInfo.FileDescription;
+            processorInfo.UserName = processInfo.UserName;
+            processorInfo.CmdLine = processInfo.CmdLine;
+            processorInfo.StartTime = processInfo.StartTime;
+            processorInfo.ThreadCount = processInfo.ThreadCount;
+            processorInfo.HandleCount = processInfo.HandleCount;
+            processorInfo.BasePriority = processInfo.BasePriority;
             return true;
         }
         catch (Exception ex) {

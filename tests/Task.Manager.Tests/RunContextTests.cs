@@ -16,7 +16,6 @@ public class RunContextTests
         Mock<IProcessService> processService = new();
         Mock<IModuleService> moduleService = new();
         Mock<IThreadService> threadService = new();
-        Mock<ISystemInfo> systemInfo = new();
         Mock<IProcessor> processor = new();
         Mock<IOutputWriter> outputWriter = new();
 
@@ -25,7 +24,6 @@ public class RunContextTests
             processService.Object,
             moduleService.Object,
             threadService.Object,
-            systemInfo.Object,
             processor.Object,
             outputWriter.Object);
         
@@ -33,7 +31,6 @@ public class RunContextTests
         Assert.True(context.ProcessService == processService.Object);
         Assert.True(context.ModuleService == moduleService.Object);
         Assert.True(context.ThreadService == threadService.Object);
-        Assert.True(context.SystemInfo == systemInfo.Object);
         Assert.True(context.Processor == processor.Object);
         Assert.True(context.OutputWriter == outputWriter.Object);
     }

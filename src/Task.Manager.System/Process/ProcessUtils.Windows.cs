@@ -136,28 +136,26 @@ public static partial class ProcessUtils
     internal static string GetProcessUserName(in SysDiag::Process process)
     {
         try {
-            if (ProcessThreadsApi.OpenProcessToken(
-                process.SafeHandle,
-                0x8u,
-                out var tokenHandle)) {
+            SecurityIdentifier? sid = GetProcessSecurityIdentifier(process);
 
-                if (GetProcessTokenSid(tokenHandle, out SecurityIdentifier sid)) {
-                    IdentityReference identityRef = sid.Translate(typeof(NTAccount));
-                    var userName = identityRef.ToString();
-
-                    if (userMap.ContainsKey(userName)) {
-                        return userMap[userName];
-                    }
-                    
-                    int domainIndex = userName.IndexOf('\\');
-                    if (domainIndex != -1) {
-                        var abbrevUserName = userName.Substring(domainIndex + 1);
-                        userMap.Add(userName, abbrevUserName);
-                    }
-                    
-                    return userName;
-                }
+            if (sid == null) {
+                return DefaultUser;
             }
+            
+            IdentityReference identityRef = sid.Translate(typeof(NTAccount));
+            var userName = identityRef.ToString();
+
+            if (userMap.ContainsKey(userName)) {
+                return userMap[userName];
+            }
+            
+            int domainIndex = userName.IndexOf('\\');
+            if (domainIndex != -1) {
+                var abbrevUserName = userName.Substring(domainIndex + 1);
+                userMap.Add(userName, abbrevUserName);
+            }
+            
+            return userName;
         }
         catch (Exception e) {
             SysDiag.Trace.WriteLine(e);
@@ -166,6 +164,46 @@ public static partial class ProcessUtils
         return DefaultUser;
     }
 
+    internal static UserRoleFlags GetProcessUserRoles(in SysDiag::Process process)
+    {
+        UserRoleFlags flags = 0;
+        SecurityIdentifier? sid = GetProcessSecurityIdentifier(process);
+
+        if (sid == null) {
+            return flags;
+        }
+
+        if (sid.IsWellKnown(WellKnownSidType.LocalSystemSid) || sid.Value == "S-1-5-18" ||
+            sid.IsWellKnown(WellKnownSidType.LocalServiceSid) || sid.Value == "S-1-5-19" ||
+            sid.IsWellKnown(WellKnownSidType.NetworkServiceSid) || sid.Value == "S-1-5-20") {
+
+            flags |= UserRoleFlags.SystemUser;
+        }
+                
+        // TODO:
+        // Process user is member of Administrators group, or is running with User Elevation (UAC)
+        // flags |= UserRoleFlags.RootUser;
+        
+        // Process user is different to the user running taskmgr. 
+        // flags |= UserRoleFlags.OtherUser;
+        
+        return flags;
+    }
+
+    private static SecurityIdentifier? GetProcessSecurityIdentifier(in SysDiag::Process process)
+    {
+        if (ProcessThreadsApi.OpenProcessToken(
+            process.SafeHandle,
+            0x8u,
+            out var tokenHandle)) {
+
+            if (GetProcessTokenSid(tokenHandle, out SecurityIdentifier sid)) {
+                return sid;
+            }
+        }
+
+        return null;
+    }
 #endif
 }
 

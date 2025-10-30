@@ -68,7 +68,6 @@ class Program
                 new ProcessService(),
                 new ModuleService(),
                 new ThreadService(),
-                new SystemInfo(),
                 new Processor(new ProcessService()),
                 outputWriter: null);
 
