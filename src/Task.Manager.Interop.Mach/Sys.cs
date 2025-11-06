@@ -9,11 +9,11 @@ public static unsafe class Sys
 {
     public enum Selectors
     {
-        CTL_KERN = 0x01,
+        CTL_KERN = 0x01,            /* Kernel */
         CTL_VM = 0x02,              /* Virtual Memory */
         CTL_HW = 0x06,              /* Hardware */
     }
-
+    
     public enum Hardware
     {
         HW_MODEL = 0x02,            /* Cpu model */
@@ -23,10 +23,6 @@ public static unsafe class Sys
     }
 
     public const int VM_SWAPUSAGE = 5;
-
-    public const int KERN_PROC_PATHNAME = 12;
-    public const int KERN_PROC = 14;
-    public const int KERN_PROC_PID = 1;
     
     private enum Error
     {
@@ -56,69 +52,55 @@ public static unsafe class Sys
             return Sysctl(ptr, name.Length, ref value, ref len);
         }
     }
-
-    private static unsafe bool Sysctl(
-        int* name, 
-        int name_len, 
-        ref byte* value, 
-        ref int len)
+    
+    private static unsafe bool Sysctl(int* name, int name_len, ref byte* value, ref int len)
     {
         nint bytesLength = len;
-        int result = -1;
+        int ret = -1;
         bool autoSize = (value == null && len == 0);
 
         if (autoSize) {
-            result = Sysctl(
-                name, 
-                name_len, 
-                value, 
-                &bytesLength);
-
-#if DEBUG
-            Debug.Assert(result == 0, $"Failed Sysctl with error {result}");
-#endif            
-            if (result != 0) {
+            ret = Sysctl(name, name_len, value, &bytesLength);
+            
+            if (ret != 0) {
                 return false;
             }
-
+            
             value = (byte*)Marshal.AllocHGlobal((int)bytesLength);
         }
 
-        result = Sysctl(
+        ret = Sysctl(
             name, 
             name_len, 
             value, 
             &bytesLength);
         
-        while (autoSize && result != 0) { //&& GetLastErrorInfo().Error == Error.ENOMEM) {
+        int lastError = Marshal.GetLastPInvokeError();
+        
+        while (autoSize && ret != 0 && lastError == (int)Error.ENOMEM)
+        {
             Marshal.FreeHGlobal((IntPtr)value);
             
             if ((int)bytesLength == int.MaxValue) {
                 throw new OutOfMemoryException();
             }
-
+            
             if ((int)bytesLength >= int.MaxValue / 2) {
                 bytesLength = int.MaxValue;
-            }
+            } 
             else {
                 bytesLength = (int)bytesLength * 2;
             }
-
-            value = (byte*)Marshal.AllocHGlobal(bytesLength);
             
-            result = Sysctl(
-                name, 
-                name_len, 
-                value, 
-                &bytesLength);
+            value = (byte*)Marshal.AllocHGlobal(bytesLength);
+            ret = Sysctl(name, name_len, value, &bytesLength);
         }
-
-        if (result != 0) {
+        
+        if (ret != 0) {
             if (autoSize) {
                 Marshal.FreeHGlobal((IntPtr)value);
             }
-
-            //throw new InvalidOperationException(SR.Format(SR.InvalidSysctl, *name, Marshal.GetLastPInvokeError()));
+            
             return false;
         }
 

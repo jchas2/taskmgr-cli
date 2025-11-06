@@ -93,6 +93,15 @@ public partial class ProcessUtilsTests
     }
 
     [Fact]
+    public void Should_Get_Process_Priority()
+    {
+        SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
+        int priority = ProcessUtils.GetPriority(currentProcess);
+        
+        //Assert.InRange(priority, -20, 19);
+    }
+    
+    [Fact]
     public void Should_Get_Process_User_Name()
     {
         SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();

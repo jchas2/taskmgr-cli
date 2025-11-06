@@ -79,12 +79,14 @@ public class ProcessInfo(SysDiag::Process process)
     {
         get {
             if (!isDaemon.HasValue) {
-                isDaemon = ServiceUtils.GetService(Pid, out ServiceController? _);
+                isDaemon = ProcessUtils.IsDaemon(Pid);
             }
             return isDaemon.Value;
         }
     }
-    
+
+    public bool IsLowPriority => ProcessUtils.IsLowPriority(process);
+
     public string UserName
     {
         get {
@@ -111,7 +113,7 @@ public class ProcessInfo(SysDiag::Process process)
     public int ThreadCount => process.Threads.Count;
 
     public uint HandleCount => ProcessUtils.GetHandleCount(process);
-    public long BasePriority => process.BasePriority;
+    public long BasePriority => ProcessUtils.GetPriority(process); //process.BasePriority;
     public long UsedMemory => process.WorkingSet64;
     public long KernelTime => process.PrivilegedProcessorTime.Ticks;
     public long UserTime => process.UserProcessorTime.Ticks;

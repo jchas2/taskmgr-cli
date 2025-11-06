@@ -27,7 +27,11 @@ public partial class ProcessControl
         [ColumnProperty("UserName")]
         [ColumnSortKey(ConsoleKey.U)]
         User,
+#if __WIN32__        
         [ColumnTitle("PRI")]
+#elif __APPLE__
+        [ColumnTitle("NI")]
+#endif
         [ColumnProperty("BasePriority")]
         Priority,
         [ColumnTitle("CPU%")]

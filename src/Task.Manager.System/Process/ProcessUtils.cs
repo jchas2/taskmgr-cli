@@ -17,6 +17,12 @@ public static partial class ProcessUtils
     }
     
     internal static uint GetHandleCount(SysDiag::Process process) => GetHandleCountInternal(process);
+
+    public static int GetPriority(in SysDiag::Process process) => GetPriorityInternal(process);
+
+    public static bool IsDaemon(in int pid) => IsDaemonInternal(pid);
+
+    public static bool IsLowPriority(in SysDiag::Process process) => IsLowPriorityInternal(process);
     
     internal static bool TryGetProcessByPid(int pid, out SysDiag::Process? process)
     {

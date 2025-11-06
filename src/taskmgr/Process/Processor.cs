@@ -300,6 +300,7 @@ public partial class Processor : IProcessor
             processorInfo.Pid = processInfo.Pid;
             processorInfo.ParentPid = processInfo.ParentPid;
             processorInfo.IsDaemon = processInfo.IsDaemon;
+            processorInfo.IsLowPriority = processInfo.IsLowPriority;
             processorInfo.ProcessName = processInfo.ProcessName;
             processorInfo.FileDescription = processInfo.FileDescription;
             processorInfo.UserName = processInfo.UserName;

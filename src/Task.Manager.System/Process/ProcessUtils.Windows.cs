@@ -25,6 +25,8 @@ public static partial class ProcessUtils
         return (uint)process.HandleCount + (gdiHandleCount + usrHandleCount);
     }
 
+    private static int GetPriorityInternal(in SysDiag::Process process) => process.BasePriority;
+
     internal static string GetProcessCommandLine(in int pid, in SysDiag::ProcessModule processModule, in string defaultValue)
     {
         try {
@@ -204,6 +206,12 @@ public static partial class ProcessUtils
 
         return null;
     }
+
+    internal static bool IsDaemonInternal(in int pid) => 
+        ServiceUtils.GetService(pid, out ServiceController? _);
+    
+    internal static unsafe bool IsLowPriorityInternal(in SysDiag::Process process) =>
+        GetPriorityInternal(process) < 8;
 #endif
 }
 

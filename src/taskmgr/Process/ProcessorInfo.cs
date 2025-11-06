@@ -8,6 +8,7 @@ public class ProcessorInfo
     public long BasePriority { get; set; }
     public int ParentPid { get; set; }
     public bool IsDaemon { get; set; }
+    public bool IsLowPriority { get; set; }
     public DateTime StartTime { get; set; }
 
     public string ProcessName { get; set; } = string.Empty;
@@ -41,6 +42,7 @@ public class ProcessorInfo
         BasePriority = other.BasePriority;
         ParentPid = other.ParentPid;
         IsDaemon = other.IsDaemon;
+        IsLowPriority = other.IsLowPriority;
         StartTime = other.StartTime;
         ProcessName = other.ProcessName;
         FileDescription = other.FileDescription;
@@ -67,6 +69,7 @@ public class ProcessorInfo
             BasePriority == other.BasePriority && 
             ParentPid == other.ParentPid && 
             IsDaemon == other.IsDaemon &&
+            IsLowPriority == other.IsLowPriority &&
             StartTime.Equals(other.StartTime) && 
             ProcessName == other.ProcessName && 
             FileDescription == other.FileDescription && 
@@ -110,6 +113,7 @@ public class ProcessorInfo
         hashCode.Add(BasePriority);
         hashCode.Add(ParentPid);
         hashCode.Add(IsDaemon);
+        hashCode.Add(IsLowPriority);
         hashCode.Add(StartTime);
         hashCode.Add(ProcessName);
         hashCode.Add(FileDescription);

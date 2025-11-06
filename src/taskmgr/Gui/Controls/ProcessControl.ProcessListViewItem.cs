@@ -149,7 +149,7 @@ public partial class ProcessControl
                 SubItems[(int)Columns.CommandLine].ForegroundColor = Theme.ColumnCommandNormalUserSpace;
             }
 
-            if (processorInfo.BasePriority < 8) {
+            if (processorInfo.IsLowPriority) {
                 SubItems[(int)Columns.Process].ForegroundColor = Theme.ColumnCommandLowPriority;
                 SubItems[(int)Columns.CommandLine].ForegroundColor = Theme.ColumnCommandLowPriority;
             }
