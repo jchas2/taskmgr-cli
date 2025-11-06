@@ -118,7 +118,20 @@ public static partial class ProcessUtils
         return string.Empty;
     }
 
-    internal static bool IsDaemonInternal(in int pid) => false;
+    internal static bool IsDaemonInternal(in int pid)
+    {
+        const int LAUNCHD_PID = 1;
+        
+        ProcInfo.proc_taskallinfo? info = GetProcessInfoById(pid);
+
+        if (null == info) {
+            return false;
+        }
+        
+        ProcInfo.proc_taskallinfo ti = info.Value;
+
+        return ti.pbsd.pbi_ppid == LAUNCHD_PID || pid == LAUNCHD_PID;
+    }
 
     internal static unsafe bool IsLowPriorityInternal(in SysDiag::Process process) =>
         GetPriorityInternal(process) > 0;
