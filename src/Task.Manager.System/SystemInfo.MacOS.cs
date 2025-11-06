@@ -109,7 +109,7 @@ public static partial class SystemInfo
         byte* buffer = null;
         int bytesLength = 0;
 
-        if (false == Sys.Sysctl(sysctlName, ref buffer, ref bytesLength)) {
+        if (!Sys.Sysctl(sysctlName, ref buffer, ref bytesLength)) {
             return 0;
         }
 

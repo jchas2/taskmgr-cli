@@ -13,10 +13,23 @@ public static partial class ProcessUtils
     {
         return (uint)process.HandleCount;
     }
-    
-    internal static string GetProcessCommandLine(in SysDiag::ProcessModule processModule, in string defaultValue)
+
+    private static unsafe int GetPriorityInternal(in SysDiag::Process process)
     {
-        // TODO: Determine for Mach. 
+        ProcInfo.proc_taskallinfo? info = GetProcessInfoById(process.Id);
+
+        if (null == info) {
+            return 0;
+        }
+        
+        ProcInfo.proc_taskallinfo ti = info.Value;
+
+        return ti.pbsd.pbi_nice;
+    }
+    
+    internal static string GetProcessCommandLine(in int pid, in SysDiag::ProcessModule processModule, in string defaultValue)
+    {
+        // TODO: Use Pid and determine for Mach. LaunchCtl? 
         try {
             return processModule.FileName ?? defaultValue;
         }
@@ -24,7 +37,7 @@ public static partial class ProcessUtils
             return defaultValue;
         } 
     }
-
+    
     public static ulong GetProcessIoOperations(in int pid) => 
         GetProcessIoOperationsInternal(pid);
 
@@ -78,7 +91,7 @@ public static partial class ProcessUtils
         return processName ?? defaultValue;
     }
 
-    internal static unsafe string GetProcessUserName(global::System.Diagnostics.Process process)
+    internal static unsafe string GetProcessUserName(SysDiag::Process process)
     {
         ProcInfo.proc_taskallinfo? info = GetProcessInfoById(process.Id);
 
@@ -104,5 +117,11 @@ public static partial class ProcessUtils
         
         return string.Empty;
     }
+
+    internal static bool IsDaemonInternal(in int pid) => false;
+
+    internal static unsafe bool IsLowPriorityInternal(in SysDiag::Process process) =>
+        GetPriorityInternal(process) > 0;
+
 #endif
 }

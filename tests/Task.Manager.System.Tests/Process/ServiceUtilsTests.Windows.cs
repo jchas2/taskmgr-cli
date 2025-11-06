@@ -7,6 +7,7 @@ namespace Task.Manager.System.Tests.Process;
 
 public class ServiceUtilsTests
 {
+#if __WIN32__
     [SkippableFact]
     [SupportedOSPlatform("windows")]
     public void Should_Get_Services_With_Pid()
@@ -38,5 +39,6 @@ public class ServiceUtilsTests
 
         Assert.True(foundAnyService);
     }
+#endif
 }
 

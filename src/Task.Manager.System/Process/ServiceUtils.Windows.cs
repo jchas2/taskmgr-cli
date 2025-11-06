@@ -7,7 +7,7 @@ namespace Task.Manager.System.Process;
 
 #pragma warning disable CA1416 // Validate platform compatibility        
 
-public static class ServiceUtils
+public static partial class ServiceUtils
 {
 #if __WIN32__
     private static readonly Dictionary<int, ServiceController> serviceMap = new();
@@ -93,6 +93,8 @@ public static class ServiceUtils
         Marshal.FreeHGlobal(pss);
         return pid;
     }
+    
+    public static bool IsService(int pid) => ServiceUtils.GetService(Pid, out ServiceController? _);
 #endif    
 }
 
