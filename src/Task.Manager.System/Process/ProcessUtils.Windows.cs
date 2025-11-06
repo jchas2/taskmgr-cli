@@ -208,7 +208,7 @@ public static partial class ProcessUtils
     }
 
     internal static bool IsDaemonInternal(in int pid) => 
-        ServiceUtils.GetService(Pid, out ServiceController? _);
+        ServiceUtils.GetService(pid, out ServiceController? _);
     
     internal static unsafe bool IsLowPriorityInternal(in SysDiag::Process process) =>
         GetPriorityInternal(process) < 8;

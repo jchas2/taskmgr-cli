@@ -94,7 +94,7 @@ public static partial class ServiceUtils
         return pid;
     }
     
-    public static bool IsService(int pid) => ServiceUtils.GetService(Pid, out ServiceController? _);
+    public static bool IsService(int pid) => ServiceUtils.GetService(pid, out ServiceController? _);
 #endif    
 }
 
