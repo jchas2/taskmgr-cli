@@ -6,8 +6,8 @@ namespace Task.Manager.Configuration;
 
 public static class ConfigBuilder
 {
-    private const string StatsCols = "pid, process, user, pri, cpu, mem, virt, thrd, disk";
-    
+    private static readonly string StatsCols = string.Join(", ", Enum.GetNames<Statistics>());
+
     private static readonly string[,] colourMap = {
         { Constants.Keys.Background, "black" },
         { Constants.Keys.BackgroundHighlight, "cyan" },
@@ -174,7 +174,7 @@ public static class ConfigBuilder
     public static ConfigSection BuildConfigSection(string name)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(name, nameof(name));
-        
+
         name = name.ToLower();
         
         switch (name) {

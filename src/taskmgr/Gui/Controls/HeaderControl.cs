@@ -153,7 +153,7 @@ public sealed class HeaderControl : Control
             systemStatistics.CpuCores.ToString().Length + 1;
 
         Terminal.WriteEmptyLineTo(Width - nchars);
-        Terminal.WriteEmptyLine();
+        //Terminal.WriteEmptyLine();
         
         double totalCpu = systemStatistics.CpuPercentKernelTime + systemStatistics.CpuPercentUserTime;
 

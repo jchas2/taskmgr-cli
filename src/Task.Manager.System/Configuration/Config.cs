@@ -1,3 +1,4 @@
+using System.Text;
 using Task.Manager.Internal.Abstractions;
 
 namespace Task.Manager.System.Configuration;
@@ -63,14 +64,18 @@ public class Config
         config.ConfigSections = parser.Sections;
         return config;
     }
-    
-    private static void TryLoadConfig(Action action)
+
+    public static void ToFile(IFileSystem fileSys, string path, Config config)
     {
-        try {
-            action.Invoke();
-        }
-        catch (Exception e) {
-            throw new ConfigLoadException(e.Message, e);
-        }
+        ArgumentNullException.ThrowIfNull(fileSys);
+        ArgumentNullException.ThrowIfNull(path);
+
+        StringBuilder buffer = new(1024*16);
+        
+        foreach (ConfigSection configSection in config.ConfigSections) {
+            buffer.AppendLine(configSection.ToString());
+        }        
+
+        fileSys.WriteAllText(path, buffer.ToString());
     }
 }
