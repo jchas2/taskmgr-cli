@@ -1,5 +1,5 @@
 ﻿#if DEBUG
-    #define DEBUG_TRACE_LISTENER 
+//    #define DEBUG_TRACE_LISTENER 
 #endif
 
 using System.Diagnostics;
@@ -61,14 +61,19 @@ class Program
 #if DEBUG_TRACE_LISTENER
         FormattedTextWriterTraceListener.Initialise();
 #endif
+        ProcessService processService = new();
+        ModuleService moduleService = new();
+        ThreadService threadService = new();
+        FileSystem fileSystem = new();
+        Processor processor = new(processService);
         
         try {
             RunContext runContext = new(
-                new FileSystem(),
-                new ProcessService(),
-                new ModuleService(),
-                new ThreadService(),
-                new Processor(new ProcessService()),
+                fileSystem,
+                processService,
+                moduleService,
+                threadService,
+                processor,
                 outputWriter: null);
 
             TaskMgrApp app = new(runContext);

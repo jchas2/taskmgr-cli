@@ -13,7 +13,7 @@ namespace Task.Manager;
 public sealed class TaskMgrApp
 {
     private const string MutexId = "Task-Mgr-d3f8e2a1-4b6f-4e8a-9b2d-1c3e4f5a6b7c";
-    private const string ConfigFile = "taskmgr.config";
+    private const string ConfigFile = "taskmgr.ini";
 
     private readonly RunContext runContext;
     private static Mutex? mutex = null;
@@ -23,7 +23,7 @@ public sealed class TaskMgrApp
         this.runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
     }
     
-    private RootCommand InitRootCommand(Config config)
+    private RootCommand InitRootCommand(Config config, string configFile)
     {
         Option<int?> pidOption = new(
             name: "--pid",
@@ -129,17 +129,20 @@ public sealed class TaskMgrApp
                 }
             }
 
-            /*
-             * Now we have a config that's either been loaded from disk or generated
-             * through the ConfigBuilder with defaults, and has had any command line
-             * args that override a setting applied.
-             *
-             * Now we ensure all settings exist in the config by performing a merge
-             * against the config instance with the default settings from the
-             * ConfigBuilder.
-             */
+            // Now we have a config that's either been loaded from disk or generated
+            // through the ConfigBuilder with defaults, and has had any command line
+            // args that override a setting applied.
+            // 
+            // Now we ensure all settings exist in the config by performing a merge
+            // against the config instance with the default settings from the
+            // ConfigBuilder.
+            // 
             ConfigBuilder.Merge(config);
             Theme theme = new(config);
+
+            if (!runContext.FileSystem.Exists(configFile)) {
+                TryWriteConfigurationToFile(configFile, config);
+            }
             
             RunCommand(
                 runContext,
@@ -196,9 +199,10 @@ public sealed class TaskMgrApp
             }
 
             Config? config = null;
-
-            if (TryGetConfigurationPath(out string? configPath) && !string.IsNullOrEmpty(configPath)) {
-                string configFile = Path.Combine(configPath, ConfigFile);
+            string configFile = string.Empty;
+            
+            if (TryGetConfigurationPath(out string? configPath) && !string.IsNullOrWhiteSpace(configPath)) {
+                configFile = Path.Combine(configPath, ConfigFile);
                 if (runContext.FileSystem.Exists(configFile)) {
                     TryGetConfigurationFromFile(configFile, out config);
                 }
@@ -206,7 +210,7 @@ public sealed class TaskMgrApp
 
             config ??= ConfigBuilder.BuildDefault();
 
-            RootCommand rootCommand = InitRootCommand(config);
+            RootCommand rootCommand = InitRootCommand(config, configFile);
             int exitCode = rootCommand.Invoke(args);
 
             return exitCode;
@@ -237,7 +241,7 @@ public sealed class TaskMgrApp
         return false;
     }
     
-    private bool TryGetConfigurationPath(out string? configPath)
+    private bool TryGetConfigurationPath(out string configPath)
     {
         configPath = string.Empty;
         
@@ -247,6 +251,22 @@ public sealed class TaskMgrApp
         }
         catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is IOException) {
             runContext.OutputWriter.WriteLine($"Unable to get working path: {e.Message}.".ToRed());
+            return false;
+        }
+    }
+
+    private bool TryWriteConfigurationToFile(string configFile, Config config)
+    {
+        try {
+            Config.ToFile(
+                runContext.FileSystem, 
+                configFile, 
+                config);
+            
+            return true;
+        }
+        catch (Exception e) {
+            runContext.OutputWriter.WriteLine($"Unable to write config file: {e.Message}.".ToRed());
             return false;
         }
     }

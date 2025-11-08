@@ -1,3 +1,4 @@
+using System.Text;
 using Task.Manager.Cli.Utils;
 
 namespace Task.Manager.System.Configuration;
@@ -82,6 +83,18 @@ public sealed class ConfigSection
         set => name = value ?? throw new ArgumentNullException(nameof(Name));
     }
 
+    public override string ToString()
+    {
+        StringBuilder buffer = new(1024);
+        buffer.AppendLine($"[{name}]");
+
+        foreach (KeyValuePair<string,string> pair in keys) {
+            buffer.AppendLine($"{pair.Key}={pair.Value}");
+        }
+        
+        return buffer.ToString();
+    }
+    
     private T TryParse<T>(string key, Func<string, T> parseMethod, T defaultValue)
     {
         string strVal = GetString(key, string.Empty);

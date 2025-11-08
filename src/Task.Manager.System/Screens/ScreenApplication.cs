@@ -59,7 +59,7 @@ public sealed class ScreenApplication
                     Screen currScreen = screenStack.Peek();
 
                     // Resize Events.
-                    if (screenWidth != terminal.WindowWidth || screenHeight != terminal.WindowHeight) {
+                    if (screenWidth != terminal.WindowWidth && screenHeight != terminal.WindowHeight) {
                         FitScreenToConsole(currScreen);
                         currScreen.Resize();
                         currScreen.Draw();
@@ -67,7 +67,7 @@ public sealed class ScreenApplication
                         screenHeight = terminal.WindowHeight;
                         continue;
                     }
-
+                    
                     // Key Events.
                     if (terminal.KeyAvailable) {
                         ConsoleKeyInfo consoleKeyInfo = terminal.ReadKey();

@@ -33,7 +33,7 @@ public sealed partial class ProcessControl : Control
     private List<ProcessorInfo> allProcesses = [];
     private SystemStatistics systemStatistics;
     private ControlMode mode = ControlMode.None;
-    private Columns sortColumn = Columns.Cpu;
+    private Columns sortColumn;
 
     private const int SortControlWidth = 20;
     private const int ControlGutter = 1;
@@ -53,14 +53,31 @@ public sealed partial class ProcessControl : Control
         this.theme = theme ?? throw new ArgumentNullException(nameof(theme));
         this.config = config ?? throw new ArgumentNullException(nameof(config));
 
-        ConfigSection csFilter = config.GetConfigSection(Configuration.Constants.Sections.Filter);
-        ConfigSection statsFilter = config.GetConfigSection(Configuration.Constants.Sections.Stats);
+        ConfigSection filterSection = config.GetConfigSection(Configuration.Constants.Sections.Filter);
+        ConfigSection statsSection = config.GetConfigSection(Configuration.Constants.Sections.Stats);
+        ConfigSection sortSection = config.GetConfigSection(Configuration.Constants.Sections.Sort);
         
         cmdLineFilters = new CmdLineFilters {
-            Pid = csFilter.Contains(Configuration.Constants.Keys.Pid) ? csFilter.GetInt(Configuration.Constants.Keys.Pid, -1) : -1,
-            UserName = csFilter.Contains(Configuration.Constants.Keys.UserName) ? csFilter.GetString(Configuration.Constants.Keys.UserName, string.Empty) : string.Empty,
-            Process = csFilter.Contains(Configuration.Constants.Keys.Process) ? csFilter.GetString(Configuration.Constants.Keys.Process, string.Empty) : string.Empty,
-            NumProcs = statsFilter.Contains(Configuration.Constants.Keys.NProcs) ? statsFilter.GetInt(Configuration.Constants.Keys.NProcs, -1) : -1
+            Pid = filterSection.Contains(Configuration.Constants.Keys.Pid) ? filterSection.GetInt(Configuration.Constants.Keys.Pid, -1) : -1,
+            UserName = filterSection.Contains(Configuration.Constants.Keys.UserName) ? filterSection.GetString(Configuration.Constants.Keys.UserName, string.Empty) : string.Empty,
+            Process = filterSection.Contains(Configuration.Constants.Keys.Process) ? filterSection.GetString(Configuration.Constants.Keys.Process, string.Empty) : string.Empty,
+            NumProcs = statsSection.Contains(Configuration.Constants.Keys.NProcs) ? statsSection.GetInt(Configuration.Constants.Keys.NProcs, -1) : -1
+        };
+
+        string sortStatisticStr = sortSection.GetString(Configuration.Constants.Keys.Col, Statistics.Cpu.ToString());
+        Statistics sortStatistic = Enum.TryParse(sortStatisticStr, out Statistics parsedStatistic) ? parsedStatistic : Statistics.Cpu;
+        
+        sortColumn = sortStatistic switch {
+            Statistics.Pid     => Columns.Pid,
+            Statistics.Process => Columns.Process,
+            Statistics.User    => Columns.User,
+            Statistics.Pri     => Columns.Priority,
+            Statistics.Cpu     => Columns.Cpu,
+            Statistics.Mem     => Columns.Memory,
+            Statistics.Thrd    => Columns.Threads,
+            Statistics.Disk    => Columns.Disk,
+            Statistics.Path    => Columns.CommandLine,
+            _ => Columns.Cpu
         };
         
         sortView = new ListView(terminal) {
