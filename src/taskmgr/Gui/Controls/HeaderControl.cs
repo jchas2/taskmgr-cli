@@ -52,8 +52,6 @@ public sealed class HeaderControl : Control
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground,
             DrawStacked = true,
-            LabelSeries1 = "k",
-            LabelSeries2 = "u"
         };
 
         memoryMetre = new MetreControl(terminal) {
@@ -61,7 +59,6 @@ public sealed class HeaderControl : Control
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground,
             DrawStacked = false,
-            LabelSeries1 = "m"
         };
 
         virtualMemoryMetre = new MetreControl(terminal) {
@@ -74,12 +71,6 @@ public sealed class HeaderControl : Control
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground,
             DrawStacked = false,
-#if __WIN32__            
-            LabelSeries1 = "v"
-#endif
-#if __APPLE__            
-            LabelSeries2 = "s"
-#endif
         };
 
         diskMetre = new MetreControl(terminal) {
@@ -87,7 +78,6 @@ public sealed class HeaderControl : Control
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground,
             DrawStacked = false,
-            LabelSeries1 = string.Empty
         };
         
         statisticsView = new ListView(terminal) {
@@ -153,7 +143,6 @@ public sealed class HeaderControl : Control
             systemStatistics.CpuCores.ToString().Length + 1;
 
         Terminal.WriteEmptyLineTo(Width - nchars);
-        //Terminal.WriteEmptyLine();
         
         double totalCpu = systemStatistics.CpuPercentKernelTime + systemStatistics.CpuPercentUserTime;
 
@@ -167,20 +156,20 @@ public sealed class HeaderControl : Control
             virRatio = 1.0 - ((double)(systemStatistics.AvailablePageFile) / (double)(systemStatistics.TotalPageFile));    
         }
 
-        var userColour = totalCpu < 50.0 ? theme.RangeLowBackground
-            : totalCpu < 75.0 ? theme.RangeMidBackground
+        var userColour = totalCpu < 0.25 ? theme.RangeLowBackground
+            : totalCpu < 0.75 ? theme.RangeMidBackground
             : theme.RangeHighBackground;
 
         // Switch the kernel colours around to provide some contrast to the User Cpu %.
-        var kernelColour = totalCpu < 50.0 ? theme.RangeMidBackground
-            : totalCpu < 75.0 ? theme.RangeLowBackground
+        var kernelColour = totalCpu < 0.25 ? theme.RangeMidBackground
+            : totalCpu < 0.75 ? theme.RangeLowBackground
             : theme.RangeMidBackground;
 
-        var memColour = memRatio < 0.5 ? theme.RangeLowBackground
+        var memColour = memRatio < 0.25 ? theme.RangeLowBackground
             : memRatio < 0.75 ? theme.RangeMidBackground
             : theme.RangeHighBackground;
 
-        var virColour = virRatio < 0.5 ? theme.RangeLowBackground
+        var virColour = virRatio < 0.25 ? theme.RangeLowBackground
             : virRatio < 0.75 ? theme.RangeMidBackground
             : theme.RangeHighBackground;
         
@@ -202,6 +191,8 @@ public sealed class HeaderControl : Control
         cpuMetre.PercentageSeries2 = systemStatistics.CpuPercentUserTime;
         cpuMetre.ColourSeries1 = kernelColour;
         cpuMetre.ColourSeries2 = userColour;
+        cpuMetre.LabelSeries1 = string.Empty;
+        cpuMetre.LabelSeries2 = totalCpu.ToString("000.0%"); 
         cpuMetre.Draw();
         
         memoryMetre.PercentageSeries1 = memRatio;

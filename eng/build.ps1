@@ -14,7 +14,7 @@ $ProjectPath = $PSScriptRoot + "\..\src\taskmgr\taskmgr.csproj"
 
 function Publish([string] $config) {
     # dotnet publish $ProjectPath -c $config -r win-x64 --self-contained true /p:PublishTrimmed=false /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:UseAppHost=true
-    & "dotnet" publish $ProjectPath -c Release -r win-x64 --self-contained -p:PublishAot=true
+    & "dotnet" publish $ProjectPath -c $config -r win-x64 --self-contained -p:PublishAot=true
 }
 
 if ($clean) {

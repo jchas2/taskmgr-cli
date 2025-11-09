@@ -183,7 +183,7 @@ public sealed class TaskMgrApp
     public int Run(string[] args)
     {
 #if !DEBUG
-        if (false == runContext.SystemInfo.IsRunningAsRoot()) {
+        if (false == SystemInfo.IsRunningAsRoot()) {
             OutputWriter.Error.WriteLine("Application must be run as root user.".ToRed());
             return -1;
         }

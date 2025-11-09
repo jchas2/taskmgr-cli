@@ -67,13 +67,13 @@ public static partial class ServiceUtils
     private static int GetServiceProcessId(IntPtr hService)
     {
         int pid = 0;
-        IntPtr pss = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(WinService.SERVICE_STATUS_PROCESS)));
+        IntPtr pss = Marshal.AllocHGlobal(Marshal.SizeOf<WinService.SERVICE_STATUS_PROCESS>());
 
         if (!WinService.QueryServiceStatusEx(
             hService,
             WinService.SC_ENUM_PROCESS_INFO,
             pss,
-            (uint)Marshal.SizeOf(typeof(WinService.SERVICE_STATUS_PROCESS)),
+            (uint)Marshal.SizeOf<WinService.SERVICE_STATUS_PROCESS>(),
             out _)) {
             
             return 0;
