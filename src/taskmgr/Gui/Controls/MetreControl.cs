@@ -6,10 +6,7 @@ namespace Task.Manager.Gui.Controls;
 
 public sealed class MetreControl : Control
 {
-    private const char MetreLeftBracket = '[';
-    private const char MetreRightBracket = ']';
     private const int MetreMargin = 2;
-
     private const char BlockChar = ' ';
     private const char BarChar = '|';
     private const char DotChar = '⣿';
@@ -19,53 +16,6 @@ public sealed class MetreControl : Control
     public ConsoleColor ColourSeries1 { get; set; } = ConsoleColor.DarkGray;
     
     public ConsoleColor ColourSeries2 { get; set; } = ConsoleColor.DarkGray;
-
-    private int DrawMeter2(
-        string label,
-        double percentage,
-        ConsoleColor colour,
-        int offsetX,
-        bool drawBackground = true)
-    {
-        using TerminalColourRestorer _ = new();
-        
-        int nchars = 0;
-        int units = (int)(percentage * (double)MetreWidth);
-
-        if (units == 0 && percentage > 0) {
-            units = 1;
-        }
-
-        Terminal.BackgroundColor = MetreStyle == MetreControlStyle.Block ? colour : BackgroundColour;
-        Terminal.ForegroundColor = MetreStyle == MetreControlStyle.Block ? ForegroundColour : colour;
-
-        if (units > 0) {
-            Terminal.Write(label);
-            nchars += label.Length;
-        }
-
-        if (nchars < units) {
-            string buffer = MetreStyle == MetreControlStyle.Block 
-                ? new(' ', units - nchars) 
-                : new('|', units - nchars);
-            
-            Terminal.Write(buffer);
-            nchars += buffer.Length;
-        }
-
-        if (drawBackground) {
-            int length = MetreWidth - (units + offsetX);
-            
-            if (length > 0) {
-                Terminal.BackgroundColor = BackgroundColour;
-                string buffer = new(' ', length); 
-                Terminal.Write(buffer);
-                nchars += buffer.Length;
-            }
-        }
-        
-        return nchars;
-    }
 
     private int DrawMeter(
         string label,
@@ -90,19 +40,16 @@ public sealed class MetreControl : Control
             labelSegmentWidth = label.Length;
         }
 
+        ConsoleColor unitFg = MetreStyle == MetreControlStyle.Block ? ForegroundColour : colour;
+        ConsoleColor unitBg = MetreStyle == MetreControlStyle.Block ? colour : BackgroundColour;
+        
         if (units + labelSegmentWidth > segmentWidth) {
             // The metre colours will eat into the string. Colour code the string accordingly.
             int numChars = segmentWidth - units;
             int colourStrLen = labelSegmentWidth - numChars;
 
-            if (MetreStyle == MetreControlStyle.Bar || MetreStyle == MetreControlStyle.Dot) {
-                label = label.Substring(0, colourStrLen).ToColour(colour, BackgroundColour) + 
-                        label.Substring(colourStrLen, label.Length - colourStrLen);
-            }
-            else if (MetreStyle == MetreControlStyle.Block) {
-                label = label.Substring(0, colourStrLen).ToColour(ForegroundColour, colour) +
-                        label.Substring(colourStrLen, label.Length - colourStrLen);
-            }
+            label = label.Substring(0, colourStrLen).ToColour(unitFg, unitBg) + 
+                    label.Substring(colourStrLen, label.Length - colourStrLen);
             
             units -= colourStrLen;
         }
@@ -120,15 +67,7 @@ public sealed class MetreControl : Control
             _ => BlockChar
         };
 
-        string unitStr = string.Empty;
-        
-        if (MetreStyle == MetreControlStyle.Bar || MetreStyle == MetreControlStyle.Dot) {
-            unitStr = new string(unitChar, units).ToColour(colour, BackgroundColour);    
-        }
-        else if (MetreStyle == MetreControlStyle.Block) {
-            unitStr = new string(unitChar, units).ToColour(ForegroundColour, colour);
-        }
-                            
+        string unitStr = new string(unitChar, units).ToColour(unitFg, unitBg);
         Terminal.Write(unitStr);
 
         if (!isFinalStackSegment) {

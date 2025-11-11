@@ -1,6 +1,7 @@
 ﻿using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.System;
+using Task.Manager.System.Configuration;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
@@ -12,6 +13,7 @@ namespace Task.Manager.Gui.Controls;
 public sealed class HeaderControl : Control
 {
     private readonly IProcessor processor;
+    private readonly Config config;
     private readonly Theme theme;
     private SystemStatistics systemStatistics = new();
 
@@ -36,11 +38,18 @@ public sealed class HeaderControl : Control
 
     public HeaderControl(
         IProcessor processor, 
-        ISystemTerminal terminal, 
-        Theme theme) : base(terminal)
+        ISystemTerminal terminal,
+        Theme theme,
+        Config config) : base(terminal)
     {
         this.processor = processor ?? throw new ArgumentNullException(nameof(processor));
         this.theme = theme ?? throw new ArgumentNullException(nameof(theme));
+        this.config = config ?? throw new ArgumentNullException(nameof(config));
+                
+        ConfigSection uxSection = config.GetConfigSection(Configuration.Constants.Sections.UX);
+        MetreControlStyle metreStyle = uxSection.Contains(Configuration.Constants.Keys.MetreStyle) 
+            ? uxSection.GetEnum(Configuration.Constants.Keys.MetreStyle, MetreControlStyle.Dot) 
+            : MetreControlStyle.Dot;
         
         BackgroundColour = theme.Background;
         ForegroundColour = theme.Foreground;
@@ -51,6 +60,7 @@ public sealed class HeaderControl : Control
             Text = "Cpu",
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground,
+            MetreStyle = metreStyle,
             DrawStacked = true,
         };
 
@@ -58,6 +68,7 @@ public sealed class HeaderControl : Control
             Text = "Mem",
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground,
+            MetreStyle = metreStyle,
             DrawStacked = false,
         };
 
@@ -70,6 +81,7 @@ public sealed class HeaderControl : Control
 #endif
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground,
+            MetreStyle = metreStyle,
             DrawStacked = false,
         };
 
@@ -77,6 +89,7 @@ public sealed class HeaderControl : Control
             Text = "Dsk",
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground,
+            MetreStyle = metreStyle,
             DrawStacked = false,
         };
         
