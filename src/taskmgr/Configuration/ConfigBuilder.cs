@@ -22,11 +22,11 @@ public static class ConfigBuilder
         { Constants.Keys.ColUserSystem, "gray" },
         { Constants.Keys.ColUserRoot, "white" },
         
-        { Constants.Keys.CommandForeground, "white" },
+        { Constants.Keys.CommandForeground, "black" },
         { Constants.Keys.CommandBackground, "cyan" },
         { Constants.Keys.Error, "red" },
         { Constants.Keys.Foreground, "white" },
-        { Constants.Keys.ForegroundHighlight, "white" },
+        { Constants.Keys.ForegroundHighlight, "black" },
         { Constants.Keys.MenubarForeground, "white" },
         { Constants.Keys.MenubarBackground, "darkblue" },
         { Constants.Keys.RangeHighBackground, "red" },
@@ -36,7 +36,7 @@ public static class ConfigBuilder
         { Constants.Keys.RangeLowForeground, "black" },
         { Constants.Keys.RangeMidForeground, "black" },
         { Constants.Keys.HeaderBackground, "green" },
-        { Constants.Keys.HeaderForeground, "white" } };
+        { Constants.Keys.HeaderForeground, "black" } };
 
     private static readonly string[,] monoMap = {
         { Constants.Keys.Background, "black" },
@@ -185,7 +185,7 @@ public static class ConfigBuilder
                     .Add(Constants.Keys.Process, string.Empty);
             case Constants.Sections.UX:
                 return new ConfigSection(Constants.Sections.UX)
-                    .Add(Constants.Keys.Bars, "false")
+                    .Add(Constants.Keys.MetreStyle, "dots")
                     .Add(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour);
             case Constants.Sections.Stats:
                 return new ConfigSection(Constants.Sections.Stats)
@@ -250,7 +250,7 @@ public static class ConfigBuilder
             .AddIfMissing(Constants.Keys.Process, string.Empty);
 
         ConfigSection uxSection = GetConfigSection(Constants.Sections.UX, withConfig)
-            .AddIfMissing(Constants.Keys.Bars, "false")
+            .AddIfMissing(Constants.Keys.MetreStyle, "dots")
             .AddIfMissing(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour);
 
         ConfigSection statsSection = GetConfigSection(Constants.Sections.Stats, withConfig)

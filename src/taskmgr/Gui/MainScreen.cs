@@ -43,7 +43,8 @@ public sealed class MainScreen : Screen
         headerControl = new HeaderControl(
             this.runContext.Processor,
             terminal,
-            theme) {
+            this.theme,
+            this.config) {
             BackgroundColour = theme.Background,
             ForegroundColour = theme.Foreground
         };

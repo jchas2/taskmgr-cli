@@ -21,7 +21,7 @@ public sealed class Constants
     {
         /* General keys. */
         public const string Asc = "asc";
-        public const string Bars = "bars";
+        public const string MetreStyle = "metre-style";
         public const string Col = "col";
         public const string Cols = "cols";
         public const string DefaultTheme = "default-theme";

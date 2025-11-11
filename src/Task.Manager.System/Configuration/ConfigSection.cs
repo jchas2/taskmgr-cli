@@ -42,6 +42,17 @@ public sealed class ConfigSection
 
     public bool Contains(string key) => keys.ContainsKey(key);
 
+    public T GetEnum<T>(string key, T defaultValue) where T : struct, Enum
+    {
+        if (keys.TryGetValue(key, out string? value) && 
+            !string.IsNullOrEmpty(value) &&
+            Enum.TryParse(value, ignoreCase: true, out T result)) {
+            return result;
+        }
+        
+        return defaultValue;
+    }
+
     public string GetString(string key) => GetString(key, string.Empty);
 
     public string GetString(string key, string defaultValue)
