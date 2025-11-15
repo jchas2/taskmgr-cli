@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Net.Sockets;
+using Task.Manager.Process;
 using Task.Manager.System.Configuration;
 
 namespace Task.Manager.Configuration;
@@ -191,7 +192,7 @@ public static class ConfigBuilder
                 return new ConfigSection(Constants.Sections.Stats)
                     /* These cols must match the Configuration.Statistics enum members. */
                     .Add(Constants.Keys.Cols, StatsCols)
-                    .Add(Constants.Keys.Delay, "1500")
+                    .Add(Constants.Keys.Delay, Processor.DefaultDelayInMilliseconds.ToString())
                     .Add(Constants.Keys.NProcs, "-1");
             case Constants.Sections.Sort:
                 return new ConfigSection(Constants.Sections.Sort)
