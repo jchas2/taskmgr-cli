@@ -4,6 +4,7 @@ using System.Reflection;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.Gui;
+using Task.Manager.Process;
 using Task.Manager.System;
 using Task.Manager.System.Configuration;
 using Task.Manager.System.Screens;
@@ -40,6 +41,9 @@ public sealed class TaskMgrApp
         Option<bool?> ascendingOption = new(
             name: "--ascending", 
             description: "Sort the statistics column in ascending order.");
+        Option<int> delayOption = new(
+            name: "--delay",
+            description: "Delay (in milliseconds) between process updates.");
         Option<int?> limitOption = new(
             name: "--limit",
             description: "Limit the number of iterations to execute before exiting.");
@@ -59,6 +63,7 @@ public sealed class TaskMgrApp
             processOption,
             sortOption,
             ascendingOption,
+            delayOption,
             limitOption,
             nprocsOption,
             themeOption,
@@ -76,6 +81,7 @@ public sealed class TaskMgrApp
             string? process = context.ParseResult.GetValueForOption(processOption);
             Statistics? sortColumn = context.ParseResult.GetValueForOption(sortOption);
             bool? sortAscending = context.ParseResult.GetValueForOption(ascendingOption);
+            int? delay = context.ParseResult.GetValueForOption(delayOption);
             int? limit = context.ParseResult.GetValueForOption(limitOption);
             int? nprocs = context.ParseResult.GetValueForOption(nprocsOption);
             string? themeName = context.ParseResult.GetValueForOption(themeOption);
@@ -105,7 +111,7 @@ public sealed class TaskMgrApp
             if (sortAscending.HasValue) {
                 sortSection?.Add(Constants.Keys.Asc, sortAscending.Value.ToString());
             }
-
+            
             ConfigSection? iterationsSection = config.ConfigSections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.Iterations, StringComparison.CurrentCultureIgnoreCase));
 
@@ -120,6 +126,10 @@ public sealed class TaskMgrApp
                 statsSection?.Add(Constants.Keys.NProcs, nprocs.Value.ToString());
             }
 
+            if (delay.HasValue && delay.Value > 500) {
+                statsSection?.Add(Constants.Keys.Delay, delay.Value.ToString());
+            }
+            
             ConfigSection? uxSection = config.ConfigSections.FirstOrDefault(s =>
                 s.Name.Equals(Constants.Sections.UX, StringComparison.CurrentCultureIgnoreCase));
 
@@ -143,6 +153,10 @@ public sealed class TaskMgrApp
             if (!runContext.FileSystem.Exists(configFile)) {
                 TryWriteConfigurationToFile(configFile, config);
             }
+            
+            runContext.Processor.Delay = 
+                statsSection?.GetInt(Constants.Keys.Delay, Processor.DefaultDelayInMilliseconds) 
+                ?? Processor.DefaultDelayInMilliseconds;
             
             RunCommand(
                 runContext,

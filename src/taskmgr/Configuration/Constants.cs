@@ -21,12 +21,12 @@ public sealed class Constants
     {
         /* General keys. */
         public const string Asc = "asc";
-        public const string MetreStyle = "metre-style";
         public const string Col = "col";
         public const string Cols = "cols";
         public const string DefaultTheme = "default-theme";
         public const string Delay = "delay";
         public const string Limit = "limit";
+        public const string MetreStyle = "metre-style";
         public const string NProcs = "nprocs";
         public const string Pid = "pid";
         public const string Process = "process";

@@ -2,13 +2,17 @@
 using Task.Manager.Cli.Utils;
 using Task.Manager.Commands;
 using Task.Manager.System;
+using Task.Manager.System.Configuration;
 using Task.Manager.System.Process;
 using WorkerTask = System.Threading.Tasks.Task;
 
 namespace Task.Manager.Process;
 
-public partial class Processor : IProcessor
+public class Processor : IProcessor
 {
+    internal const int DefaultDelayInMilliseconds = 1500;
+    internal const int MinimumDelayInMilliseconds = 500;
+
     private const int InitialBufferSize = 512;
 
     private readonly IProcessService processService;
@@ -24,12 +28,13 @@ public partial class Processor : IProcessor
     private bool dataInitialised = false;
     private int processCount = 0;
     private int threadCount = 0;
-    
+    private int delayInMilliseconds = DefaultDelayInMilliseconds;
     public event EventHandler<ProcessorEventArgs>? ProcessorUpdated;
     
     public Processor(IProcessService processService)
     {
         this.processService = processService;
+        Delay = DefaultDelayInMilliseconds;
         systemStatistics = new SystemStatistics();
         allProcessorInfos = new List<ProcessorInfo>(InitialBufferSize);
         allProcessorInfosCopy = new List<ProcessorInfo>(InitialBufferSize);
@@ -37,7 +42,20 @@ public partial class Processor : IProcessor
         @lock = new Lock();
         isWindows = OperatingSystem.IsWindows();
     }
-    
+
+    public int Delay
+    {
+        get => delayInMilliseconds;
+        set {
+            if (value < MinimumDelayInMilliseconds) {
+                delayInMilliseconds = MinimumDelayInMilliseconds;
+            }
+            else {
+                delayInMilliseconds = DefaultDelayInMilliseconds;
+            }
+        }
+    }
+
     private void GetSystemTimes(out SystemTimes systemTimes)
     {
         systemTimes = new SystemTimes();
@@ -61,7 +79,7 @@ public partial class Processor : IProcessor
 
     private void RunInternal(CancellationToken cancellationToken)
     {
-        TimeSpan delayInMs = new TimeSpan(0, 0, 0, 0, Constants.ProcessDelayInMilliseconds);
+        TimeSpan delayInMs = new TimeSpan(0, 0, 0, 0, Delay);
 
         while (!cancellationToken.IsCancellationRequested) {
             ProcessInfo[] processInfos = processService.GetProcesses();
@@ -138,7 +156,7 @@ public partial class Processor : IProcessor
             }
 
             GetSystemTimes(out SystemTimes prevSysTimes);
-            Thread.Sleep(Constants.ProcessDelayInMilliseconds);
+            Thread.Sleep(Delay);
             GetSystemTimes(out SystemTimes currSysTimes);
             
             SystemTimes sysTimesDeltas = new() {
@@ -203,7 +221,7 @@ public partial class Processor : IProcessor
                 ulong currDiskOperations = allProcessorInfos[i].DiskOperations;
 
                 allProcessorInfos[i].DiskUsage = 
-                    (long)((double)(currDiskOperations - prevDiskOperations) * (1000.0 / (double)Constants.ProcessDelayInMilliseconds));
+                    (long)((double)(currDiskOperations - prevDiskOperations) * (1000.0 / (double)Delay));
                 
                 systemStatistics.DiskUsage += allProcessorInfos[i].DiskUsage;
             }
@@ -231,7 +249,7 @@ public partial class Processor : IProcessor
     private void RunMonitorInternal(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested) {
-            Thread.Sleep(Constants.ProcessDelayInMilliseconds);
+            Thread.Sleep(Delay);
 
             if (!dataInitialised) {
                 continue;
