@@ -46,14 +46,9 @@ public class Processor : IProcessor
     public int Delay
     {
         get => delayInMilliseconds;
-        set {
-            if (value < MinimumDelayInMilliseconds) {
-                delayInMilliseconds = MinimumDelayInMilliseconds;
-            }
-            else {
-                delayInMilliseconds = DefaultDelayInMilliseconds;
-            }
-        }
+        set => delayInMilliseconds = value >= MinimumDelayInMilliseconds 
+            ? value 
+            : DefaultDelayInMilliseconds;
     }
 
     private void GetSystemTimes(out SystemTimes systemTimes)
