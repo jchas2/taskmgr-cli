@@ -17,7 +17,7 @@ public sealed class MetreControl : Control
     
     public ConsoleColor ColourSeries2 { get; set; } = ConsoleColor.DarkGray;
 
-    private int DrawMeter(
+    private int DrawMetre(
         string label,
         double percentage,
         ConsoleColor colour,
@@ -40,8 +40,8 @@ public sealed class MetreControl : Control
             labelSegmentWidth = label.Length;
         }
 
-        ConsoleColor unitFg = MetreStyle == MetreControlStyle.Block ? ForegroundColour : colour;
-        ConsoleColor unitBg = MetreStyle == MetreControlStyle.Block ? colour : BackgroundColour;
+        ConsoleColor unitFg = MetreStyle == MetreControlStyle.Blocks ? ForegroundColour : colour;
+        ConsoleColor unitBg = MetreStyle == MetreControlStyle.Blocks ? colour : BackgroundColour;
         
         if (units + labelSegmentWidth > segmentWidth) {
             // The metre colours will eat into the string. Colour code the string accordingly.
@@ -49,7 +49,7 @@ public sealed class MetreControl : Control
             int colourStrLen = labelSegmentWidth - numChars;
 
             label = label.Substring(0, colourStrLen).ToColour(unitFg, unitBg) + 
-                    label.Substring(colourStrLen, label.Length - colourStrLen);
+                    label.Substring(colourStrLen, label.Length - colourStrLen).ToColour(ForegroundColour, BackgroundColour);
             
             units -= colourStrLen;
         }
@@ -61,9 +61,9 @@ public sealed class MetreControl : Control
         int unitFillerLen = Math.Max(0, segmentWidth - units - labelSegmentWidth);
         
         char unitChar = MetreStyle switch {
-            MetreControlStyle.Bar => BarChar,
-            MetreControlStyle.Block => BlockChar,
-            MetreControlStyle.Dot => DotChar,
+            MetreControlStyle.Bars => BarChar,
+            MetreControlStyle.Blocks => BlockChar,
+            MetreControlStyle.Dots => DotChar,
             _ => BlockChar
         };
 
@@ -94,14 +94,14 @@ public sealed class MetreControl : Control
 
         int nchars = 1;
 
-        nchars += DrawMeter(
+        nchars += DrawMetre(
             LabelSeries1,
             PercentageSeries1,
             ColourSeries1,
             offsetX: 0,
             isFinalStackSegment: false);
         
-        _ = DrawMeter(
+        _ = DrawMetre(
             LabelSeries2,
             PercentageSeries2,
             ColourSeries2,
@@ -115,7 +115,7 @@ public sealed class MetreControl : Control
     {
         Terminal.Write('[');
 
-        DrawMeter(
+        DrawMetre(
             LabelSeries1,
             PercentageSeries1,
             ColourSeries1,
@@ -129,7 +129,7 @@ public sealed class MetreControl : Control
     
     public string LabelSeries2 { get; set; } = string.Empty;
 
-    public MetreControlStyle MetreStyle { get; set; } = MetreControlStyle.Dot;
+    public MetreControlStyle MetreStyle { get; set; } = MetreControlStyle.Dots;
     
     private int MetreWidth => Width - Text.Length - MetreMargin;
 

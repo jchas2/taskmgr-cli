@@ -29,19 +29,14 @@ public class Config
     public bool ContainsSection(string name) =>
         configSections.Any(s => s.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
 
-    public static Config? FromFile(IFileSystem fileSys, string path)
+    public static Config FromFile(IFileSystem fileSys, string path)
     {
-        ArgumentNullException.ThrowIfNull(fileSys);
-        ArgumentNullException.ThrowIfNull(path);
-
         ConfigParser parser = new(fileSys, path);
         return ParseConfig(parser);
     }
 
     public static Config? FromString(string str)
     {
-        ArgumentNullException.ThrowIfNull(str);
-
         ConfigParser parser = new(str);
         return ParseConfig(parser);
     }
@@ -67,9 +62,6 @@ public class Config
 
     public static void ToFile(IFileSystem fileSys, string path, Config config)
     {
-        ArgumentNullException.ThrowIfNull(fileSys);
-        ArgumentNullException.ThrowIfNull(path);
-
         StringBuilder buffer = new(1024*16);
         
         foreach (ConfigSection configSection in config.ConfigSections) {

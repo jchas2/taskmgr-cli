@@ -1,9 +1,6 @@
 ﻿using System.Diagnostics;
 using Task.Manager.Commands;
-using Task.Manager.Configuration;
 using Task.Manager.Gui.Controls;
-using Task.Manager.System;
-using Task.Manager.System.Configuration;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.InputBox;
 using Task.Manager.System.Controls.ListView;
@@ -14,9 +11,6 @@ namespace Task.Manager.Gui;
 public sealed class MainScreen : Screen
 {
     private readonly RunContext runContext;
-    private readonly Theme theme;
-    private readonly Config config;
-
     private readonly ProcessControl processControl;
     private readonly ProcessInfoControl processInfoControl;
     private readonly HeaderControl headerControl;
@@ -28,50 +22,29 @@ public sealed class MainScreen : Screen
     private const int HeaderHeight = 9;
     private const int FooterHeight = 1;
     
-    public MainScreen(
-        ScreenApplication screenApp,
-        RunContext runContext,
-        ISystemTerminal terminal,
-        Theme theme,
-        Config config)
-    : base(terminal)
+    public MainScreen(ScreenApplication screenApp, RunContext runContext)
+    : base(runContext.Terminal)
     {
-        this.runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
-        this.theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        this.config = config ?? throw new ArgumentNullException(nameof(config));
+        this.runContext = runContext;
 
         headerControl = new HeaderControl(
-            this.runContext.Processor,
-            terminal,
-            this.theme,
-            this.config) {
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground
-        };
+            runContext.Processor,
+            runContext.Terminal,
+            runContext.AppConfig);
 
         processControl = new ProcessControl(
-            this.runContext.Processor,
-            terminal,
-            this.theme,
-            this.config) {
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground
-        };
+            runContext.Processor,
+            runContext.Terminal,
+            runContext.AppConfig);
 
         processInfoControl = new ProcessInfoControl(
-            this.runContext.ProcessService,
-            this.runContext.ModuleService,
-            this.runContext.ThreadService,
-            terminal, 
-            this.theme) {
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground
-        };
+            runContext.ProcessService,
+            runContext.ModuleService,
+            runContext.ThreadService,
+            runContext.Terminal, 
+            runContext.AppConfig);
 
-        commandControl = new CommandControl(terminal, this.theme) {
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground
-        };
+        commandControl = new CommandControl(runContext.Terminal, runContext.AppConfig);
         
         commandControl.AddCommand(ConsoleKey.F1, () => new HelpCommand("Help", screenApp));
         commandControl.AddCommand(ConsoleKey.F2, () => new SetupCommand("Setup", screenApp));
@@ -81,18 +54,18 @@ public sealed class MainScreen : Screen
         commandControl.AddCommand(ConsoleKey.F6, () => new EndTaskCommand("End Task", this));
         commandControl.AddCommand(ConsoleKey.F7, () => new AboutCommand("About", this));
         
-        filterControl = new FilterControl(terminal, this.theme) {
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground
-        };
+        filterControl = new FilterControl(runContext.Terminal, runContext.AppConfig);
 
         activeControl = processControl;
         footerControl = commandControl;
 
         Controls
             .Add(processControl)
-            .Add(processInfoControl);
-    }
+            .Add(processInfoControl)
+            .Add(headerControl)
+            .Add(commandControl)
+            .Add(filterControl);
+    } 
 
     public Control? GetActiveControl => activeControl;
 
@@ -102,13 +75,9 @@ public sealed class MainScreen : Screen
     {
         Debug.Assert(activeControl != null);
 
-        Terminal.CursorVisible = false;
-        
         headerControl.Draw();
         activeControl.Draw();
         footerControl.Draw();
-        
-        Terminal.CursorVisible = true;
     }
 
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
@@ -137,6 +106,13 @@ public sealed class MainScreen : Screen
 
     protected override void OnLoad()
     {
+        Terminal.CursorVisible = false;
+
+        foreach (Control ctrl in Controls) {
+            ctrl.BackgroundColour = runContext.AppConfig.DefaultTheme.Background;
+            ctrl.ForegroundColour = runContext.AppConfig.DefaultTheme.Foreground;
+        }
+
         activeControl = processControl;
 
         headerControl.Load();
@@ -172,9 +148,8 @@ public sealed class MainScreen : Screen
         headerControl.Width = Width;
         headerControl.Resize();
         
-        foreach (Control control in Controls) {
-            SizeControl(control);            
-        }
+        SizeControl(processControl);
+        SizeControl(processInfoControl);
 
         footerControl.X = 0;
         footerControl.Y = Height - FooterHeight;
@@ -186,17 +161,21 @@ public sealed class MainScreen : Screen
     protected override void OnShown()
     {
         base.OnShown();
+        
+        runContext.Processor.Delay = runContext.AppConfig.DelayInMilliseconds;
+        runContext.Processor.IterationLimit = runContext.AppConfig.IterationLimit;
         runContext.Processor.Run();
     }
 
     protected override void OnUnload()
     {
+        base.OnUnload();
+        
         runContext.Processor.Stop();
+        
         processControl.ProcessItemSelected -= OnProcessItemSelected;
-
-        foreach (Control control in Controls) {
-            control.Unload();
-        }
+        
+        Terminal.CursorVisible = true;
     }
 
     public T SetActiveControl<T>() where T : Control
@@ -223,12 +202,14 @@ public sealed class MainScreen : Screen
     public void ShowCommandControl()
     {
         filterControl.Visible = false;
+        
         ShowFooterControl(commandControl);   
     }
 
     public void ShowFilterControl(Action<string, InputBoxResult> onInputBoxResult)
     {
         commandControl.Visible = false;
+        
         ShowFooterControl(filterControl);
         
         ShowInputBox(

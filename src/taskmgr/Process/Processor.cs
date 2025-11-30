@@ -12,6 +12,8 @@ public class Processor : IProcessor
 {
     internal const int DefaultDelayInMilliseconds = 1500;
     internal const int MinimumDelayInMilliseconds = 500;
+    internal const int ExitIntervalInMilliseconds = 250;
+    internal const int DefaultIterationLimit = 0;
 
     private const int InitialBufferSize = 512;
 
@@ -29,6 +31,8 @@ public class Processor : IProcessor
     private int processCount = 0;
     private int threadCount = 0;
     private int delayInMilliseconds = DefaultDelayInMilliseconds;
+    private int iterationLimit = DefaultIterationLimit;
+    
     public event EventHandler<ProcessorEventArgs>? ProcessorUpdated;
     
     public Processor(IProcessService processService)
@@ -46,14 +50,9 @@ public class Processor : IProcessor
     public int Delay
     {
         get => delayInMilliseconds;
-        set {
-            if (value < MinimumDelayInMilliseconds) {
-                delayInMilliseconds = MinimumDelayInMilliseconds;
-            }
-            else {
-                delayInMilliseconds = DefaultDelayInMilliseconds;
-            }
-        }
+        set => delayInMilliseconds = value >= MinimumDelayInMilliseconds 
+            ? value 
+            : DefaultDelayInMilliseconds;
     }
 
     private void GetSystemTimes(out SystemTimes systemTimes)
@@ -66,7 +65,15 @@ public class Processor : IProcessor
             systemTimes.User = 0;
         }
     }
-    
+
+    public int IterationLimit
+    {
+        get => iterationLimit;
+        set => iterationLimit = value >= DefaultIterationLimit 
+            ? value 
+            : DefaultIterationLimit;
+    }
+
     public int ProcessCount => processCount;
 
     public void Run()
@@ -80,8 +87,9 @@ public class Processor : IProcessor
     private void RunInternal(CancellationToken cancellationToken)
     {
         TimeSpan delayInMs = new TimeSpan(0, 0, 0, 0, Delay);
+        int iterationCount = 0;
 
-        while (!cancellationToken.IsCancellationRequested) {
+        while (!cancellationToken.IsCancellationRequested && iterationCount <= IterationLimit) {
             ProcessInfo[] processInfos = processService.GetProcesses();
             int index = 0;
 
@@ -156,7 +164,13 @@ public class Processor : IProcessor
             }
 
             GetSystemTimes(out SystemTimes prevSysTimes);
-            Thread.Sleep(Delay);
+            
+            ThreadSleep(cancellationToken, Delay);
+            
+            if (cancellationToken.IsCancellationRequested) {
+                return;
+            }            
+            
             GetSystemTimes(out SystemTimes currSysTimes);
             
             SystemTimes sysTimesDeltas = new() {
@@ -243,14 +257,22 @@ public class Processor : IProcessor
             if (!dataInitialised) {
                 dataInitialised = true;
             }
+
+            if (iterationLimit > 0) {
+                iterationCount++;
+            }
         }
     }
 
     private void RunMonitorInternal(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested) {
-            Thread.Sleep(Delay);
+            ThreadSleep(cancellationToken, Delay);
 
+            if (cancellationToken.IsCancellationRequested) {
+                return;
+            }            
+            
             if (!dataInitialised) {
                 continue;
             }
@@ -275,6 +297,23 @@ public class Processor : IProcessor
         }
     }
 
+    private void ThreadSleep(CancellationToken cancellationToken, int delay)
+    {
+        // Method to only sleep the thread the minimum amount of required time
+        // with checks every ExitIntervalInMilliseconds. For example, if the delay is 
+        // 3000ms, check every 250ms for a cancellation.
+        TimeSpan remainingDelay = new TimeSpan(0, 0, 0, 0, delay);
+
+        while (remainingDelay > TimeSpan.Zero) {
+            if (cancellationToken.IsCancellationRequested) {
+                return;
+            }
+
+            Thread.Sleep((int)Math.Min(ExitIntervalInMilliseconds, remainingDelay.TotalMilliseconds));
+            remainingDelay = remainingDelay.Subtract(TimeSpan.FromMilliseconds(ExitIntervalInMilliseconds));
+        }
+    }
+    
     private bool TryGetProcessTimes(in int pid, ref ProcessTimeInfo ptInfo)
     {
         try {
@@ -291,8 +330,6 @@ public class Processor : IProcessor
             ExceptionHelper.HandleException(ex, $"Failed TryGetProcessTimes() {pid}");
             return false;
         }
-
-
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

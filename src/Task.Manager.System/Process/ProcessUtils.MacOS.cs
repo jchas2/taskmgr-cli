@@ -1,6 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.JavaScript;
-using System.Text;
 using Task.Manager.Interop.Mach;
 using SysDiag = System.Diagnostics;
 
@@ -120,6 +118,7 @@ public static partial class ProcessUtils
 
     internal static bool IsDaemonInternal(in int pid)
     {
+        const int KERNEL_TASK = 0;
         const int LAUNCHD_PID = 1;
         
         ProcInfo.proc_taskallinfo? info = GetProcessInfoById(pid);
@@ -130,7 +129,7 @@ public static partial class ProcessUtils
         
         ProcInfo.proc_taskallinfo ti = info.Value;
 
-        return ti.pbsd.pbi_ppid == LAUNCHD_PID || pid == LAUNCHD_PID;
+        return ti.pbsd.pbi_ppid == LAUNCHD_PID || pid == LAUNCHD_PID || pid == KERNEL_TASK;
     }
 
     internal static unsafe bool IsLowPriorityInternal(in SysDiag::Process process) =>

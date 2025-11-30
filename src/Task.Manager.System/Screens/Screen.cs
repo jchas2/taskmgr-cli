@@ -174,19 +174,20 @@ public partial class Screen : Control
         string title,
         string text,
         MessageBoxButtons buttons,
-        Action onMessageBoxResult)
+        Action action,
+        int width = MessageBoxWidth)
     {
         ArgumentNullException.ThrowIfNull(title);
         ArgumentNullException.ThrowIfNull(text);
 
-        Control.RedrawEnabled = false;
-        
-        this.onMessageBoxResult = onMessageBoxResult;
+        RedrawEnabled = false;
+        onMessageBoxResult = action;
 
         messageBox.Visible = true;
         messageBox.Buttons = buttons;
         messageBox.Text = text;
         messageBox.Title = title;
+        messageBox.Width = width;
         
         messageBox.ShowMessageBox();
     }

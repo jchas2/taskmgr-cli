@@ -4,20 +4,13 @@ namespace Task.Manager.Configuration;
 
 public sealed class Theme
 {
-    private readonly ConfigSection? themeSection;
+    private ConfigSection? themeSection;
 
-    public Theme(Config config)
-    {
-        ArgumentNullException.ThrowIfNull(config, nameof(config));
+    public Theme() { }
 
-        if (config.ContainsSection(Constants.Sections.UX)) {
-            ConfigSection uxSection = config.GetConfigSection(Constants.Sections.UX);
+    public Theme(ConfigSection configSection) => themeSection = configSection;
 
-            if (config.ContainsSection(uxSection.GetString(Constants.Keys.DefaultTheme))) {
-                themeSection = config.GetConfigSection(uxSection.GetString(Constants.Keys.DefaultTheme));
-            }
-        }
-    }
+    public string Name => themeSection?.Name ?? string.Empty;
 
     public ConsoleColor Background => themeSection?.GetColour(Constants.Keys.Background, ConsoleColor.Black) ?? ConsoleColor.Black;
     public ConsoleColor BackgroundHighlight => themeSection?.GetColour(Constants.Keys.BackgroundHighlight, ConsoleColor.Cyan) ?? ConsoleColor.Cyan;

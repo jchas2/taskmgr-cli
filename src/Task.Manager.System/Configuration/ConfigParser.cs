@@ -163,7 +163,7 @@ public class ConfigParser : IDisposable
             throw new ConfigParseException($"Expected '=' after key {keyBuffer}.");
         }
 
-        /* Keys are mandatory, values are not. */
+        // Keys are mandatory, values are not.
         if (keyBuffer.Length == 0) {
             throw new ConfigParseException("Key name cannot be empty.");
         }

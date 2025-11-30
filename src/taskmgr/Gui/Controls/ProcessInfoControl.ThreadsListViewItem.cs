@@ -17,12 +17,10 @@ public partial class ProcessInfoControl
         private TimeSpan lastCpuUserTime;
         private TimeSpan lastCpuTotalTime;
         
-        public ThreadListViewItem(ThreadInfo threadInfo, Theme theme)
+        public ThreadListViewItem(ThreadInfo threadInfo, AppConfig appConfig)
             : base(threadInfo.ThreadId.ToString())
         {
-            ArgumentNullException.ThrowIfNull(threadInfo);
-            
-            Theme = theme ?? throw new ArgumentNullException(nameof(theme));
+            AppConfig = appConfig;
             ThreadId = threadInfo.ThreadId;
             
             SubItems.AddRange(
@@ -37,7 +35,7 @@ public partial class ProcessInfoControl
             UpdateItem(threadInfo);
         }
         
-        private Theme Theme { get; }
+        private AppConfig AppConfig { get; }
         
         public int ThreadId { get; private set; }
 
@@ -46,7 +44,7 @@ public partial class ProcessInfoControl
             subItem.Text = text;
             
             if (changeCondition.Invoke()) {
-                subItem.ForegroundColor = Theme.RangeMidForeground;
+                subItem.ForegroundColor = AppConfig.DefaultTheme.RangeMidForeground;
             }
         }
         
@@ -56,8 +54,8 @@ public partial class ProcessInfoControl
             Debug.Assert(threadInfo.ThreadId == ThreadId);
 
             foreach (ListViewSubItem subItem in SubItems) {
-                subItem.BackgroundColor = Theme.Background;
-                subItem.ForegroundColor = Theme.Foreground;
+                subItem.BackgroundColor = AppConfig.DefaultTheme.Background;
+                subItem.ForegroundColor = AppConfig.DefaultTheme.Foreground;
             }
             
             UpdateSubItem(

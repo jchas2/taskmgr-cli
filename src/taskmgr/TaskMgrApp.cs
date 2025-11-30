@@ -1,30 +1,19 @@
 using System.CommandLine;
-using System.Data;
-using System.Reflection;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.Gui;
-using Task.Manager.Process;
 using Task.Manager.System;
-using Task.Manager.System.Configuration;
 using Task.Manager.System.Screens;
 
 namespace Task.Manager;
 
-public sealed class TaskMgrApp
+public sealed class TaskMgrApp(RunContext runContext)
 {
     private const string MutexId = "Task-Mgr-d3f8e2a1-4b6f-4e8a-9b2d-1c3e4f5a6b7c";
-    private const string ConfigFile = "taskmgr.ini";
 
-    private readonly RunContext runContext;
     private static Mutex? mutex = null;
-    
-    public TaskMgrApp(RunContext runContext)
-    {
-        this.runContext = runContext ?? throw new ArgumentNullException(nameof(runContext));
-    }
-    
-    private RootCommand InitRootCommand(Config config, string configFile)
+
+    private RootCommand InitRootCommand()
     {
         Option<int?> pidOption = new(
             name: "--pid",
@@ -72,10 +61,36 @@ public sealed class TaskMgrApp
         
         rootCommand.SetHandler(context =>
         {
-            /*
-             * Map the incoming command line arguments to the current config instance.
-             * Only override what's in config if a value comes in from the command line.
-             */
+            void AssignIfValid<T>(
+                T? optionValue, 
+                Action<T> assignmentAction, 
+                Func<T, bool> validation) where T : struct
+            {
+                if (optionValue.HasValue && validation(optionValue.Value)) {
+                    assignmentAction.Invoke(optionValue.Value);
+                }
+            }
+
+            void AssignIfStringValid(string? optionValue, Action<string> assignmentAction)
+            {
+                if (!string.IsNullOrWhiteSpace(optionValue)) {
+                    assignmentAction.Invoke(optionValue);
+                }
+            }            
+            
+            // First load configuration from disk.
+            string? configPath = runContext.AppConfig.DefaultConfigPath;
+            
+            if (!string.IsNullOrEmpty(configPath)) {
+                if (runContext.FileSystem.Exists(configPath)) {
+                    runContext.AppConfig.TryLoad(configPath);
+                }
+                else {
+                    runContext.AppConfig.TrySave(configPath);
+                }
+            }
+            
+            // Only override what's in config if a value comes in from the command line.
             int? pid = context.ParseResult.GetValueForOption(pidOption);
             string? userName = context.ParseResult.GetValueForOption(usernameOption);
             string? process = context.ParseResult.GetValueForOption(processOption);
@@ -85,105 +100,46 @@ public sealed class TaskMgrApp
             int? limit = context.ParseResult.GetValueForOption(limitOption);
             int? nprocs = context.ParseResult.GetValueForOption(nprocsOption);
             string? themeName = context.ParseResult.GetValueForOption(themeOption);
-
-            ConfigSection? filterSection = config.ConfigSections.FirstOrDefault(s => 
-                s.Name.Equals(Constants.Sections.Filter, StringComparison.CurrentCultureIgnoreCase));
-
-            if (pid.HasValue && pid.Value >= 0) {
-                filterSection?.Add(Constants.Keys.Pid, pid.Value.ToString());
-            }
-
-            if (!string.IsNullOrWhiteSpace(userName)) {
-                filterSection?.Add(Constants.Keys.UserName, userName);
-            }
-
-            if (!string.IsNullOrWhiteSpace(process)) {
-                filterSection?.Add(Constants.Keys.Process, process);
-            }
-
-            ConfigSection? sortSection = config.ConfigSections.FirstOrDefault(s =>
-                s.Name.Equals(Constants.Sections.Sort, StringComparison.CurrentCultureIgnoreCase));
-
+            
+            AssignIfValid(pid, val => runContext.AppConfig.FilterPid = val, val => val >= 0);
+            AssignIfValid(limit, val => runContext.AppConfig.IterationLimit = val, val => val >= 0);
+            AssignIfValid(nprocs, val => runContext.AppConfig.NumberOfProcesses = val, val => val > 0);
+            AssignIfValid(delay, val => runContext.AppConfig.DelayInMilliseconds = val, val => val > 500);
+            
+            AssignIfStringValid(userName, val => runContext.AppConfig.FilterUserName = val);
+            AssignIfStringValid(process, val => runContext.AppConfig.FilterProcess = val);
+            
             if (sortColumn.HasValue) {
-                sortSection?.Add(Constants.Keys.Col, sortColumn.Value.ToString());
+                runContext.AppConfig.SortColumn = sortColumn.Value;
             }
 
             if (sortAscending.HasValue) {
-                sortSection?.Add(Constants.Keys.Asc, sortAscending.Value.ToString());
+                runContext.AppConfig.SortAscending = sortAscending.Value;
             }
             
-            ConfigSection? iterationsSection = config.ConfigSections.FirstOrDefault(s =>
-                s.Name.Equals(Constants.Sections.Iterations, StringComparison.CurrentCultureIgnoreCase));
-
-            if (limit.HasValue && limit.Value >= 0) {
-                iterationsSection?.Add(Constants.Keys.Limit, limit.Value.ToString());
-            }
-
-            ConfigSection? statsSection = config.ConfigSections.FirstOrDefault(s =>
-                s.Name.Equals(Constants.Sections.Stats, StringComparison.CurrentCultureIgnoreCase));
-
-            if (nprocs.HasValue && nprocs.Value > 0) {
-                statsSection?.Add(Constants.Keys.NProcs, nprocs.Value.ToString());
-            }
-
-            if (delay.HasValue && delay.Value > 500) {
-                statsSection?.Add(Constants.Keys.Delay, delay.Value.ToString());
-            }
-            
-            ConfigSection? uxSection = config.ConfigSections.FirstOrDefault(s =>
-                s.Name.Equals(Constants.Sections.UX, StringComparison.CurrentCultureIgnoreCase));
-
             if (!string.IsNullOrWhiteSpace(themeName)) {
-                if (config.ContainsSection(themeName)) {
-                    uxSection?.Add(Constants.Keys.DefaultTheme, themeName);    
+                Theme? defaultTheme = runContext.AppConfig.Themes
+                    .FirstOrDefault(t => t.Name.Equals(themeName, StringComparison.CurrentCultureIgnoreCase));
+
+                if (defaultTheme != null) {
+                    runContext.AppConfig.DefaultTheme = defaultTheme;
                 }
             }
 
-            // Now we have a config that's either been loaded from disk or generated
-            // through the ConfigBuilder with defaults, and has had any command line
-            // args that override a setting applied.
-            // 
-            // Now we ensure all settings exist in the config by performing a merge
-            // against the config instance with the default settings from the
-            // ConfigBuilder.
-            // 
-            ConfigBuilder.Merge(config);
-            Theme theme = new(config);
-
-            if (!runContext.FileSystem.Exists(configFile)) {
-                TryWriteConfigurationToFile(configFile, config);
-            }
-            
-            runContext.Processor.Delay = 
-                statsSection?.GetInt(Constants.Keys.Delay, Processor.DefaultDelayInMilliseconds) 
-                ?? Processor.DefaultDelayInMilliseconds;
-            
-            RunCommand(
-                runContext,
-                config,
-                theme);
+            RunCommand(runContext);
         });   
         
         return rootCommand;
     }
 
-    private static int RunCommand(
-        RunContext runContext, 
-        Config config, 
-        Theme theme)
+    private static int RunCommand(RunContext runContext)
     {
         SystemTerminal terminal = new();
         ScreenApplication screenApp = new(terminal);
-        
-        MainScreen mainScreen = new(
-            screenApp,
-            runContext, 
-            terminal, 
-            theme, 
-            config);
 
-        HelpScreen helpScreen = new(terminal, theme);
-        SetupScreen setupScreen = new(terminal);
+        MainScreen mainScreen = new(screenApp, runContext); 
+        HelpScreen helpScreen = new(runContext);
+        SetupScreen setupScreen = new(runContext);
         
         screenApp.RegisterScreen(mainScreen);
         screenApp.RegisterScreen(helpScreen);
@@ -212,19 +168,7 @@ public sealed class TaskMgrApp
                 return -1;
             }
 
-            Config? config = null;
-            string configFile = string.Empty;
-            
-            if (TryGetConfigurationPath(out string? configPath) && !string.IsNullOrWhiteSpace(configPath)) {
-                configFile = Path.Combine(configPath, ConfigFile);
-                if (runContext.FileSystem.Exists(configFile)) {
-                    TryGetConfigurationFromFile(configFile, out config);
-                }
-            }
-
-            config ??= ConfigBuilder.BuildDefault();
-
-            RootCommand rootCommand = InitRootCommand(config, configFile);
+            RootCommand rootCommand = InitRootCommand();
             int exitCode = rootCommand.Invoke(args);
 
             return exitCode;
@@ -234,54 +178,6 @@ public sealed class TaskMgrApp
                 mutex.ReleaseMutex();
                 mutex.Dispose();
             }
-        }
-    }
-
-    private bool TryGetConfigurationFromFile(string configFile, out Config? config)
-    {
-        config = null;
-
-        try {
-            config = Config.FromFile(runContext.FileSystem, configFile);
-            return true;
-        }
-        catch (Exception e) when (e is FileNotFoundException || e is IOException) {
-            runContext.OutputWriter.WriteLine($"Error loading config: ${e.Message}.".ToRed());
-        }
-        catch (Exception e) when (e is ConfigParseException) {
-            runContext.OutputWriter.WriteLine($"Error parsing config: {e.Message}.".ToRed());
-        }
-
-        return false;
-    }
-    
-    private bool TryGetConfigurationPath(out string configPath)
-    {
-        configPath = string.Empty;
-        
-        try {
-            configPath = AppContext.BaseDirectory;
-            return true;
-        }
-        catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is IOException) {
-            runContext.OutputWriter.WriteLine($"Unable to get working path: {e.Message}.".ToRed());
-            return false;
-        }
-    }
-
-    private bool TryWriteConfigurationToFile(string configFile, Config config)
-    {
-        try {
-            Config.ToFile(
-                runContext.FileSystem, 
-                configFile, 
-                config);
-            
-            return true;
-        }
-        catch (Exception e) {
-            runContext.OutputWriter.WriteLine($"Unable to write config file: {e.Message}.".ToRed());
-            return false;
         }
     }
 }

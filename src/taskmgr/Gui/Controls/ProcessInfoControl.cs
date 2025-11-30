@@ -7,7 +7,7 @@ using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.ListView;
 using Task.Manager.System.Process;
 using WorkerTask = System.Threading.Tasks.Task;
-
+    
 namespace Task.Manager.Gui.Controls;
 
 public partial class ProcessInfoControl : Control
@@ -15,7 +15,7 @@ public partial class ProcessInfoControl : Control
     private readonly IProcessService processService;
     private readonly IModuleService moduleService;
     private readonly IThreadService threadService;
-    private readonly Theme theme;
+    private readonly AppConfig appConfig;
     private readonly ListView processInfoView;
     private readonly ListView menuView;
     private readonly ListView modulesView;
@@ -36,21 +36,15 @@ public partial class ProcessInfoControl : Control
         IModuleService moduleService,
         IThreadService threadService,
         ISystemTerminal terminal, 
-        Theme theme) 
+        AppConfig appConfig) 
         : base(terminal)
     {
         this.processService = processService;
         this.moduleService = moduleService;
         this.threadService = threadService;
-        this.theme = theme;
+        this.appConfig = appConfig;
         
         processInfoView = new ListView(terminal) {
-            BackgroundHighlightColour = theme.BackgroundHighlight,
-            ForegroundHighlightColour = theme.ForegroundHighlight,
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
-            HeaderBackgroundColour = theme.HeaderBackground,
-            HeaderForegroundColour = theme.HeaderForeground,
             EnableScroll = false,
             EnableRowSelect = false,
             ShowColumnHeaders = false,
@@ -62,24 +56,12 @@ public partial class ProcessInfoControl : Control
             .Add(new ListViewColumnHeader("VALUE"));
 
         menuView = new ListView(terminal) {
-            BackgroundHighlightColour = theme.BackgroundHighlight,
-            ForegroundHighlightColour = theme.ForegroundHighlight,
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
-            HeaderBackgroundColour = theme.HeaderBackground,
-            HeaderForegroundColour = theme.HeaderForeground,
             Visible = true
         };
 
         menuView.ColumnHeaders.Add(new ListViewColumnHeader("SELECT"));
 
         threadsView = new ListView(terminal) {
-            BackgroundHighlightColour = theme.BackgroundHighlight,
-            ForegroundHighlightColour = theme.ForegroundHighlight,
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
-            HeaderBackgroundColour = theme.HeaderBackground,
-            HeaderForegroundColour = theme.HeaderForeground,
             Visible = true
         };
 
@@ -94,12 +76,6 @@ public partial class ProcessInfoControl : Control
             .Add(new ListViewColumnHeader("TOTAL TIME"));
         
         modulesView = new ListView(terminal) {
-            BackgroundHighlightColour = theme.BackgroundHighlight,
-            ForegroundHighlightColour = theme.ForegroundHighlight,
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
-            HeaderBackgroundColour = theme.HeaderBackground,
-            HeaderForegroundColour = theme.HeaderForeground,
             Visible = false
         };
 
@@ -108,12 +84,6 @@ public partial class ProcessInfoControl : Control
             .Add(new ListViewColumnHeader("PATH"));
 
         handlesView = new ListView(terminal) {
-            BackgroundHighlightColour = theme.BackgroundHighlight,
-            ForegroundHighlightColour = theme.ForegroundHighlight,
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
-            HeaderBackgroundColour = theme.HeaderBackground,
-            HeaderForegroundColour = theme.HeaderForeground,
             EmptyListViewText = "Not yet implemented on this OS",
             Visible = false
         };
@@ -226,29 +196,46 @@ public partial class ProcessInfoControl : Control
 
     protected override void OnLoad()
     {
-        foreach (Control control in Controls) {
-            control.Load();
+        base.OnLoad();
+        
+        BackgroundColour = appConfig.DefaultTheme.Background;
+        ForegroundColour = appConfig.DefaultTheme.Foreground;
+        
+        ListView[] listViews = [
+            menuView, 
+            processInfoView, 
+            modulesView, 
+            threadsView, 
+            handlesView];
+
+        foreach (var listView in listViews) {
+            listView.BackgroundHighlightColour = appConfig.DefaultTheme.BackgroundHighlight;
+            listView.ForegroundHighlightColour = appConfig.DefaultTheme.ForegroundHighlight;
+            listView.BackgroundColour = appConfig.DefaultTheme.Background;
+            listView.ForegroundColour = appConfig.DefaultTheme.Foreground;
+            listView.HeaderBackgroundColour = appConfig.DefaultTheme.HeaderBackground;
+            listView.HeaderForegroundColour = appConfig.DefaultTheme.HeaderForeground;
         }
 
         menuView.Items.Add(
             new MenuListViewItem(
                 threadsView, 
                 "THREADS",
-                theme.Background,
-                theme.Foreground));
+                appConfig.DefaultTheme.Background,
+                appConfig.DefaultTheme.Foreground));
         
         menuView.Items.Add(
             new MenuListViewItem(
                 modulesView, "MODULES",
-                theme.Background,
-                theme.Foreground));
+                appConfig.DefaultTheme.Background,
+                appConfig.DefaultTheme.Foreground));
         
         menuView.Items.Add(
             new MenuListViewItem(
                 handlesView, 
                 "HANDLES",
-                theme.Background,
-                theme.Foreground));
+                appConfig.DefaultTheme.Background,
+                appConfig.DefaultTheme.Foreground));
 
         TryLoadProcessInfo();
         TryUpdateListViewThreadItems();
@@ -306,6 +293,8 @@ public partial class ProcessInfoControl : Control
 
     protected override void OnUnload()
     {
+        base.OnUnload();
+        
         cancellationTokenSource?.Cancel();
 
         try {
@@ -320,10 +309,6 @@ public partial class ProcessInfoControl : Control
         modulesView.Items.Clear();
         threadsView.Items.Clear();
         handlesView.Items.Clear();
-        
-        foreach (Control control in Controls) {
-            control.Unload();
-        }
         
         menuView.ItemClicked -= MenuViewOnItemClicked;
     }
@@ -344,43 +329,43 @@ public partial class ProcessInfoControl : Control
             
             processInfoView.Items.Add(
                 new(["Pid:", processInfo.Pid.ToString()],
-                theme.Background,
-                theme.Foreground));
+                    appConfig.DefaultTheme.Background,
+                    appConfig.DefaultTheme.Foreground));
             
             processInfoView.Items.Add(
                 new(["File:", processInfo.ModuleName],
-                theme.Background,
-                theme.Foreground));
+                    appConfig.DefaultTheme.Background,
+                    appConfig.DefaultTheme.Foreground));
                     
             processInfoView.Items.Add(
                 new(["Description:", processInfo.FileDescription],
-                theme.Background,
-                theme.Foreground));
+                    appConfig.DefaultTheme.Background,
+                    appConfig.DefaultTheme.Foreground));
                     
             processInfoView.Items.Add(
                 new(["Path:", processInfo.CmdLine],
-                theme.Background,
-                theme.Foreground));
+                    appConfig.DefaultTheme.Background,
+                    appConfig.DefaultTheme.Foreground));
             
             processInfoView.Items.Add(
                 new(["User:", processInfo.UserName],
-                theme.Background,
-                theme.Foreground));
+                    appConfig.DefaultTheme.Background,
+                    appConfig.DefaultTheme.Foreground));
             
             processInfoView.Items.Add(
                 new(["Version:", fvi.FileVersion ?? string.Empty],
-                theme.Background,
-                theme.Foreground));
+                    appConfig.DefaultTheme.Background,
+                    appConfig.DefaultTheme.Foreground));
             
             processInfoView.Items.Add(
                 new(["Size:", finfo.Length.ToFormattedByteSize()],
-                theme.Background,
-                theme.Foreground));
+                    appConfig.DefaultTheme.Background,
+                    appConfig.DefaultTheme.Foreground));
             
             processInfoView.Items.Add(
                 new(["", ""],
-                theme.Background,
-                theme.Foreground));
+                    appConfig.DefaultTheme.Background,
+                    appConfig.DefaultTheme.Foreground));
         }
         catch (Exception ex) {
             ExceptionHelper.HandleException(ex);
@@ -396,7 +381,7 @@ public partial class ProcessInfoControl : Control
                 .ToList();
 
             foreach (var moduleInfo in modules) {
-                modulesView.Items.Add(new ModuleListViewItem(moduleInfo, theme));
+                modulesView.Items.Add(new ModuleListViewItem(moduleInfo, appConfig));
             }
         }
         catch (Exception ex) {
@@ -438,7 +423,7 @@ public partial class ProcessInfoControl : Control
                     threadsView.Items.InsertAt(insertAt, foundItem);
                 }
                 else {
-                    ThreadListViewItem item = new(threads[i], theme);
+                    ThreadListViewItem item = new(threads[i], appConfig);
                     threadsView.Items.InsertAt(i, item);
                 }
             }

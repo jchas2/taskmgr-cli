@@ -5,13 +5,10 @@ using Task.Manager.System.Controls;
 
 namespace Task.Manager.Gui.Controls;
 
-public class FilterControl : Control
+public class FilterControl(ISystemTerminal terminal, AppConfig appConfig) : Control(terminal)
 {
-    private readonly Theme theme;
     private const int CommandLength = 6;
     
-    public FilterControl(ISystemTerminal terminal, Theme theme) : base(terminal) => this.theme = theme;
-
     public int NeededWidth { get; private set; }
     
     protected override void OnDraw()
@@ -39,7 +36,7 @@ public class FilterControl : Control
             nchars,
             Y,
             CommandLength,
-            theme,
+            appConfig.DefaultTheme,
             enabled: true,
             Terminal);
 
@@ -49,7 +46,7 @@ public class FilterControl : Control
             nchars,
             Y,
             CommandLength,
-            theme,
+            appConfig.DefaultTheme,
             enabled: true,
             Terminal);
 
@@ -59,13 +56,13 @@ public class FilterControl : Control
         string spacer = "  ";
         string filterCommand = "Filter: ";
 
-        Terminal.BackgroundColor = theme.Background;
-        Terminal.ForegroundColor = theme.Foreground;
+        Terminal.BackgroundColor = appConfig.DefaultTheme.Background;
+        Terminal.ForegroundColor = appConfig.DefaultTheme.Foreground;
         Terminal.Write(spacer);
         nchars += spacer.Length;
         
-        Terminal.BackgroundColor = theme.BackgroundHighlight;
-        Terminal.ForegroundColor = theme.ForegroundHighlight;
+        Terminal.BackgroundColor = appConfig.DefaultTheme.BackgroundHighlight;
+        Terminal.ForegroundColor = appConfig.DefaultTheme.ForegroundHighlight;
         Terminal.Write(filterCommand);
         nchars += filterCommand.Length;
         

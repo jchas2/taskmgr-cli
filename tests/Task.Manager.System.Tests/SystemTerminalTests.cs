@@ -37,7 +37,7 @@ public sealed class SystemTerminalTests
     public void Should_Encode_Ansi_Colour_Codes()
     {
         var terminal = new SystemTerminal();
-        string testString = "This should be Red".ToRed();
+        string testString = "This should be Green".ToGreen();
         
         // Initially just test no error is thrown.
         terminal.WriteLine(testString);

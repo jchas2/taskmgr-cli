@@ -403,13 +403,18 @@ public class ListView : Control
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(index, items.Count, nameof(index));
-        
+
+        item.Parent = this;
         items.Insert(index, item);
     }
 
     internal void InsertItems(ListViewItem[] items)
     {
         ArgumentNullException.ThrowIfNull(items, nameof(items));
+
+        for (int i = 0; i < items.Length; i++) {
+            items[i].Parent = this;
+        }
         
         this.items.AddRange(items);
     }
