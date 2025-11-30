@@ -1,13 +1,9 @@
-﻿using System.Numerics;
-using System.Runtime.InteropServices.Marshalling;
-using Task.Manager.Configuration;
+﻿using Task.Manager.Configuration;
 using Task.Manager.Extensions;
 using Task.Manager.Process;
 using Task.Manager.System;
-using Task.Manager.System.Configuration;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.ListView;
-using Task.Manager.System.Process;
 using IProcessor = Task.Manager.Process.IProcessor;
 using ProcessorEventArgs = Task.Manager.Process.ProcessorEventArgs;
 
@@ -24,8 +20,7 @@ public sealed partial class ProcessControl : Control
     }
     
     private readonly IProcessor processor;
-    private readonly Theme theme;
-    private readonly Config config;
+    private readonly AppConfig appConfig;
     private readonly ListView sortView;
     private readonly ListView processView;
     private readonly CmdLineFilters cmdLineFilters;
@@ -45,27 +40,20 @@ public sealed partial class ProcessControl : Control
     public ProcessControl(
         IProcessor processor, 
         ISystemTerminal terminal, 
-        Theme theme,
-        Config config)
+        AppConfig appConfig)
         : base(terminal)
     {
-        this.processor = processor ?? throw new ArgumentNullException(nameof(processor));
-        this.theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        this.config = config ?? throw new ArgumentNullException(nameof(config));
-
-        ConfigSection filterSection = config.GetConfigSection(Configuration.Constants.Sections.Filter);
-        ConfigSection statsSection = config.GetConfigSection(Configuration.Constants.Sections.Stats);
-        ConfigSection sortSection = config.GetConfigSection(Configuration.Constants.Sections.Sort);
+        this.processor = processor;
+        this.appConfig = appConfig;
         
         cmdLineFilters = new CmdLineFilters {
-            Pid = filterSection.Contains(Configuration.Constants.Keys.Pid) ? filterSection.GetInt(Configuration.Constants.Keys.Pid, -1) : -1,
-            UserName = filterSection.Contains(Configuration.Constants.Keys.UserName) ? filterSection.GetString(Configuration.Constants.Keys.UserName, string.Empty) : string.Empty,
-            Process = filterSection.Contains(Configuration.Constants.Keys.Process) ? filterSection.GetString(Configuration.Constants.Keys.Process, string.Empty) : string.Empty,
-            NumProcs = statsSection.Contains(Configuration.Constants.Keys.NProcs) ? statsSection.GetInt(Configuration.Constants.Keys.NProcs, -1) : -1
+            Pid = appConfig.FilterPid,
+            UserName = appConfig.FilterUserName,
+            Process = appConfig.FilterProcess,
+            NumProcs = appConfig.NumberOfProcesses
         };
 
-        string sortStatisticStr = sortSection.GetString(Configuration.Constants.Keys.Col, Statistics.Cpu.ToString());
-        Statistics sortStatistic = Enum.TryParse(sortStatisticStr, out Statistics parsedStatistic) ? parsedStatistic : Statistics.Cpu;
+        Statistics sortStatistic = appConfig.SortColumn;
         
         sortColumn = sortStatistic switch {
             Statistics.Pid     => Columns.Pid,
@@ -81,24 +69,12 @@ public sealed partial class ProcessControl : Control
         };
         
         sortView = new ListView(terminal) {
-            BackgroundHighlightColour = theme.BackgroundHighlight,
-            ForegroundHighlightColour = theme.ForegroundHighlight,
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
-            HeaderBackgroundColour = theme.HeaderBackground,
-            HeaderForegroundColour = theme.HeaderForeground,
             Visible = mode == ControlMode.SortSelection
         };
 
         sortView.ColumnHeaders.Add(new ListViewColumnHeader("SORT BY"));
 
         processView = new ListView(terminal) {
-            BackgroundHighlightColour = this.theme.BackgroundHighlight,
-            ForegroundHighlightColour = this.theme.ForegroundHighlight,
-            BackgroundColour = this.theme.Background,
-            ForegroundColour = this.theme.Foreground,
-            HeaderBackgroundColour = this.theme.HeaderBackground,
-            HeaderForegroundColour = this.theme.HeaderForeground,
             Visible = true
         };
         
@@ -112,9 +88,6 @@ public sealed partial class ProcessControl : Control
             .Add(new ListViewColumnHeader(Columns.Memory.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Disk.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.CommandLine.GetTitle()));
-        
-        processView.ColumnHeaders[(int)sortColumn].BackgroundColour = this.theme.BackgroundHighlight;
-        processView.ColumnHeaders[(int)sortColumn].ForegroundColour = this.theme.ForegroundHighlight;
         
         Controls
             .Add(sortView)
@@ -130,13 +103,10 @@ public sealed partial class ProcessControl : Control
             .Select(c => c.GetTitle());
         
         foreach (var column in columns) {
-            sortView.Items.Add(new ListViewItem(
-                column, 
-                theme.Background, 
-                theme.Foreground));
+            sortView.Items.Add(new ListViewItem(column));
         }
     }
-
+    
     protected override void OnDraw()
     {
         try {
@@ -177,14 +147,35 @@ public sealed partial class ProcessControl : Control
 
     protected override void OnLoad()
     {
-        sortView.Load();
-        processView.Load();
+        base.OnLoad();
         
+        BackgroundColour = appConfig.DefaultTheme.Background;
+        ForegroundColour = appConfig.DefaultTheme.Foreground;
+        
+        ListView[] listViews = [sortView, processView];
+
+        foreach (var listView in listViews) {
+            listView.BackgroundHighlightColour = appConfig.DefaultTheme.BackgroundHighlight;
+            listView.ForegroundHighlightColour = appConfig.DefaultTheme.ForegroundHighlight;
+            listView.BackgroundColour = appConfig.DefaultTheme.Background;
+            listView.ForegroundColour = appConfig.DefaultTheme.Foreground;
+            listView.HeaderBackgroundColour = appConfig.DefaultTheme.HeaderBackground;
+            listView.HeaderForegroundColour = appConfig.DefaultTheme.HeaderForeground;
+
+            foreach (ListViewColumnHeader columnHeader in listView.ColumnHeaders) {
+                columnHeader.BackgroundColour = appConfig.DefaultTheme.HeaderBackground;
+                columnHeader.ForegroundColour = appConfig.DefaultTheme.HeaderForeground;
+            }
+        }
+        
+        processView.ColumnHeaders[(int)sortColumn].BackgroundColour = appConfig.DefaultTheme.BackgroundHighlight;
+        processView.ColumnHeaders[(int)sortColumn].ForegroundColour = appConfig.DefaultTheme.ForegroundHighlight;
+
         sortView.ItemSelected += SortViewOnItemSelected;
         processView.ItemSelected += ProcessViewOnItemSelected;
         processor.ProcessorUpdated += ProcessorOnProcessorUpdated;
     }
-    
+
     protected override void OnResize()
     {
         sortView.X = X;
@@ -240,8 +231,7 @@ public sealed partial class ProcessControl : Control
 
     protected override void OnUnload()
     {
-        sortView.Unload();
-        processView.Unload();
+        base.OnUnload();
         
         sortView.ItemSelected -= SortViewOnItemSelected;
         processView.ItemSelected -= ProcessViewOnItemSelected;
@@ -292,13 +282,13 @@ public sealed partial class ProcessControl : Control
     
     private void SortViewOnItemSelected(object? sender, ListViewItemEventArgs e)
     {
-        processView.ColumnHeaders[(int)sortColumn].BackgroundColour = theme.HeaderBackground;
-        processView.ColumnHeaders[(int)sortColumn].ForegroundColour = theme.HeaderForeground;
+        processView.ColumnHeaders[(int)sortColumn].BackgroundColour = appConfig.DefaultTheme.HeaderBackground;
+        processView.ColumnHeaders[(int)sortColumn].ForegroundColour = appConfig.DefaultTheme.HeaderForeground;
         
         sortColumn = Enum.GetValues<Columns>().Single(c => c.GetTitle() == e.Item.Text);
         
-        processView.ColumnHeaders[(int)sortColumn].BackgroundColour = theme.BackgroundHighlight;
-        processView.ColumnHeaders[(int)sortColumn].ForegroundColour = theme.ForegroundHighlight;
+        processView.ColumnHeaders[(int)sortColumn].BackgroundColour = appConfig.DefaultTheme.BackgroundHighlight;
+        processView.ColumnHeaders[(int)sortColumn].ForegroundColour = appConfig.DefaultTheme.ForegroundHighlight;
         
         mode = ControlMode.None;
         
@@ -400,7 +390,7 @@ public sealed partial class ProcessControl : Control
             }
         
             if (!exists) {
-                ProcessListViewItem item = new(sortedProcesses[i], ref systemStatistics, theme);
+                ProcessListViewItem item = new(sortedProcesses[i], ref systemStatistics, appConfig);
                 processView.Items.InsertAt(i, item);
             }
         }

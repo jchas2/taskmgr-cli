@@ -3,10 +3,10 @@
 #endif
 
 using System.Diagnostics;
-using System.Reflection.Metadata;
 using System.Text;
 using Task.Manager.System;
 using Task.Manager.Cli.Utils;
+using Task.Manager.Configuration;
 using Task.Manager.Internal.Abstractions;
 using Task.Manager.System.Process;
 using Processor = Task.Manager.Process.Processor;
@@ -62,18 +62,22 @@ class Program
         FormattedTextWriterTraceListener.Initialise();
 #endif
         ProcessService processService = new();
+        SystemTerminal terminal = new();
         ModuleService moduleService = new();
         ThreadService threadService = new();
         FileSystem fileSystem = new();
         Processor processor = new(processService);
+        AppConfig appConfig = new(fileSystem);
         
         try {
             RunContext runContext = new(
                 fileSystem,
+                terminal,
                 processService,
                 moduleService,
                 threadService,
                 processor,
+                appConfig,
                 outputWriter: null);
 
             TaskMgrApp app = new(runContext);

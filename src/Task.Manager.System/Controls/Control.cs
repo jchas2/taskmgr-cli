@@ -140,7 +140,12 @@ public class Control
 
     protected virtual void OnDraw() { }
 
-    protected virtual void OnLoad() { }
+    protected virtual void OnLoad()
+    {
+        foreach (Control control in Controls) {
+            control.Load();
+        }
+    }
 
     protected virtual void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled) { }
 

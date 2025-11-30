@@ -7,14 +7,11 @@ using Task.Manager.System.Controls;
 
 namespace Task.Manager.Gui.Controls;
 
-public sealed class  CommandControl : Control
+public sealed class CommandControl(ISystemTerminal terminal, AppConfig appConfig) : Control(terminal)
 {
-    private readonly Theme theme;
     private const int CommandLength = 10;
 
     private readonly Dictionary<ConsoleKey, AbstractCommand> commandMap = new();
-    
-    public CommandControl(ISystemTerminal terminal, Theme theme) : base(terminal) => this.theme = theme;
 
     public void AddCommand(ConsoleKey key, Func<AbstractCommand> commandFactory) =>
         commandMap.Add(key, commandFactory.Invoke());
@@ -50,7 +47,7 @@ public sealed class  CommandControl : Control
                 nchars,
                 Y,
                 CommandLength,
-                theme,
+                appConfig.DefaultTheme,
                 cmd.IsEnabled,
                 Terminal);
         }

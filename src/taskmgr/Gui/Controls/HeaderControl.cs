@@ -1,10 +1,8 @@
 ﻿using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.System;
-using Task.Manager.System.Configuration;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.ListView;
-using Task.Manager.System.Process;
 using IProcessor = Task.Manager.Process.IProcessor;
 using ProcessorEventArgs = Task.Manager.Process.ProcessorEventArgs;
 
@@ -13,8 +11,7 @@ namespace Task.Manager.Gui.Controls;
 public sealed class HeaderControl : Control
 {
     private readonly IProcessor processor;
-    private readonly Config config;
-    private readonly Theme theme;
+    private readonly AppConfig appConfig;
     private SystemStatistics systemStatistics = new();
 
     private readonly MetreControl cpuMetre;
@@ -39,36 +36,19 @@ public sealed class HeaderControl : Control
     public HeaderControl(
         IProcessor processor, 
         ISystemTerminal terminal,
-        Theme theme,
-        Config config) : base(terminal)
+        AppConfig appConfig) 
+        : base(terminal)
     {
-        this.processor = processor ?? throw new ArgumentNullException(nameof(processor));
-        this.theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        this.config = config ?? throw new ArgumentNullException(nameof(config));
-                
-        ConfigSection uxSection = config.GetConfigSection(Configuration.Constants.Sections.UX);
-        MetreControlStyle metreStyle = uxSection.Contains(Configuration.Constants.Keys.MetreStyle) 
-            ? uxSection.GetEnum(Configuration.Constants.Keys.MetreStyle, MetreControlStyle.Dot) 
-            : MetreControlStyle.Dot;
+        this.processor = processor;
+        this.appConfig = appConfig;
         
-        BackgroundColour = theme.Background;
-        ForegroundColour = theme.Foreground;
-        MenubarBackColour = theme.MenubarBackground;
-        MenubarForeColour = theme.MenubarForeground;
-
         cpuMetre = new MetreControl(terminal) {
             Text = "Cpu",
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
-            MetreStyle = metreStyle,
             DrawStacked = true,
         };
 
         memoryMetre = new MetreControl(terminal) {
             Text = "Mem",
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
-            MetreStyle = metreStyle,
             DrawStacked = false,
         };
 
@@ -79,23 +59,15 @@ public sealed class HeaderControl : Control
 #if __APPLE__            
             Text = "Swp",
 #endif
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
-            MetreStyle = metreStyle,
             DrawStacked = false,
         };
 
         diskMetre = new MetreControl(terminal) {
             Text = "Dsk",
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
-            MetreStyle = metreStyle,
             DrawStacked = false,
         };
         
         statisticsView = new ListView(terminal) {
-            BackgroundColour = theme.Background,
-            ForegroundColour = theme.Foreground,
             EnableScroll = false,
             EnableRowSelect = false,
             ShowColumnHeaders = false,
@@ -105,11 +77,15 @@ public sealed class HeaderControl : Control
         for (int i = 0; i < StatisticsViewColumnCount; i++) {
             statisticsView.ColumnHeaders.Add(new ListViewColumnHeader(string.Empty));
         }
+
+        Controls
+            .Add(cpuMetre)
+            .Add(memoryMetre)
+            .Add(virtualMemoryMetre)
+            .Add(diskMetre)
+            .Add(statisticsView);
     }
     
-    public ConsoleColor MenubarBackColour { get; set; } = ConsoleColor.DarkBlue;
-    public ConsoleColor MenubarForeColour { get; set; } = ConsoleColor.Gray;
-
     protected override void OnDraw()
     {
         try {
@@ -125,9 +101,12 @@ public sealed class HeaderControl : Control
     {
         using TerminalColourRestorer _ = new();
 
+        BackgroundColour = appConfig.DefaultTheme.Background;
+        ForegroundColour = appConfig.DefaultTheme.Foreground;
+        
         Terminal.SetCursorPosition(X, Y);
-        Terminal.BackgroundColor = MenubarBackColour;
-        Terminal.ForegroundColor = MenubarForeColour;
+        Terminal.BackgroundColor = appConfig.DefaultTheme.MenubarBackground;
+        Terminal.ForegroundColor = appConfig.DefaultTheme.MenubarForeground;
 
         string menubar = "TASK MANAGER";
         int offsetX = Terminal.WindowWidth / 2 - menubar.Length / 2;
@@ -169,22 +148,22 @@ public sealed class HeaderControl : Control
             virRatio = 1.0 - ((double)(systemStatistics.AvailablePageFile) / (double)(systemStatistics.TotalPageFile));    
         }
 
-        var userColour = totalCpu < 0.25 ? theme.RangeLowBackground
-            : totalCpu < 0.75 ? theme.RangeMidBackground
-            : theme.RangeHighBackground;
+        var userColour = totalCpu < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
+            : totalCpu < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
+            : appConfig.DefaultTheme.RangeHighBackground;
 
         // Switch the kernel colours around to provide some contrast to the User Cpu %.
-        var kernelColour = totalCpu < 0.25 ? theme.RangeMidBackground
-            : totalCpu < 0.75 ? theme.RangeLowBackground
-            : theme.RangeMidBackground;
+        var kernelColour = totalCpu < 0.25 ? appConfig.DefaultTheme.RangeMidBackground
+            : totalCpu < 0.75 ? appConfig.DefaultTheme.RangeLowBackground
+            : appConfig.DefaultTheme.RangeMidBackground;
 
-        var memColour = memRatio < 0.25 ? theme.RangeLowBackground
-            : memRatio < 0.75 ? theme.RangeMidBackground
-            : theme.RangeHighBackground;
+        var memColour = memRatio < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
+            : memRatio < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
+            : appConfig.DefaultTheme.RangeHighBackground;
 
-        var virColour = virRatio < 0.25 ? theme.RangeLowBackground
-            : virRatio < 0.75 ? theme.RangeMidBackground
-            : theme.RangeHighBackground;
+        var virColour = virRatio < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
+            : virRatio < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
+            : appConfig.DefaultTheme.RangeHighBackground;
         
         double mbps = systemStatistics.DiskUsage.ToMbpsFromBytes();
 
@@ -196,9 +175,9 @@ public sealed class HeaderControl : Control
             ? mbps / maxMbps
             : 0;
 
-        ConsoleColor mbpsColour = mbps < 10.0 ? theme.RangeLowBackground 
-            : mbps < 100.0 ? theme.RangeMidBackground
-            : theme.RangeHighBackground;
+        ConsoleColor mbpsColour = mbps < 10.0 ? appConfig.DefaultTheme.RangeLowBackground 
+            : mbps < 100.0 ? appConfig.DefaultTheme.RangeMidBackground
+            : appConfig.DefaultTheme.RangeHighBackground;
 
         cpuMetre.PercentageSeries1 = systemStatistics.CpuPercentKernelTime;
         cpuMetre.PercentageSeries2 = systemStatistics.CpuPercentUserTime;
@@ -207,7 +186,7 @@ public sealed class HeaderControl : Control
         cpuMetre.LabelSeries1 = string.Empty;
         cpuMetre.LabelSeries2 = totalCpu.ToString("000.0%"); 
         cpuMetre.Draw();
-        
+
         memoryMetre.PercentageSeries1 = memRatio;
         memoryMetre.ColourSeries1 = memColour;
         memoryMetre.LabelSeries1 =
@@ -228,12 +207,12 @@ public sealed class HeaderControl : Control
         diskMetre.Draw();
 
         for (int i = 0; i < statisticsView.Items.Count; i++) {
-            statisticsView.Items[i].BackgroundColour = theme.Background;
-            statisticsView.Items[i].ForegroundColour = theme.Foreground;
+            statisticsView.Items[i].BackgroundColour = BackgroundColour;
+            statisticsView.Items[i].ForegroundColour = ForegroundColour;
 
             for (int j = 0; j < statisticsView.Items[i].SubItems.Count(); j++) {
-                statisticsView.Items[i].SubItems[j].BackgroundColor = theme.Background;
-                statisticsView.Items[i].SubItems[j].ForegroundColor = theme.Foreground;
+                statisticsView.Items[i].SubItems[j].BackgroundColor = BackgroundColour;
+                statisticsView.Items[i].SubItems[j].ForegroundColor = ForegroundColour;
             } 
         }
 
@@ -290,6 +269,21 @@ public sealed class HeaderControl : Control
         foreach (Control control in Controls) {
             control.Load();
         }
+        
+        MetreControl[] metres = [cpuMetre, memoryMetre, virtualMemoryMetre, diskMetre];
+
+        foreach (MetreControl metreControl in metres) {
+            metreControl.BackgroundColour = appConfig.DefaultTheme.Background;
+            metreControl.ForegroundColour = appConfig.DefaultTheme.Foreground;
+            metreControl.MetreStyle = appConfig.MetreStyle;
+        }
+        
+        statisticsView.BackgroundColour = BackgroundColour;
+        statisticsView.ForegroundColour = ForegroundColour;
+        statisticsView.BackgroundHighlightColour = appConfig.DefaultTheme.BackgroundHighlight;
+        statisticsView.ForegroundHighlightColour = appConfig.DefaultTheme.ForegroundHighlight;
+        statisticsView.HeaderBackgroundColour = appConfig.DefaultTheme.HeaderBackground;
+        statisticsView.HeaderForegroundColour = appConfig.DefaultTheme.HeaderForeground;
 
         int[] columnWidths = [
             CpuLabelColumnWidth,
@@ -310,22 +304,22 @@ public sealed class HeaderControl : Control
             statisticsView.ColumnHeaders[i].RightAligned = (i + 1) % 2 == 0;
         }
 
-        if (statisticsView.Items.Count == 0) {
+        statisticsView.Items.Clear();
+        
 #if __WIN32__
-            statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Vir:   ", "", "Disk:", ""]));
+        statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Vir:   ", "", "Disk:", ""]));
 #endif
 #if __APPLE__
-            statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Swap:  ", "", "Disk:", ""]));
+        statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Swap:  ", "", "Disk:", ""]));
 #endif
-            statisticsView.Items.Add(new(["User:  ", "", "Total:  ", "", "Total: ", "", "Peak:", ""]));
-            statisticsView.Items.Add(new(["Kernel:", "", "Used:   ", "", "Used:  ", "", "", ""]));
-            statisticsView.Items.Add(new(["Idle:  ", "", "Free:   ", "", "Free:  ", "", "", ""]));
+        statisticsView.Items.Add(new(["User:  ", "", "Total:  ", "", "Total: ", "", "Peak:", ""]));
+        statisticsView.Items.Add(new(["Kernel:", "", "Used:   ", "", "Used:  ", "", "", ""]));
+        statisticsView.Items.Add(new(["Idle:  ", "", "Free:   ", "", "Free:  ", "", "", ""]));
 #if DEBUG
-            statisticsView.Items.Add(new(["Proc:  ", "", "Threads:", "", "Ghosts:", "", "", ""]));
+        statisticsView.Items.Add(new(["Proc:  ", "", "Threads:", "", "Ghosts:", "", "", ""]));
 #else
-            statisticsView.Items.Add(new(["Procs  :",       "", "Threads:",      "", "",         "", "",      ""]));
+        statisticsView.Items.Add(new(["Procs  :",       "", "Threads:",      "", "",         "", "",      ""]));
 #endif
-        }
 
         processor.ProcessorUpdated += OnProcessorUpdated; 
     }
@@ -373,12 +367,8 @@ public sealed class HeaderControl : Control
     
     protected override void OnUnload()
     {
-        processor.ProcessorUpdated -= OnProcessorUpdated;
-
-        statisticsView.Items.Clear();
+        base.OnUnload();
         
-        foreach (Control control in Controls) {
-            control.Unload();
-        }
+        processor.ProcessorUpdated -= OnProcessorUpdated;
     }
 }

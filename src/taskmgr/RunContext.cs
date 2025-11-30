@@ -1,4 +1,5 @@
 using Task.Manager.Cli.Utils;
+using Task.Manager.Configuration;
 using Task.Manager.Internal.Abstractions;
 using Task.Manager.System;
 using Task.Manager.System.Process;
@@ -8,16 +9,20 @@ namespace Task.Manager;
 
 public class RunContext(
     IFileSystem fileSystem,
+    ISystemTerminal terminal,
     IProcessService processService,
     IModuleService moduleService,
     IThreadService threadService,
     IProcessor processor,
+    AppConfig appConfig,
     IOutputWriter? outputWriter = null)
 {
-    public IFileSystem FileSystem { get; } = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-    public IProcessService ProcessService { get; } = processService ?? throw new ArgumentNullException(nameof(processService));
-    public IModuleService ModuleService { get; } = moduleService ?? throw new ArgumentNullException(nameof(moduleService));
-    public IThreadService ThreadService { get; } = threadService ?? throw new ArgumentNullException(nameof(threadService));
-    public IProcessor Processor { get; } = processor ?? throw new ArgumentNullException(nameof(processor));
+    public IFileSystem FileSystem { get; } = fileSystem;
+    public ISystemTerminal Terminal { get; } = terminal;
+    public IProcessService ProcessService { get; } = processService;
+    public IModuleService ModuleService { get; } = moduleService;
+    public IThreadService ThreadService { get; } = threadService;
+    public IProcessor Processor { get; } = processor;
+    public AppConfig AppConfig { get; } = appConfig;
     public IOutputWriter OutputWriter { get; } = outputWriter ?? Cli.Utils.OutputWriter.Out;
 }

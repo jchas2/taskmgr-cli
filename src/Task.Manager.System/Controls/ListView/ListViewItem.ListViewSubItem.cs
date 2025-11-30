@@ -34,7 +34,7 @@ public class ListViewSubItem
                 return style.BackgroundColour;
             }
 
-            return owner.BackgroundColour;
+            return owner.Parent?.BackgroundColour ?? ConsoleColor.Black;
         }
         set {
             style ??= new SubItemStyle();
@@ -58,7 +58,7 @@ public class ListViewSubItem
                 return style.ForegroundColour;
             }
 
-            return owner.ForegroundColour;
+            return owner.Parent?.ForegroundColour ?? ConsoleColor.White;
         }
         set {
             style ??= new SubItemStyle();
@@ -71,7 +71,7 @@ public class ListViewSubItem
 
     public string Text
     {
-        get => text ?? string.Empty;
+        get => text;
         set => text = value;
     }
 }

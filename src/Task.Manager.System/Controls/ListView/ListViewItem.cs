@@ -2,16 +2,16 @@
 
 public class ListViewItem
 {
-    /*
-     * The Collection acts as a proxy for updates to the underlying List<T>.
-     * This provides a clean api for interacting with Collections on the ListViewItem
-     * control, similar to the Win32 ListView common control.
-     */
+    //
+    // The Collection acts as a proxy for updates to the underlying List<T>.
+    // This provides a clean api for interacting with Collections on the ListViewItem
+    // control, similar to the Win32 ListView common control.
+    // 
     private readonly ListViewSubItemCollection subItemCollection;
 
-    /* The containers holding the List<T> for rendering. We don't expose them via a public api. */
+    // The containers holding the List<T> for rendering. We don't expose them via a public api.
     private List<ListViewSubItem> subItems = [];
-
+    
     public ListViewItem(string text)
     {
         ArgumentNullException.ThrowIfNull(text, nameof(text));
@@ -77,7 +77,17 @@ public class ListViewItem
         ForegroundColour = foregroundColor;
     }
 
-    public ConsoleColor BackgroundColour { get; set; } = ConsoleColor.Black;
+    public ConsoleColor BackgroundColour
+    {
+        get {
+            if (SubItemCount != 0) {
+                return SubItems[0].BackgroundColor;
+            }
+            
+            return Parent?.BackgroundColour ?? ConsoleColor.Black;
+        }
+        set => SubItems[0].BackgroundColor = value;
+    }
 
     internal void ClearSubItems() => subItems.Clear();
 
@@ -88,7 +98,18 @@ public class ListViewItem
         return subItems.Contains(subItem);
     }
 
-    public ConsoleColor ForegroundColour { get; set; } = ConsoleColor.White;
+    public ConsoleColor ForegroundColour 
+    {
+        get {
+            if (SubItemCount != 0) {
+                return SubItems[0].ForegroundColor;
+            }
+            
+            return Parent?.ForegroundColour ?? ConsoleColor.White;
+        }
+        set => SubItems[0].ForegroundColor = value;
+    }
+    
 
     internal ListViewSubItem GetSubItemByIndex(int index)
     {
@@ -118,6 +139,8 @@ public class ListViewItem
         this.subItems.AddRange(subItems);
     }
 
+    internal ListView? Parent { get; set; }
+    
     internal int SubItemCount => subItems.Count;
     
     public ListViewSubItemCollection SubItems => subItemCollection;

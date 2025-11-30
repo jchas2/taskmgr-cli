@@ -5,9 +5,9 @@ namespace Task.Manager.Gui.Controls;
 public enum MetreControlStyle
 {
     [Description("Blocks")]
-    Block = 0,
+    Blocks = 0,
     [Description("Bars")]
-    Bar,
+    Bars,
     [Description("Dots")]
-    Dot
+    Dots
 }
