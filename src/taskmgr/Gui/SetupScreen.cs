@@ -18,7 +18,6 @@ public class SetupScreen : Screen
     private readonly ListView numProcsView;
     private readonly List<ListView> tabControls = [];
 
-    private ListView focusedControl; 
     private Theme previewTheme;
 
     private const int ControlGutter = 1;
@@ -28,45 +27,59 @@ public class SetupScreen : Screen
     public SetupScreen(RunContext runContext) : base(runContext.Terminal)
     {
         this.runContext = runContext;
+
+        menuView = new(runContext.Terminal) {
+            TabIndex = 1,
+            TabStop = true
+        };
         
-        menuView = new(runContext.Terminal);
         menuView.ColumnHeaders.Add(new ListViewColumnHeader("CATEGORIES"));
 
         themeView = new(runContext.Terminal) {
-            ShowColumnHeaders = true,
             EnableScroll = true,
+            ShowColumnHeaders = true,
+            TabIndex = 2,
+            TabStop = true,
             Visible = false
         };
 
         themeView.ColumnHeaders.Add(new ListViewColumnHeader("Available themes"));
 
         metreView = new(runContext.Terminal) {
-            ShowColumnHeaders = true,
             EnableScroll = true,
+            ShowColumnHeaders = true,
+            TabIndex = 3,
+            TabStop = true,
             Visible = false
         };
 
         metreView.ColumnHeaders.Add(new ListViewColumnHeader("Metre Styles"));
         
         delayView = new(runContext.Terminal) {
-            ShowColumnHeaders = true,
             EnableScroll = true,
+            ShowColumnHeaders = true,
+            TabIndex = 4,
+            TabStop = true,
             Visible = false
         };
 
         delayView.ColumnHeaders.Add(new ListViewColumnHeader("Delay between updates, in milliseconds"));
         
         limitView = new(runContext.Terminal) {
-            ShowColumnHeaders = true,
             EnableScroll = true,
+            ShowColumnHeaders = true,
+            TabIndex = 5,
+            TabStop = true,
             Visible = false
         };
 
         limitView.ColumnHeaders.Add(new ListViewColumnHeader("Limit the number of process iterations, 0 = loop forever"));
         
         numProcsView = new(runContext.Terminal) {
-            ShowColumnHeaders = true,
             EnableScroll = true,
+            ShowColumnHeaders = true,
+            TabIndex = 6,
+            TabStop = true,
             Visible = false
         };
 
@@ -88,7 +101,6 @@ public class SetupScreen : Screen
             numProcsView
         });
 
-        focusedControl = menuView;
         previewTheme = runContext.AppConfig.DefaultTheme;
     }
 
@@ -196,6 +208,7 @@ public class SetupScreen : Screen
         var menuListViewItem = e.Item as MenuListViewItem;
         menuListViewItem!.AssociatedControl.Visible = true;
         
+        Clear();
         Resize();
         Draw();
     }
@@ -246,25 +259,12 @@ public class SetupScreen : Screen
 
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
     {
-        base.OnKeyPressed(keyInfo, ref handled);
-        
-        if (handled) {
-            return;
-        }
-
         ListView activeControl = tabControls.Single(ctrl => ctrl.Visible);
+        Control? focusedControl = GetFocusedControl;
 
         switch (keyInfo.Key) {
-            case ConsoleKey.UpArrow:
-            case ConsoleKey.DownArrow:
-            case ConsoleKey.PageUp:
-            case ConsoleKey.PageDown:
-                focusedControl.KeyPressed(keyInfo, ref handled);
-                break;
-
             case ConsoleKey.LeftArrow:
-                focusedControl = menuView;
-                focusedControl.Draw();
+                menuView.SetFocus();
 
                 if (menuView.SelectedItem != null) {
                     ListViewItemEventArgs e = new(menuView.SelectedItem);
@@ -274,8 +274,15 @@ public class SetupScreen : Screen
                 break;
 
             case ConsoleKey.RightArrow:
-                focusedControl = activeControl;
-                focusedControl.Draw();
+                activeControl.SetFocus();
+                Draw();
+                break;
+
+            case ConsoleKey.UpArrow:
+            case ConsoleKey.DownArrow:
+            case ConsoleKey.PageUp:
+            case ConsoleKey.PageDown:
+                focusedControl?.KeyPressed(keyInfo, ref handled);
                 break;
             
             case ConsoleKey.F8:
@@ -313,8 +320,8 @@ public class SetupScreen : Screen
             runContext.AppConfig.IterationLimit);
 
         previewTheme = runContext.AppConfig.DefaultTheme;
-        focusedControl = menuView;
         themeView.Visible = true;
+        menuView.SetFocus();
         
         menuView.ItemClicked += MenuViewOnItemClicked;
         themeView.ItemClicked += ThemeViewOnItemClicked;
@@ -365,8 +372,6 @@ public class SetupScreen : Screen
             control.Unload();
             (control as ListView)?.Items.Clear();
         }
-        
-        focusedControl = menuView;
     }
 
     private void SaveConfig()

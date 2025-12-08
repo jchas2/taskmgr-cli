@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Drawing;
-using System.Security.Cryptography;
+﻿using System.Drawing;
 using System.Text;
 using Task.Manager.Cli.Utils;
 
@@ -269,6 +267,10 @@ public class ListView : Control
                 ? "{0," + columnFormatWidth.ToString() + "}"
                 : "{0,-" + columnFormatWidth.ToString() + "}";
 
+            ConsoleColor backgroundHighlightColour = Focused
+                ? BackgroundHighlightColour
+                : ConsoleColor.Gray;
+            
             ConsoleColor foregroundColour = highlight
                 ? EnableRowSelect
                     ? ForegroundHighlightColour
@@ -277,7 +279,7 @@ public class ListView : Control
 
             ConsoleColor backgroundColour = highlight
                 ? EnableRowSelect
-                    ? BackgroundHighlightColour
+                    ? backgroundHighlightColour
                     : subItem.BackgroundColor
                 : subItem.BackgroundColor;
 

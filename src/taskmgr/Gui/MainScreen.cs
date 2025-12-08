@@ -30,31 +30,44 @@ public sealed class MainScreen : Screen
         headerControl = new HeaderControl(
             runContext.Processor,
             runContext.Terminal,
-            runContext.AppConfig);
+            runContext.AppConfig) {
+            TabStop = false
+        };
 
         processControl = new ProcessControl(
             runContext.Processor,
             runContext.Terminal,
-            runContext.AppConfig);
+            runContext.AppConfig) {
+            TabStop = true,
+            TabIndex = 1
+        };
 
         processInfoControl = new ProcessInfoControl(
             runContext.ProcessService,
             runContext.ModuleService,
             runContext.ThreadService,
-            runContext.Terminal, 
-            runContext.AppConfig);
+            runContext.Terminal,
+            runContext.AppConfig) {
+            TabStop = true,
+            TabIndex = 2
+        };
 
-        commandControl = new CommandControl(runContext.Terminal, runContext.AppConfig);
+        commandControl = new CommandControl(runContext.Terminal, runContext.AppConfig) {
+            TabStop = false
+        };
         
-        commandControl.AddCommand(ConsoleKey.F1, () => new HelpCommand("Help", screenApp));
-        commandControl.AddCommand(ConsoleKey.F2, () => new SetupCommand("Setup", screenApp));
-        commandControl.AddCommand(ConsoleKey.F3, () => new ProcessSortCommand("Sort", this));
-        commandControl.AddCommand(ConsoleKey.F4, () => new FilterCommand("Filter", this));
-        commandControl.AddCommand(ConsoleKey.F5, () => new ProcessInfoCommand("Info", this));
-        commandControl.AddCommand(ConsoleKey.F6, () => new EndTaskCommand("End Task", this));
-        commandControl.AddCommand(ConsoleKey.F7, () => new AboutCommand("About", this));
-        
-        filterControl = new FilterControl(runContext.Terminal, runContext.AppConfig);
+        commandControl
+            .AddCommand(ConsoleKey.F1, () => new HelpCommand("Help", screenApp))
+            .AddCommand(ConsoleKey.F2, () => new SetupCommand("Setup", screenApp))
+            .AddCommand(ConsoleKey.F3, () => new ProcessSortCommand("Sort", this))
+            .AddCommand(ConsoleKey.F4, () => new FilterCommand("Filter", this))
+            .AddCommand(ConsoleKey.F5, () => new ProcessInfoCommand("Info", this))
+            .AddCommand(ConsoleKey.F6, () => new EndTaskCommand("End Task", this))
+            .AddCommand(ConsoleKey.F7, () => new AboutCommand("About", this));
+
+        filterControl = new FilterControl(runContext.Terminal, runContext.AppConfig) {
+            TabStop = false
+        };
 
         activeControl = processControl;
         footerControl = commandControl;
