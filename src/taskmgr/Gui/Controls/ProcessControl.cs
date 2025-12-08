@@ -69,13 +69,17 @@ public sealed partial class ProcessControl : Control
         };
         
         sortView = new ListView(terminal) {
-            Visible = mode == ControlMode.SortSelection
+            Visible = mode == ControlMode.SortSelection,
+            TabStop = true,
+            TabIndex = 1
         };
 
         sortView.ColumnHeaders.Add(new ListViewColumnHeader("SORT BY"));
 
         processView = new ListView(terminal) {
-            Visible = true
+            Visible = true,
+            TabStop = true,
+            TabIndex = 2
         };
         
         processView.ColumnHeaders
@@ -95,6 +99,17 @@ public sealed partial class ProcessControl : Control
     }
 
     public string FilterText { private get; set; } = string.Empty;
+
+    private ListView? GetTargetControl()
+    {
+        ListView? targetControl = mode switch {
+            ControlMode.None => processView,
+            ControlMode.SortSelection => sortView,
+            _ => null
+        };
+
+        return targetControl;
+    }
     
     private void LoadSortItems()
     {
@@ -129,15 +144,15 @@ public sealed partial class ProcessControl : Control
 
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
     {
+        if (keyInfo.Key == ConsoleKey.Escape && mode == ControlMode.SortSelection) {
+            SetMode(ControlMode.None);
+            handled = true;
+            return;
+        }
+        
         try {
+            Control? targetControl = GetTargetControl();
             Control.DrawingLockAcquire();
-
-            Control? targetControl = mode switch {
-                ControlMode.None => processView,
-                ControlMode.SortSelection => sortView,
-                _ => null
-            };
-
             targetControl?.KeyPressed(keyInfo, ref handled);
         }
         finally {
@@ -170,6 +185,7 @@ public sealed partial class ProcessControl : Control
         
         processView.ColumnHeaders[(int)sortColumn].BackgroundColour = appConfig.DefaultTheme.BackgroundHighlight;
         processView.ColumnHeaders[(int)sortColumn].ForegroundColour = appConfig.DefaultTheme.ForegroundHighlight;
+        processView.SetFocus();
 
         sortView.ItemSelected += SortViewOnItemSelected;
         processView.ItemSelected += ProcessViewOnItemSelected;
@@ -274,6 +290,9 @@ public sealed partial class ProcessControl : Control
 
         this.mode = mode;
         sortView.Visible = this.mode == ControlMode.SortSelection;
+        
+        Control? targetControl = GetTargetControl();
+        targetControl?.SetFocus();
 
         Clear();
         Resize();
@@ -291,7 +310,9 @@ public sealed partial class ProcessControl : Control
         processView.ColumnHeaders[(int)sortColumn].ForegroundColour = appConfig.DefaultTheme.ForegroundHighlight;
         
         mode = ControlMode.None;
-        
+        processView.SetFocus();
+
+        Clear();
         Resize();
         Draw();
     }

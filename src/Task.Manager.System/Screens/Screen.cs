@@ -9,6 +9,8 @@ public partial class Screen : Control
     private readonly MessageBox messageBox;
     private readonly InputBox inputBox;
     
+    private Control? focusedControl;
+    
     Action? onMessageBoxResult;
     Action<string, InputBoxResult>? onInputBoxResult;
 
@@ -39,6 +41,35 @@ public partial class Screen : Control
     }
 
     public bool CursorVisible { get; set; } = true;
+
+    private void Focus()
+    {
+        if (focusedControl != null) {
+            focusedControl.Focused = false;    
+        }
+        
+        focusedControl = SelectFirstControl(currentControl: this, lookForward: true);
+        
+        if (focusedControl != null) {
+            focusedControl.Focused = true;
+        }
+    }
+
+    internal void FocusInternal(Control control)
+    {
+        if (focusedControl == control) {
+            return;
+        }
+        
+        if (focusedControl != null) {
+            focusedControl.Focused = false;
+            focusedControl.LostFocus();
+        }
+
+        focusedControl = control;
+        focusedControl.Focused = true;
+        focusedControl.GotFocus();
+    }
     
     private bool IsActive { get; set; } = false;
 
@@ -70,13 +101,16 @@ public partial class Screen : Control
         if (handled) {
             return;
         }
-
+        
         if (messageBox.Visible) {
             OnMessageBoxKeyPressed(keyInfo, ref handled);
         }
         else if (inputBox.Visible) {
             OnInputBoxKeyPressed(keyInfo, ref handled);
         }
+        // else {
+        //     base.OnKeyPressed(keyInfo, ref handled);
+        // }
     }
 
     protected override void OnLoad()
@@ -85,6 +119,8 @@ public partial class Screen : Control
         
         messageBox.Load();
         inputBox.Load();
+
+        focusedControl = SelectNextControl(null, lookForward: true);
     }
 
     private void OnInputBoxKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
@@ -140,9 +176,10 @@ public partial class Screen : Control
 
     public void Show()
     {
-        Load();
         Clear();
+        Load();
         Resize();
+        Focus();
         Draw();
         OnShown();
         IsActive = true;

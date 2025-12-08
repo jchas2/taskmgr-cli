@@ -13,8 +13,11 @@ public sealed class CommandControl(ISystemTerminal terminal, AppConfig appConfig
 
     private readonly Dictionary<ConsoleKey, AbstractCommand> commandMap = new();
 
-    public void AddCommand(ConsoleKey key, Func<AbstractCommand> commandFactory) =>
+    public CommandControl AddCommand(ConsoleKey key, Func<AbstractCommand> commandFactory)
+    {
         commandMap.Add(key, commandFactory.Invoke());
+        return this;
+    }
     
     protected override void OnDraw()
     {

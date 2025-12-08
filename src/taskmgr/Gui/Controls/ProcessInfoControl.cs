@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
+using Task.Manager.Process;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.ListView;
@@ -22,7 +22,6 @@ public partial class ProcessInfoControl : Control
     private readonly ListView threadsView;
     private readonly ListView handlesView;
     private readonly List<ListView> tabControls = [];
-    private ListView focusedControl;
     private WorkerTask? workerTask;
     
     private CancellationTokenSource? cancellationTokenSource;
@@ -44,24 +43,30 @@ public partial class ProcessInfoControl : Control
         this.threadService = threadService;
         this.appConfig = appConfig;
         
+        menuView = new ListView(terminal) {
+            TabStop = true,
+            TabIndex = 1,
+            Visible = true
+        };
+
+        menuView.ColumnHeaders.Add(new ListViewColumnHeader("SELECT"));
+        
         processInfoView = new ListView(terminal) {
             EnableScroll = false,
             EnableRowSelect = false,
             ShowColumnHeaders = false,
-            Visible = true
+            TabStop = true,
+            TabIndex = 2,
+            Visible = true,
         };
 
         processInfoView.ColumnHeaders
             .Add(new ListViewColumnHeader("KEY"))
             .Add(new ListViewColumnHeader("VALUE"));
 
-        menuView = new ListView(terminal) {
-            Visible = true
-        };
-
-        menuView.ColumnHeaders.Add(new ListViewColumnHeader("SELECT"));
-
         threadsView = new ListView(terminal) {
+            TabStop = true,
+            TabIndex = 3,
             Visible = true
         };
 
@@ -76,6 +81,8 @@ public partial class ProcessInfoControl : Control
             .Add(new ListViewColumnHeader("TOTAL TIME"));
         
         modulesView = new ListView(terminal) {
+            TabStop = true,
+            TabIndex = 4,
             Visible = false
         };
 
@@ -85,6 +92,8 @@ public partial class ProcessInfoControl : Control
 
         handlesView = new ListView(terminal) {
             EmptyListViewText = "Not yet implemented on this OS",
+            TabStop = true,
+            TabIndex = 5,
             Visible = false
         };
 
@@ -104,8 +113,6 @@ public partial class ProcessInfoControl : Control
             threadsView, 
             handlesView
         });
-
-        focusedControl = threadsView;
     }
 
     private void MenuViewOnItemClicked(object? sender, ListViewItemEventArgs e)
@@ -115,6 +122,7 @@ public partial class ProcessInfoControl : Control
         var menuListViewItem = e.Item as MenuListViewItem;
         menuListViewItem!.AssociatedControl.Visible = true;
         
+        Clear();
         Resize();
         Draw();
     }
@@ -123,14 +131,9 @@ public partial class ProcessInfoControl : Control
     {
         try {
             Control.DrawingLockAcquire();
-
+            ListView activeControl = tabControls.Single(ctrl => ctrl.Visible);
             processInfoView.Draw();
             menuView.Draw();
-            threadsView.Draw();
-            modulesView.Draw();
-            handlesView.Draw();
-
-            Control activeControl = tabControls.Single(ctrl => ctrl.Visible);
             activeControl.Draw();
         }
         finally {
@@ -143,29 +146,12 @@ public partial class ProcessInfoControl : Control
         try {
             Control.DrawingLockAcquire();
             ListView activeControl = tabControls.Single(ctrl => ctrl.Visible);
+            Control? focusedControl = GetFocusedControl;
 
             switch (keyInfo.Key) {
-                case ConsoleKey.UpArrow:
-                case ConsoleKey.DownArrow:
-                case ConsoleKey.PageUp:
-                case ConsoleKey.PageDown:
-                    focusedControl.KeyPressed(keyInfo, ref handled);
-                    break;
-                
                 case ConsoleKey.LeftArrow:
-                    focusedControl = menuView;
+                    menuView.SetFocus();
                     
-                    if (activeControl.SelectedIndex <= menuView.SelectedIndex) {
-                        menuView.SelectedIndex = activeControl.SelectedIndex;
-                    }
-                    else {
-                        if (menuView.Items.Count > 0) {
-                            menuView.SelectedIndex = menuView.Items.Count - 1;
-                        }
-                    }
-                    
-                    focusedControl.Draw();
- 
                     if (menuView.SelectedItem != null) {
                         ListViewItemEventArgs e = new(menuView.SelectedItem);
                         MenuViewOnItemClicked(this, e);
@@ -174,18 +160,19 @@ public partial class ProcessInfoControl : Control
                     break;
                 
                 case ConsoleKey.RightArrow:
-                    focusedControl = activeControl;
-                    
-                    if (focusedControl.Items.Count > menuView.Items.Count) {
-                        focusedControl.SelectedIndex = menuView.SelectedIndex;
+                    if (activeControl.Items.Count > 0) {
+                        activeControl.SelectedIndex = 0;
                     }
-                    else {
-                        if (focusedControl.Items.Count > 0) {
-                            focusedControl.SelectedIndex = focusedControl.Items.Count - 1;
-                        }
-                    }
-                    
-                    focusedControl.Draw();
+
+                    activeControl.SetFocus();
+                    Draw();
+                    break;
+                
+                case ConsoleKey.UpArrow:
+                case ConsoleKey.DownArrow:
+                case ConsoleKey.PageUp:
+                case ConsoleKey.PageDown:
+                    focusedControl?.KeyPressed(keyInfo, ref handled);
                     break;
             }
         }
@@ -240,7 +227,8 @@ public partial class ProcessInfoControl : Control
         TryLoadProcessInfo();
         TryUpdateListViewThreadItems();
         TryUpdateListViewModuleItems();
-        
+
+        menuView.SetFocus();
         menuView.ItemClicked += MenuViewOnItemClicked;
         
         cancellationTokenSource = new CancellationTokenSource();
@@ -445,8 +433,10 @@ public partial class ProcessInfoControl : Control
     private void UpdateListViewItemsLoop(CancellationToken token)
     {
         while (!token.IsCancellationRequested) {
-            TryUpdateListViewThreadItems();
-            Draw();
+            if (threadsView.Visible) {
+                TryUpdateListViewThreadItems();
+                Draw();
+            }
             Thread.Sleep(1000);
         }
     }
