@@ -62,7 +62,7 @@ public sealed class MainScreen : Screen
             .AddCommand(ConsoleKey.F3, () => new ProcessSortCommand("Sort", this))
             .AddCommand(ConsoleKey.F4, () => new FilterCommand("Filter", this))
             .AddCommand(ConsoleKey.F5, () => new ProcessInfoCommand("Info", this))
-            .AddCommand(ConsoleKey.F6, () => new EndTaskCommand("End Task", this))
+            .AddCommand(ConsoleKey.F6, () => new EndTaskCommand("End Task", this, runContext.AppConfig))
             .AddCommand(ConsoleKey.F7, () => new AboutCommand("About", this));
 
         filterControl = new FilterControl(runContext.Terminal, runContext.AppConfig) {

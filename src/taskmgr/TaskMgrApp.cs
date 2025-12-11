@@ -91,23 +91,23 @@ public sealed class TaskMgrApp(RunContext runContext)
             }
             
             // Only override what's in config if a value comes in from the command line.
-            int? pid = context.ParseResult.GetValueForOption(pidOption);
-            string? userName = context.ParseResult.GetValueForOption(usernameOption);
-            string? process = context.ParseResult.GetValueForOption(processOption);
+            int? pid =               context.ParseResult.GetValueForOption(pidOption);
+            string? userName =       context.ParseResult.GetValueForOption(usernameOption);
+            string? process =        context.ParseResult.GetValueForOption(processOption);
             Statistics? sortColumn = context.ParseResult.GetValueForOption(sortOption);
-            bool? sortAscending = context.ParseResult.GetValueForOption(ascendingOption);
-            int? delay = context.ParseResult.GetValueForOption(delayOption);
-            int? limit = context.ParseResult.GetValueForOption(limitOption);
-            int? nprocs = context.ParseResult.GetValueForOption(nprocsOption);
-            string? themeName = context.ParseResult.GetValueForOption(themeOption);
+            bool? sortAscending =    context.ParseResult.GetValueForOption(ascendingOption);
+            int? delay =             context.ParseResult.GetValueForOption(delayOption);
+            int? limit =             context.ParseResult.GetValueForOption(limitOption);
+            int? nprocs =            context.ParseResult.GetValueForOption(nprocsOption);
+            string? themeName =      context.ParseResult.GetValueForOption(themeOption);
             
-            AssignIfValid(pid, val => runContext.AppConfig.FilterPid = val, val => val >= 0);
-            AssignIfValid(limit, val => runContext.AppConfig.IterationLimit = val, val => val >= 0);
-            AssignIfValid(nprocs, val => runContext.AppConfig.NumberOfProcesses = val, val => val > 0);
-            AssignIfValid(delay, val => runContext.AppConfig.DelayInMilliseconds = val, val => val > 500);
+            AssignIfValid(pid,    val => runContext.AppConfig.FilterPid = val,           val => val >= 0);
+            AssignIfValid(limit,  val => runContext.AppConfig.IterationLimit = val,      val => val >= 0);
+            AssignIfValid(nprocs, val => runContext.AppConfig.NumberOfProcesses = val,   val => val > 0);
+            AssignIfValid(delay,  val => runContext.AppConfig.DelayInMilliseconds = val, val => val > 500);
             
             AssignIfStringValid(userName, val => runContext.AppConfig.FilterUserName = val);
-            AssignIfStringValid(process, val => runContext.AppConfig.FilterProcess = val);
+            AssignIfStringValid(process,  val => runContext.AppConfig.FilterProcess = val);
             
             if (sortColumn.HasValue) {
                 runContext.AppConfig.SortColumn = sortColumn.Value;

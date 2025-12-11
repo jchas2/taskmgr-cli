@@ -184,26 +184,36 @@ public sealed class HeaderControl : Control
         cpuMetre.ColourSeries1 = kernelColour;
         cpuMetre.ColourSeries2 = userColour;
         cpuMetre.LabelSeries1 = string.Empty;
-        cpuMetre.LabelSeries2 = totalCpu.ToString("000.0%"); 
+        cpuMetre.LabelSeries2 = appConfig.ShowMetreCpuNumerically
+            ? cpuMetre.LabelSeries2 = totalCpu.ToString("000.0%")
+            : string.Empty;
+
         cpuMetre.Draw();
 
         memoryMetre.PercentageSeries1 = memRatio;
         memoryMetre.ColourSeries1 = memColour;
-        memoryMetre.LabelSeries1 =
-            (systemStatistics.TotalPhysical - systemStatistics.AvailablePhysical).ToFormattedByteSize() + "/" +
-             systemStatistics.TotalPhysical.ToFormattedByteSize();
+        memoryMetre.LabelSeries1 = appConfig.ShowMetreMemoryNumerically
+            ? (systemStatistics.TotalPhysical - systemStatistics.AvailablePhysical).ToFormattedByteSize() + "/" +
+               systemStatistics.TotalPhysical.ToFormattedByteSize()
+            : string.Empty;
+        
         memoryMetre.Draw();
 
         virtualMemoryMetre.PercentageSeries1 = virRatio;
         virtualMemoryMetre.ColourSeries1 = virColour;
-        virtualMemoryMetre.LabelSeries1 =
-            (systemStatistics.TotalPageFile - systemStatistics.AvailablePageFile).ToFormattedByteSize() + "/" +
-             systemStatistics.TotalPageFile.ToFormattedByteSize();
+        virtualMemoryMetre.LabelSeries1 = appConfig.ShowMetreSwapNumerically
+            ? (systemStatistics.TotalPageFile - systemStatistics.AvailablePageFile).ToFormattedByteSize() + "/" +
+               systemStatistics.TotalPageFile.ToFormattedByteSize()
+            : string.Empty;
+        
         virtualMemoryMetre.Draw();
 
         diskMetre.PercentageSeries1 = mbpsRatio;
         diskMetre.ColourSeries1 = mbpsColour;
-        diskMetre.LabelSeries1 = $"{mbps} MB/s";
+        diskMetre.LabelSeries1 = appConfig.ShowMetreDiskNumerically
+            ? $"{mbps} MB/s"
+            : string.Empty;
+        
         diskMetre.Draw();
 
         for (int i = 0; i < statisticsView.Items.Count; i++) {

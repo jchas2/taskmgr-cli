@@ -14,8 +14,6 @@ public class ListViewItem
     
     public ListViewItem(string text)
     {
-        ArgumentNullException.ThrowIfNull(text, nameof(text));
-        
         subItems.Add(new ListViewSubItem(this, text));
         subItemCollection = new ListViewSubItemCollection(this);
     }
@@ -32,11 +30,8 @@ public class ListViewItem
     
     public ListViewItem(string[] items)
     {
-        ArgumentNullException.ThrowIfNull(items, nameof(items));
-
         for (int i = 0; i < items.Length; i++) {
             ArgumentNullException.ThrowIfNull(items[i], nameof(items));
-            
             subItems.Add(new ListViewSubItem(this, items[i]));
         }
         
@@ -55,11 +50,8 @@ public class ListViewItem
 
     public ListViewItem(ListViewSubItem[] subItems)
     {
-        ArgumentNullException.ThrowIfNull(subItems, nameof(subItems));
-
         for (int i = 0; i < subItems.Length; i++) {
             ArgumentNullException.ThrowIfNull(subItems[i], nameof(subItems));
-            
             subItems[i].Owner = this;
             this.subItems.Add(subItems[i]);
         }
@@ -89,12 +81,12 @@ public class ListViewItem
         set => SubItems[0].BackgroundColor = value;
     }
 
+    public bool Checked { get; set; }
+    
     internal void ClearSubItems() => subItems.Clear();
 
     internal bool Contains(ListViewSubItem subItem)
     {
-        ArgumentNullException.ThrowIfNull(subItem, nameof(subItem));
-        
         return subItems.Contains(subItem);
     }
 
@@ -121,8 +113,6 @@ public class ListViewItem
     
     internal int IndexOfSubItem(ListViewSubItem subItem)
     {
-        ArgumentNullException.ThrowIfNull(subItem, nameof(subItem));
-
         for (int i = 0; i < subItems.Count; i++) {
             if (subItems[i] == subItem) {
                 return i;
@@ -132,19 +122,15 @@ public class ListViewItem
         return -1;
     }
 
-    internal void InsertSubItems(ListViewSubItem[] subItems)
-    {
-        ArgumentNullException.ThrowIfNull(subItems, nameof(subItems));
-        
+    internal void InsertSubItems(ListViewSubItem[] subItems) =>
         this.subItems.AddRange(subItems);
-    }
 
     internal ListView? Parent { get; set; }
     
     internal int SubItemCount => subItems.Count;
     
     public ListViewSubItemCollection SubItems => subItemCollection;
-
+    
     public string Text
     {
         get => subItems[0].Text;

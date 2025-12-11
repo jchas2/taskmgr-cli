@@ -175,6 +175,12 @@ public sealed class AppConfig
         LoadSections();
     }
 
+    public bool ConfirmTaskDelete
+    {
+        get => uxSection?.GetBool(Constants.Keys.ConfirmTaskDelete, true) ?? true;
+        set => uxSection?.Add(Constants.Keys.ConfirmTaskDelete, value.ToString());
+    }
+
     public string? DefaultConfigPath
     {
         get {
@@ -186,6 +192,29 @@ public sealed class AppConfig
                 return null;
             }
         }
+    }
+    
+    public Theme DefaultTheme
+    {
+        get => defaultTheme;
+        set {
+            if (!allThemes.Contains(value)) {
+                throw new InvalidOperationException();
+            }
+
+            defaultTheme = value;
+            
+            if (iniConfig.ConfigSections.Any(cs => cs.Name.Equals(value.Name, StringComparison.CurrentCultureIgnoreCase))) {
+                uxSection?.Add(Constants.Keys.DefaultTheme, value.Name);
+            }
+        }
+    }
+    
+    public int DelayInMilliseconds
+    {
+        get => statsSection?.GetInt(Constants.Keys.Delay, Processor.DefaultDelayInMilliseconds) ??
+               Processor.DefaultDelayInMilliseconds;
+        set => statsSection?.Add(Constants.Keys.Delay, value.ToString());
     }
 
     public int FilterPid
@@ -205,21 +234,23 @@ public sealed class AppConfig
         get => filterSection?.GetString(Constants.Keys.Process, string.Empty) ?? string.Empty;
         set => filterSection?.Add(Constants.Keys.Process, value);
     }
-
-    public Theme DefaultTheme
+    
+    public bool HighlightProgramName
     {
-        get => defaultTheme;
-        set {
-            if (!allThemes.Contains(value)) {
-                throw new InvalidOperationException();
-            }
+        get => uxSection?.GetBool(Constants.Keys.HighlightProgramName, true) ?? true;
+        set => uxSection?.Add(Constants.Keys.HighlightProgramName, value.ToString());
+    }
 
-            defaultTheme = value;
-            
-            if (iniConfig.ConfigSections.Any(cs => cs.Name.Equals(value.Name, StringComparison.CurrentCultureIgnoreCase))) {
-                uxSection?.Add(Constants.Keys.DefaultTheme, value.Name);
-            }
-        }
+    public bool HighlightDaemons
+    {
+        get => uxSection?.GetBool(Constants.Keys.HighlightDaemons, true) ?? true;
+        set => uxSection?.Add(Constants.Keys.HighlightDaemons, value.ToString());
+    }
+    
+    public bool HighlightStatisticsColumnUpdate
+    {
+        get => uxSection?.GetBool(Constants.Keys.HighlightStatsColUpdate, true) ?? true;
+        set => uxSection?.Add(Constants.Keys.HighlightStatsColUpdate, value.ToString());
     }
 
     public MetreControlStyle MetreStyle
@@ -227,12 +258,11 @@ public sealed class AppConfig
         get => uxSection?.GetEnum(Constants.Keys.MetreStyle, MetreControlStyle.Dots) ?? MetreControlStyle.Dots;
         set => uxSection?.Add(Constants.Keys.MetreStyle, value.ToString());
     }
-
-    public int DelayInMilliseconds
+    
+    public bool MultiSelectProcesses
     {
-        get => statsSection?.GetInt(Constants.Keys.Delay, Processor.DefaultDelayInMilliseconds) ??
-               Processor.DefaultDelayInMilliseconds;
-        set => statsSection?.Add(Constants.Keys.Delay, value.ToString());
+        get => uxSection?.GetBool(Constants.Keys.MultiSelectProcesses, false) ?? false;
+        set => uxSection?.Add(Constants.Keys.MultiSelectProcesses, value.ToString());
     }
 
     public int NumberOfProcesses
@@ -259,6 +289,42 @@ public sealed class AppConfig
         set => iterationSection?.Add(Constants.Keys.Limit, value.ToString());
     }
     
+    public bool ShowMetreCpuNumerically
+    {
+        get => uxSection?.GetBool(Constants.Keys.ShowMetreCpuNumerically, true) ?? true;
+        set => uxSection?.Add(Constants.Keys.ShowMetreCpuNumerically, value.ToString());
+    }
+
+    public bool ShowMetreDiskNumerically
+    {
+        get => uxSection?.GetBool(Constants.Keys.ShowMetreDiskNumerically, true) ?? true;
+        set => uxSection?.Add(Constants.Keys.ShowMetreDiskNumerically, value.ToString());
+    }
+
+    public bool ShowMetreMemoryNumerically
+    {
+        get => uxSection?.GetBool(Constants.Keys.ShowMetreMemNumerically, true) ?? true;
+        set => uxSection?.Add(Constants.Keys.ShowMetreMemNumerically, value.ToString());
+    }
+
+    public bool ShowMetreSwapNumerically
+    {
+        get => uxSection?.GetBool(Constants.Keys.ShowMetreSwapNumerically, true) ?? true;
+        set => uxSection?.Add(Constants.Keys.ShowMetreSwapNumerically, value.ToString());
+    }
+
+    public bool UseIrixReporting
+    {
+#if __WIN32__
+        get => uxSection?.GetBool(Constants.Keys.UseIrixCpuReporting, false) ?? false;
+        set => uxSection?.Add(Constants.Keys.UseIrixCpuReporting, value.ToString());
+#endif
+#if __APPLE__        
+        get => uxSection?.GetBool(Constants.Keys.UseIrixCpuReporting, true) ?? true;
+        set => uxSection?.Add(Constants.Keys.UseIrixCpuReporting, value.ToString());
+#endif
+    }
+
     private void LoadSections()
     {
         filterSection = iniConfig.ContainsSection(Constants.Sections.Filter)
@@ -314,8 +380,23 @@ public sealed class AppConfig
             : new ConfigSection(Constants.Sections.UX);
 
         uxSection
+            .AddIfMissing(Constants.Keys.ConfirmTaskDelete, true.ToString())
+            .AddIfMissing(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour)
+            .AddIfMissing(Constants.Keys.HighlightProgramName, true.ToString())
+            .AddIfMissing(Constants.Keys.HighlightDaemons, true.ToString())
+            .AddIfMissing(Constants.Keys.HighlightStatsColUpdate, true.ToString())
             .AddIfMissing(Constants.Keys.MetreStyle, MetreControlStyle.Dots.ToString())
-            .AddIfMissing(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour);
+            .AddIfMissing(Constants.Keys.MultiSelectProcesses, false.ToString())
+            .AddIfMissing(Constants.Keys.ShowMetreCpuNumerically, true.ToString())
+            .AddIfMissing(Constants.Keys.ShowMetreDiskNumerically, true.ToString())
+            .AddIfMissing(Constants.Keys.ShowMetreMemNumerically, true.ToString())
+            .AddIfMissing(Constants.Keys.ShowMetreSwapNumerically, true.ToString())
+#if __WIN32__            
+            .AddIfMissing(Constants.Keys.UseIrixCpuReporting, false.ToString());
+#endif
+#if __APPLE__
+            .AddIfMissing(Constants.Keys.UseIrixCpuReporting, true.ToString());
+#endif
 
         if (!iniConfig.ContainsSection(uxSection.Name)) {
             iniConfig.AddConfigSection(uxSection);
