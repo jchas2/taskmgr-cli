@@ -19,20 +19,38 @@ public sealed class Constants
 
     public sealed class Keys
     {
-        /* General keys. */
-        public const string Asc = "asc";
-        public const string Col = "col";
-        public const string Cols = "cols";
-        public const string DefaultTheme = "default-theme";
-        public const string Delay = "delay";
-        public const string Limit = "limit";
-        public const string MetreStyle = "metre-style";
-        public const string NProcs = "nprocs";
+        // Filter keys.
         public const string Pid = "pid";
         public const string Process = "process";
         public const string UserName = "username";
-        
-        /* Theme keys. */
+
+        // Iteration keys.
+        public const string Limit = "limit";
+
+        // Sort keys.
+        public const string Asc = "asc";
+        public const string Col = "col";
+
+        // Stats keys.
+        public const string Cols = "cols";
+        public const string Delay = "delay";
+        public const string NProcs = "nprocs";
+
+        // UX Keys.
+        public const string ConfirmTaskDelete = "confirm-task-delete";
+        public const string DefaultTheme = "default-theme";
+        public const string HighlightProgramName = "highlight-program-name";
+        public const string HighlightDaemons = "highlight-daemons";
+        public const string HighlightStatsColUpdate = "highlight-stats-col-update";
+        public const string MetreStyle = "metre-style";
+        public const string MultiSelectProcesses = "multi-select-procs";
+        public const string ShowMetreCpuNumerically = "show-metre-cpu-numerically";
+        public const string ShowMetreDiskNumerically = "show-metre-disk-numerically";
+        public const string ShowMetreMemNumerically = "show-metre-mem-numerically";
+        public const string ShowMetreSwapNumerically = "show-metre-swap-numerically";
+        public const string UseIrixCpuReporting = "use-irix-cpu-reporting";
+
+        // Theme keys.
         public const string Background = "background";
         public const string BackgroundHighlight = "background-highlight";
 

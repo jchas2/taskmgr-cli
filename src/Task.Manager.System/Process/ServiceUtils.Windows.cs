@@ -11,49 +11,52 @@ public static partial class ServiceUtils
 {
 #if __WIN32__
     private static readonly Dictionary<int, ServiceController> serviceMap = new();
+    private static readonly Lock criticalSection = new();
 
     private static void BuildServiceMap()
     {
         serviceMap.Clear();
 
         IntPtr hSCM = WinService.OpenSCManager(null!, null!, WinService.SC_MANAGER_CONNECT);
-        
+
         if (hSCM == IntPtr.Zero) {
             return;
         }
-        
+
         ServiceController[] services = ServiceController.GetServices();
 
         for (int i = 0; i < services.Length; i++) {
             ServiceController service = services[i];
 
             IntPtr hService = WinService.OpenService(hSCM, service.ServiceName, WinService.SERVICE_QUERY_STATUS);
-            
+
             if (hService == IntPtr.Zero) {
                 continue;
             }
-            
+
             int pid = GetServiceProcessId(hService);
-            
+
             if (pid == 0) {
                 continue;
             }
-            
+
             serviceMap[pid] = service;
         }
     }
 
     public static bool GetService(int pid, out ServiceController? service)
     {
-        if (serviceMap.Count == 0) {
-            BuildServiceMap();
-        }
+        lock (criticalSection) {
+            if (serviceMap.Count == 0) {
+                BuildServiceMap();
+            }
 
-        if (serviceMap.TryGetValue(pid, out service)) {
-            return true;
-        }
+            if (serviceMap.TryGetValue(pid, out service)) {
+                return true;
+            }
 
-        return false;
+            return false;
+        }
     }
 
     public static string? GetServiceImagePath(string serviceName)

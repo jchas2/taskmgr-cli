@@ -185,6 +185,7 @@ public sealed partial class ProcessControl : Control
         
         processView.ColumnHeaders[(int)sortColumn].BackgroundColour = appConfig.DefaultTheme.BackgroundHighlight;
         processView.ColumnHeaders[(int)sortColumn].ForegroundColour = appConfig.DefaultTheme.ForegroundHighlight;
+        processView.ShowCheckboxes = appConfig.MultiSelectProcesses;
         processView.SetFocus();
 
         sortView.ItemSelected += SortViewOnItemSelected;
@@ -238,8 +239,11 @@ public sealed partial class ProcessControl : Control
             ColumnMemoryWidth +
             ColumnDiskWidth;
 
-        processView.ColumnHeaders[(int)Columns.CommandLine].Width = total + ColumnCommandlineWidth < processView.Width
-            ? processView.ColumnHeaders[(int)Columns.CommandLine].Width = processView.Width - total
+        int processViewWidth =
+            processView.ShowCheckboxes ? processView.Width - ListView.CheckboxWidth : processView.Width;
+        
+        processView.ColumnHeaders[(int)Columns.CommandLine].Width = total + ColumnCommandlineWidth < processViewWidth
+            ? processView.ColumnHeaders[(int)Columns.CommandLine].Width = processViewWidth - total
             : processView.ColumnHeaders[(int)Columns.CommandLine].Width = ColumnCommandlineWidth; 
         
         processView.Resize();

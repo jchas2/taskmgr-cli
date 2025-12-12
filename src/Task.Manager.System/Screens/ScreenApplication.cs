@@ -95,9 +95,9 @@ public sealed class ScreenApplication
                 if (terminal.KeyAvailable) {
                     continue;
                 }
-
+                
                 // Small delay to prevent busy-wait.
-                Thread.Sleep(30);
+                Thread.Sleep(50);
             }
 
             lock (@lock) {

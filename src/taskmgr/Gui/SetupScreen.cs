@@ -11,6 +11,7 @@ public class SetupScreen : Screen
 {
     private readonly RunContext runContext;
     private readonly ListView menuView;
+    private readonly ListView generalView;
     private readonly ListView themeView;
     private readonly ListView metreView;
     private readonly ListView delayView;
@@ -35,10 +36,22 @@ public class SetupScreen : Screen
         
         menuView.ColumnHeaders.Add(new ListViewColumnHeader("CATEGORIES"));
 
+        generalView = new(runContext.Terminal) {
+            EnableScroll = true,
+            ShowCheckboxes = true,
+            ShowColumnHeaders = true,
+            TabIndex = 2,
+            TabStop = true,
+            Visible = false
+        };
+
+        generalView.ColumnHeaders.Add(new ListViewColumnHeader("General Settings"));
+        generalView.ColumnHeaders.Add(new ListViewColumnHeader("key"));
+
         themeView = new(runContext.Terminal) {
             EnableScroll = true,
             ShowColumnHeaders = true,
-            TabIndex = 2,
+            TabIndex = 3,
             TabStop = true,
             Visible = false
         };
@@ -48,7 +61,7 @@ public class SetupScreen : Screen
         metreView = new(runContext.Terminal) {
             EnableScroll = true,
             ShowColumnHeaders = true,
-            TabIndex = 3,
+            TabIndex = 4,
             TabStop = true,
             Visible = false
         };
@@ -58,7 +71,7 @@ public class SetupScreen : Screen
         delayView = new(runContext.Terminal) {
             EnableScroll = true,
             ShowColumnHeaders = true,
-            TabIndex = 4,
+            TabIndex = 5,
             TabStop = true,
             Visible = false
         };
@@ -68,7 +81,7 @@ public class SetupScreen : Screen
         limitView = new(runContext.Terminal) {
             EnableScroll = true,
             ShowColumnHeaders = true,
-            TabIndex = 5,
+            TabIndex = 6,
             TabStop = true,
             Visible = false
         };
@@ -78,7 +91,7 @@ public class SetupScreen : Screen
         numProcsView = new(runContext.Terminal) {
             EnableScroll = true,
             ShowColumnHeaders = true,
-            TabIndex = 6,
+            TabIndex = 7,
             TabStop = true,
             Visible = false
         };
@@ -87,6 +100,7 @@ public class SetupScreen : Screen
 
         Controls
             .Add(menuView)
+            .Add(generalView)
             .Add(themeView)
             .Add(metreView)
             .Add(delayView)
@@ -94,6 +108,7 @@ public class SetupScreen : Screen
             .Add(numProcsView);
         
         tabControls.AddRange(new [] {
+            generalView,
             themeView, 
             metreView,
             delayView, 
@@ -104,8 +119,85 @@ public class SetupScreen : Screen
         previewTheme = runContext.AppConfig.DefaultTheme;
     }
 
+    private void LoadGeneralSection()
+    {
+        void AddGeneralItem(string text, string key, bool value)
+        {
+            generalView.Items.Add(new ListViewItem([text, key]));
+            generalView.Items[^1].Checked = value;
+        }
+
+        AddGeneralItem(
+            "Confirm Task delete",
+            Constants.Keys.ConfirmTaskDelete,
+            runContext.AppConfig.ConfirmTaskDelete);
+        
+        AddGeneralItem(
+            "Highlight program name", 
+            Constants.Keys.HighlightProgramName, 
+            runContext.AppConfig.HighlightProgramName);
+        
+#if __WIN32__
+        AddGeneralItem(
+            "Highlight Windows Services",
+            Constants.Keys.HighlightDaemons,
+            runContext.AppConfig.HighlightDaemons);
+#endif
+#if __APPLE__
+        AddGeneralItem(
+            "Highlight daemons",
+            Constants.Keys.HighlightDaemons,
+            runContext.AppConfig.HighlightDaemons);
+#endif
+        AddGeneralItem(
+            "Highlight changed values", 
+            Constants.Keys.HighlightStatsColUpdate,
+            runContext.AppConfig.HighlightStatisticsColumnUpdate);
+
+        AddGeneralItem(
+            "Enable multiple process selection",
+            Constants.Keys.MultiSelectProcesses,
+            runContext.AppConfig.MultiSelectProcesses);
+
+        AddGeneralItem(
+            "Show Cpu meter numerically",
+            Constants.Keys.ShowMetreCpuNumerically,
+            runContext.AppConfig.ShowMetreCpuNumerically);
+        
+        AddGeneralItem(
+            "Show Disk metre numerically", 
+            Constants.Keys.ShowMetreDiskNumerically,
+            runContext.AppConfig.ShowMetreDiskNumerically);
+        
+        AddGeneralItem(
+            "Show Memory metre numerically", 
+            Constants.Keys.ShowMetreMemNumerically,
+            runContext.AppConfig.ShowMetreMemoryNumerically);
+#if __WIN32__
+        AddGeneralItem(
+            "Show Virtual memory numerically", 
+            Constants.Keys.ShowMetreSwapNumerically,
+            runContext.AppConfig.ShowMetreSwapNumerically);
+#endif
+#if __APPLE__
+        AddGeneralItem(
+            "Show Swap memory numerically", 
+            Constants.Keys.ShowMetreSwapNumerically,
+            runContext.AppConfig.ShowMetreSwapNumerically);
+#endif
+        AddGeneralItem(
+            "Use Irix mode CPU reporting (Unix default)",
+            Constants.Keys.UseIrixCpuReporting,
+            runContext.AppConfig.UseIrixReporting);
+    }
+    
     private void LoadMenuItems()
     {
+        menuView.Items.Add(
+            new MenuListViewItem(
+                generalView,
+                "GENERAL"));
+        
         menuView.Items.Add(
             new MenuListViewItem(
                 themeView, 
@@ -188,6 +280,19 @@ public class SetupScreen : Screen
             }
         }
 
+        ListViewItem GetItemValueByKey(string key) => generalView.Items.Single(lvi => lvi.SubItems[1].Text == key);
+
+        runContext.AppConfig.ConfirmTaskDelete = GetItemValueByKey(Constants.Keys.ConfirmTaskDelete).Checked;
+        runContext.AppConfig.HighlightProgramName = GetItemValueByKey(Constants.Keys.HighlightProgramName).Checked;
+        runContext.AppConfig.HighlightDaemons = GetItemValueByKey(Constants.Keys.HighlightDaemons).Checked;
+        runContext.AppConfig.HighlightStatisticsColumnUpdate = GetItemValueByKey(Constants.Keys.HighlightStatsColUpdate).Checked;
+        runContext.AppConfig.MultiSelectProcesses = GetItemValueByKey(Constants.Keys.MultiSelectProcesses).Checked;
+        runContext.AppConfig.ShowMetreCpuNumerically = GetItemValueByKey(Constants.Keys.ShowMetreCpuNumerically).Checked;
+        runContext.AppConfig.ShowMetreDiskNumerically = GetItemValueByKey(Constants.Keys.ShowMetreDiskNumerically).Checked;
+        runContext.AppConfig.ShowMetreMemoryNumerically = GetItemValueByKey(Constants.Keys.ShowMetreMemNumerically).Checked;
+        runContext.AppConfig.ShowMetreSwapNumerically = GetItemValueByKey(Constants.Keys.ShowMetreSwapNumerically).Checked;
+        runContext.AppConfig.UseIrixReporting = GetItemValueByKey(Constants.Keys.UseIrixCpuReporting).Checked;
+        
         if (themeView.SelectedItem?.Text != null) {
             runContext.AppConfig.DefaultTheme = runContext.AppConfig.Themes.First(
                 t => t.Name.Equals(themeView.SelectedItem.Text, StringComparison.CurrentCultureIgnoreCase));
@@ -196,8 +301,8 @@ public class SetupScreen : Screen
         runContext.AppConfig.MetreStyle = Enum.GetValues<MetreControlStyle>()
             .Single(c => c.ToString() == metreView.SelectedItem?.Text);
 
-        UpdateConfigValue(delayView.SelectedItem, val => runContext.AppConfig.DelayInMilliseconds = val);
-        UpdateConfigValue(limitView.SelectedItem, val => runContext.AppConfig.IterationLimit = val);
+        UpdateConfigValue(delayView.SelectedItem,    val => runContext.AppConfig.DelayInMilliseconds = val);
+        UpdateConfigValue(limitView.SelectedItem,    val => runContext.AppConfig.IterationLimit = val);
         UpdateConfigValue(numProcsView.SelectedItem, val => runContext.AppConfig.NumberOfProcesses = val);
     }
     
@@ -259,6 +364,12 @@ public class SetupScreen : Screen
 
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
     {
+        base.OnKeyPressed(keyInfo, ref handled);
+
+        if (handled) {
+            return;
+        }
+        
         ListView activeControl = tabControls.Single(ctrl => ctrl.Visible);
         Control? focusedControl = GetFocusedControl;
 
@@ -282,6 +393,7 @@ public class SetupScreen : Screen
             case ConsoleKey.DownArrow:
             case ConsoleKey.PageUp:
             case ConsoleKey.PageDown:
+            case ConsoleKey.Spacebar:
                 focusedControl?.KeyPressed(keyInfo, ref handled);
                 break;
             
@@ -302,6 +414,7 @@ public class SetupScreen : Screen
         }
 
         LoadMenuItems();
+        LoadGeneralSection();
         LoadUxSection();
         
         LoadSectionConfigListView(
@@ -320,7 +433,7 @@ public class SetupScreen : Screen
             runContext.AppConfig.IterationLimit);
 
         previewTheme = runContext.AppConfig.DefaultTheme;
-        themeView.Visible = true;
+        generalView.Visible = true;
         menuView.SetFocus();
         
         menuView.ItemClicked += MenuViewOnItemClicked;
@@ -354,9 +467,11 @@ public class SetupScreen : Screen
             ctrl.Y = menuView.Y;
             ctrl.Height = menuView.Height;
             ctrl.Width = Width - (menuView.Width + ControlGutter);
-            ctrl.ColumnHeaders[0].Width = ctrl.Width;
+            ctrl.ColumnHeaders[0].Width = ctrl.ShowCheckboxes ? ctrl.Width - ListView.CheckboxWidth : ctrl.Width;
             ctrl.Resize();
         }
+
+        generalView.ColumnHeaders[1].Width = 0;
     }
 
     protected override void OnUnload()
@@ -376,31 +491,22 @@ public class SetupScreen : Screen
 
     private void SaveConfig()
     {
-        string msg = $"Save settings to config file:\n{runContext.AppConfig.DefaultConfigPath}?";
-        
-        ShowMessageBox(
-            "Save Config",
-            msg,
-            MessageBoxButtons.OkCancel,
-            () => {
-                MapControlsToConfig();
+        MapControlsToConfig();
                 
-                if (runContext.AppConfig.TrySave(runContext.AppConfig.DefaultConfigPath ?? string.Empty)) {
-                    ShowMessageBox(
-                        "Save Succeeded",
-                        "Config file successfully saved.",
-                        MessageBoxButtons.Ok,
-                        () => { });
-                }
-                else {
-                    ShowMessageBox(
-                        "Save Failed",
-                        "An error occurred saving config file.",
-                        MessageBoxButtons.Ok,
-                        () => { });
-                }
-            },
-            msg.Length + ControlGutter * 2);
+        if (runContext.AppConfig.TrySave(runContext.AppConfig.DefaultConfigPath ?? string.Empty)) {
+            ShowMessageBox(
+                "Save Succeeded",
+                "Config successfully saved.",
+                MessageBoxButtons.Ok,
+                () => { });
+        }
+        else {
+            ShowMessageBox(
+                "Save Failed",
+                "An error occurred saving config.",
+                MessageBoxButtons.Ok,
+                () => { });
+        }
     }
 
     private void UpdateTheme(ListView listView)

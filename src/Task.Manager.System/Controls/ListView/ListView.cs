@@ -28,6 +28,11 @@ public class ListView : Control
     private const int DefaultColumnWidth = 30;
     private const int DefaultHeaderWidth = 80;
 
+    private const string CheckedText   = "[x] ";
+    private const string UnCheckedText = "[ ] ";
+
+    public const int CheckboxWidth = 4;
+    
     public event EventHandler<ListViewItemEventArgs>? ItemClicked;
     public event EventHandler<ListViewItemEventArgs>? ItemSelected;
 
@@ -194,8 +199,17 @@ public class ListView : Control
 
         /* TODO: Will look into span<T> + stackalloc char[] to fast build strings */
         int c = 0;
+
+        if (ShowCheckboxes) {
+            buffer.Append(' ', CheckboxWidth);
+            c += CheckboxWidth;
+        }
         
         for (int i = 0; i < ColumnHeaderCount; i++) {
+            if (columnHeaders[i].Width == 0) {
+                continue;
+            }
+            
             if (c + columnHeaders[i].Width > viewPort.Bounds.Width) {
                 break;
             }
@@ -205,8 +219,8 @@ public class ListView : Control
                 : columnHeaders[i].Width;
             
             string formatStr = columnHeaders[i].RightAligned 
-                ? "{0," + columnHeaderFormatWidth.ToString() + "}"
-                : "{0,-" + columnHeaderFormatWidth.ToString() + "}";
+                ? "{0," + columnHeaderFormatWidth + "}"
+                : "{0,-" + columnHeaderFormatWidth + "}";
 
             ConsoleColor foreground = columnHeaders[i].ForegroundColour ?? HeaderForegroundColour;
             ConsoleColor background = columnHeaders[i].BackgroundColour ?? HeaderBackgroundColour;
@@ -232,7 +246,6 @@ public class ListView : Control
 
     private void DrawItem(
         ListViewItem item,
-        int width,
         bool highlight)
     {
         using TerminalColourRestorer _ = new();
@@ -244,8 +257,22 @@ public class ListView : Control
         /* TODO: Will look into span<T> + stackalloc char[] to fast build strings */
         int c = 0;
 
+        if (ShowCheckboxes) {
+            if (item.Checked) {
+                buffer.Append(CheckedText);
+            }
+            else {
+                buffer.Append(UnCheckedText);
+            }
+            c += CheckboxWidth;
+        }
+
         for (int i = 0; i < item.SubItemCount; i++) {
-            var subItem = item.SubItems[i];
+            if (i < ColumnHeaderCount && columnHeaders[i].Width == 0) {
+                continue;
+            }
+
+            ListViewSubItem subItem = item.SubItems[i];
 
             bool rightAligned = false;
             int columnWidth = DefaultColumnWidth;
@@ -264,8 +291,8 @@ public class ListView : Control
                 : columnWidth;
 
             string formatStr = rightAligned
-                ? "{0," + columnFormatWidth.ToString() + "}"
-                : "{0,-" + columnFormatWidth.ToString() + "}";
+                ? "{0," + columnFormatWidth + "}"
+                : "{0,-" + columnFormatWidth + "}";
 
             ConsoleColor backgroundHighlightColour = Focused
                 ? BackgroundHighlightColour
@@ -282,7 +309,7 @@ public class ListView : Control
                     ? backgroundHighlightColour
                     : subItem.BackgroundColor
                 : subItem.BackgroundColor;
-
+            
             if (subItem.Text.Length >= columnWidth) {
                 buffer.Append((string.Format(formatStr, subItem.Text.Substring(0, columnWidth - 1)) + ' ')
                     .ToColour(foregroundColour, backgroundColour));
@@ -310,15 +337,9 @@ public class ListView : Control
             int pid = i + viewPort.CurrentIndex;
 
             if (pid < ItemCount) {
-                var item = Items[pid];
-                
+                ListViewItem item = Items[pid];
                 terminal.SetCursorPosition(viewPort.Bounds.X, viewPort.Bounds.Y + n);
-                
-                DrawItem(
-                    item,
-                    viewPort.Bounds.Width,
-                    highlight: pid == viewPort.SelectedIndex);
-
+                DrawItem(item, highlight: pid == viewPort.SelectedIndex);
                 n++;
             }
         }
@@ -452,7 +473,7 @@ public class ListView : Control
         if (Items.Count == 0) {
             return;
         }
-        
+
         switch (keyInfo.Key) {
             case ConsoleKey.UpArrow:
             case ConsoleKey.DownArrow:
@@ -461,7 +482,7 @@ public class ListView : Control
                 if (!EnableScroll) {
                     return;
                 }
-                
+
                 DoScroll(keyInfo.Key, out bool redrawAllItems);
 
                 if (redrawAllItems) {
@@ -475,16 +496,29 @@ public class ListView : Control
                 if (SelectedIndex != -1) {
                     OnItemClicked(SelectedItem!);
                 }
-                
+
                 handled = true;
                 break;
             }
             case ConsoleKey.Enter: {
-                
+
                 if (SelectedIndex != -1) {
                     OnItemSelected(SelectedItem!);
                 }
-                
+
+                handled = true;
+                break;
+            }
+            case ConsoleKey.Spacebar: {
+                if (!ShowCheckboxes) {
+                    return;
+                }
+
+                if (SelectedIndex != -1) {
+                    SelectItemCheckbox(SelectedItem!);
+                    RedrawItem();
+                }
+
                 handled = true;
                 break;
             }
@@ -496,23 +530,14 @@ public class ListView : Control
     private void RedrawItem()
     {
         terminal.SetCursorPosition(X, viewPort.Bounds.Y + viewPort.SelectedIndex - viewPort.CurrentIndex);
-                    
-        var selectedItem = items[viewPort.SelectedIndex];
+        ListViewItem selectedItem = items[viewPort.SelectedIndex];
 
-        DrawItem(
-            selectedItem,
-            viewPort.Bounds.Width,
-            highlight: true);
+        DrawItem(selectedItem, highlight: true);
 
         if (viewPort.PreviousSelectedIndex != viewPort.SelectedIndex) {
             terminal.SetCursorPosition(X, viewPort.Bounds.Y + viewPort.PreviousSelectedIndex - viewPort.CurrentIndex);
-                        
-            var previousSelectedItem = items[viewPort.PreviousSelectedIndex];
-
-            DrawItem(
-                previousSelectedItem,
-                viewPort.Bounds.Width,
-                highlight: false);
+            ListViewItem previousSelectedItem = items[viewPort.PreviousSelectedIndex];
+            DrawItem(previousSelectedItem, highlight: false);
         }
     }
     
@@ -554,7 +579,11 @@ public class ListView : Control
             
             return items[SelectedIndex];
         }
-    } 
+    }
+
+    private void SelectItemCheckbox(ListViewItem item) => item.Checked = !item.Checked;
+    
+    public bool ShowCheckboxes { get; set; }
     
     public bool ShowColumnHeaders { get; set; }
 }
