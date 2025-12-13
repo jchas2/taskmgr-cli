@@ -235,12 +235,6 @@ public sealed class AppConfig
         set => filterSection?.Add(Constants.Keys.Process, value);
     }
     
-    public bool HighlightProgramName
-    {
-        get => uxSection?.GetBool(Constants.Keys.HighlightProgramName, true) ?? true;
-        set => uxSection?.Add(Constants.Keys.HighlightProgramName, value.ToString());
-    }
-
     public bool HighlightDaemons
     {
         get => uxSection?.GetBool(Constants.Keys.HighlightDaemons, true) ?? true;
@@ -382,7 +376,6 @@ public sealed class AppConfig
         uxSection
             .AddIfMissing(Constants.Keys.ConfirmTaskDelete, true.ToString())
             .AddIfMissing(Constants.Keys.DefaultTheme, Constants.Sections.ThemeColour)
-            .AddIfMissing(Constants.Keys.HighlightProgramName, true.ToString())
             .AddIfMissing(Constants.Keys.HighlightDaemons, true.ToString())
             .AddIfMissing(Constants.Keys.HighlightStatsColUpdate, true.ToString())
             .AddIfMissing(Constants.Keys.MetreStyle, MetreControlStyle.Dots.ToString())

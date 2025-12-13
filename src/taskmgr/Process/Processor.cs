@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Commands;
+using Task.Manager.Configuration;
 using Task.Manager.System;
 using Task.Manager.System.Configuration;
 using Task.Manager.System.Process;
@@ -66,6 +67,13 @@ public class Processor : IProcessor
         }
     }
 
+#if __WIN32__
+    public bool IrixMode { get; set; } = false;
+#endif
+#if __APPLE__
+    public bool IrixMode { get; set; } = true;
+#endif    
+    
     public int IterationLimit
     {
         get => iterationLimit;
@@ -88,6 +96,7 @@ public class Processor : IProcessor
     {
         TimeSpan delayInMs = new TimeSpan(0, 0, 0, 0, Delay);
         int iterationCount = 0;
+        int irixFactor = 0;
 
         while (!cancellationToken.IsCancellationRequested && iterationCount <= IterationLimit) {
             ProcessInfo[] processInfos = processService.GetProcesses();
@@ -216,17 +225,19 @@ public class Processor : IProcessor
                 if (totalSysTime == 0) {
                     continue;
                 }
+
+                // Irix mode is consistent with Mac Activity Monitor, where 100% is full utilisation of a SINGLE cpu core on the system.
+                // Non-Irix Mode is consistent with Windows Task Manager, where 100% is full utilisation of ALL cores on the system.
+                irixFactor = IrixMode ? Environment.ProcessorCount : 1;
 #if __WIN32__
-                // Solaris mode to be consistent with Task Manager, where 100% is full utilisation of ALL cores on the system. 
-                allProcessorInfos[i].CpuTimePercent = (double)totalProc / (double)totalSysTime;
-                allProcessorInfos[i].CpuKernelTimePercent = (double)procKernelDiff / (double)totalSysTime;
-                allProcessorInfos[i].CpuUserTimePercent = (double)procUserDiff / (double)totalSysTime;
+                allProcessorInfos[i].CpuTimePercent = irixFactor * (double)totalProc / (double)totalSysTime;
+                allProcessorInfos[i].CpuKernelTimePercent = irixFactor * (double)procKernelDiff / (double)totalSysTime;
+                allProcessorInfos[i].CpuUserTimePercent = irixFactor * (double)procUserDiff / (double)totalSysTime;
 #endif
 #if __APPLE__
-                // Irix mode to be consistent with Activity Monitor, where 100% is full utilisation of a SINGLE cpu core on the system.
-                allProcessorInfos[i].CpuTimePercent = Environment.ProcessorCount * (double)totalProc / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
-                allProcessorInfos[i].CpuKernelTimePercent = Environment.ProcessorCount * (double)procKernelDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
-                allProcessorInfos[i].CpuUserTimePercent = Environment.ProcessorCount * (double)procUserDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
+                allProcessorInfos[i].CpuTimePercent = irixFactor * (double)totalProc / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
+                allProcessorInfos[i].CpuKernelTimePercent = irixFactor * (double)procKernelDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
+                allProcessorInfos[i].CpuUserTimePercent = irixFactor * (double)procUserDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
 #endif
                 ulong prevDiskOperations = allProcessorInfos[i].DiskOperations;
                 

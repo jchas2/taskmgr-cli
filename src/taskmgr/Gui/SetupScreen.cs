@@ -132,11 +132,6 @@ public class SetupScreen : Screen
             Constants.Keys.ConfirmTaskDelete,
             runContext.AppConfig.ConfirmTaskDelete);
         
-        AddGeneralItem(
-            "Highlight program name", 
-            Constants.Keys.HighlightProgramName, 
-            runContext.AppConfig.HighlightProgramName);
-        
 #if __WIN32__
         AddGeneralItem(
             "Highlight Windows Services",
@@ -283,7 +278,6 @@ public class SetupScreen : Screen
         ListViewItem GetItemValueByKey(string key) => generalView.Items.Single(lvi => lvi.SubItems[1].Text == key);
 
         runContext.AppConfig.ConfirmTaskDelete = GetItemValueByKey(Constants.Keys.ConfirmTaskDelete).Checked;
-        runContext.AppConfig.HighlightProgramName = GetItemValueByKey(Constants.Keys.HighlightProgramName).Checked;
         runContext.AppConfig.HighlightDaemons = GetItemValueByKey(Constants.Keys.HighlightDaemons).Checked;
         runContext.AppConfig.HighlightStatisticsColumnUpdate = GetItemValueByKey(Constants.Keys.HighlightStatsColUpdate).Checked;
         runContext.AppConfig.MultiSelectProcesses = GetItemValueByKey(Constants.Keys.MultiSelectProcesses).Checked;

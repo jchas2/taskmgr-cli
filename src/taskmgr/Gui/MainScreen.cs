@@ -176,6 +176,7 @@ public sealed class MainScreen : Screen
         base.OnShown();
         
         runContext.Processor.Delay = runContext.AppConfig.DelayInMilliseconds;
+        runContext.Processor.IrixMode = runContext.AppConfig.UseIrixReporting;
         runContext.Processor.IterationLimit = runContext.AppConfig.IterationLimit;
         runContext.Processor.Run();
     }
