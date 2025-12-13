@@ -12,6 +12,8 @@ public sealed class Theme
 
     public string Name => themeSection?.Name ?? string.Empty;
 
+    public void Update(ConfigSection configSection) => themeSection = configSection;
+
     public ConsoleColor Background => themeSection?.GetColour(Constants.Keys.Background, ConsoleColor.Black) ?? ConsoleColor.Black;
     public ConsoleColor BackgroundHighlight => themeSection?.GetColour(Constants.Keys.BackgroundHighlight, ConsoleColor.Cyan) ?? ConsoleColor.Cyan;
     public ConsoleColor ColumnCommandNormalUserSpace => themeSection?.GetColour(Constants.Keys.ColCmdNormalUserSpace, ConsoleColor.Green) ?? ConsoleColor.Green;
