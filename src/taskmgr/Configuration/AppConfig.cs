@@ -93,7 +93,7 @@ public sealed class AppConfig
         { Constants.Keys.CommandBackground,     "darkblue"    },
         { Constants.Keys.Error,                 "red"         },
         { Constants.Keys.Foreground,            "darkgrey"    },
-        { Constants.Keys.ForegroundHighlight,   "white"       },
+        { Constants.Keys.ForegroundHighlight,   "black"       },
         { Constants.Keys.MenubarForeground,     "yellow"      },
         { Constants.Keys.MenubarBackground,     "blue"        },
         { Constants.Keys.RangeHighBackground,   "red"         },
@@ -416,7 +416,11 @@ public sealed class AppConfig
             .ToList();
 
         foreach (ConfigSection configSection in themeSections) {
-            if (!allThemes.Any(t => t.Name.Equals(configSection.Name, StringComparison.CurrentCultureIgnoreCase))) {
+            Theme? theme = allThemes.FirstOrDefault(t => t.Name.Equals(configSection.Name, StringComparison.CurrentCultureIgnoreCase));
+            if (theme != null) {
+                theme.Update(configSection);
+            }
+            else {
                 allThemes.Add(new Theme(configSection));
             }
         }

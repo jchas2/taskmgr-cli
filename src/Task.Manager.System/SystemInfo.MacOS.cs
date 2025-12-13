@@ -130,8 +130,8 @@ public static partial class SystemInfo
         systemStatistics.TotalVirtual = 0;
         
         IntPtr host = MachHost.host_self();
-        int count = (int)(Marshal.SizeOf(typeof(MachHost.VmStatistics64)) / sizeof(int));
-        IntPtr vmStatisticsPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(MachHost.VmStatistics64)));
+        int count = (int)(Marshal.SizeOf<MachHost.VmStatistics64>() / sizeof(int));
+        IntPtr vmStatisticsPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MachHost.VmStatistics64>());
         
         if (0 != MachHost.host_statistics64(
                 host,
