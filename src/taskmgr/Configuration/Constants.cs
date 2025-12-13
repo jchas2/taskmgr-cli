@@ -39,7 +39,6 @@ public sealed class Constants
         // UX Keys.
         public const string ConfirmTaskDelete = "confirm-task-delete";
         public const string DefaultTheme = "default-theme";
-        public const string HighlightProgramName = "highlight-program-name";
         public const string HighlightDaemons = "highlight-daemons";
         public const string HighlightStatsColUpdate = "highlight-stats-col-update";
         public const string MetreStyle = "metre-style";
