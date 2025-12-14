@@ -1,3 +1,4 @@
+using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.Gui.Controls;
 using Task.Manager.System.Controls;
@@ -10,6 +11,7 @@ namespace Task.Manager.Gui;
 public class SetupScreen : Screen
 {
     private readonly RunContext runContext;
+    private readonly ListView headerView;
     private readonly ListView menuView;
     private readonly ListView generalView;
     private readonly ListView themeView;
@@ -29,6 +31,16 @@ public class SetupScreen : Screen
     {
         this.runContext = runContext;
 
+        headerView = new(runContext.Terminal) {
+            TabIndex = 0,
+            TabStop = false,
+            ShowColumnHeaders = false,
+            EnableRowSelect = false,
+            EnableScroll = false,
+        };
+
+        headerView.ColumnHeaders.Add(new ListViewColumnHeader("SETUP"));
+        
         menuView = new(runContext.Terminal) {
             TabIndex = 1,
             TabStop = true
@@ -218,6 +230,13 @@ public class SetupScreen : Screen
                 numProcsView,
                 "PROCESSES"));
     }
+
+    private void LoadHeaderView()
+    {
+        headerView.Items.AddRange(
+            new ListViewItem("Changes are saved to the following config file:"),
+            new ListViewItem(runContext.AppConfig.DefaultConfigPath ?? string.Empty));
+    }
     
     private void LoadSectionConfigListView<T>(
         ListView listView,
@@ -322,8 +341,21 @@ public class SetupScreen : Screen
             previewTheme.Background);
 
         Terminal.SetCursorPosition(X, Y);
+        Terminal.BackgroundColor = previewTheme.MenubarBackground;
+        Terminal.ForegroundColor = previewTheme.MenubarForeground;
+
+        string menubar = "TASK MANAGER SETUP";
+        int offsetX = Terminal.WindowWidth / 2 - menubar.Length / 2;
+        
+        Terminal.WriteEmptyLineTo(offsetX);
+        Terminal.Write(menubar.ToBold());
+        Terminal.WriteEmptyLineTo(Width - offsetX - menubar.Length);
+
         Terminal.BackgroundColor = previewTheme.Background;
         Terminal.ForegroundColor = previewTheme.Foreground;
+        
+        UpdateTheme(headerView);
+        headerView.Draw();
         
         UpdateTheme(menuView);
         menuView.Draw();
@@ -407,6 +439,7 @@ public class SetupScreen : Screen
             listView.Visible = false;
         }
 
+        LoadHeaderView();
         LoadMenuItems();
         LoadGeneralSection();
         LoadUxSection();
@@ -448,10 +481,16 @@ public class SetupScreen : Screen
     {
         base.OnResize();
         Clear();
+
+        headerView.X = X;
+        headerView.Y = Y + 2;
+        headerView.Width = Width;
+        headerView.Height = 3;
+        headerView.ColumnHeaders[0].Width = Width;
         
         menuView.X = X;
-        menuView.Y = Y;
-        menuView.Height = Height - ControlGutter;
+        menuView.Y = headerView.Y + headerView.Height + 2;
+        menuView.Height = Height - (headerView.Height + 4) - ControlGutter;
         menuView.Width = MenuViewWidth;
         menuView.ColumnHeaders[0].Width = MenuViewWidth;
         menuView.Resize();
@@ -475,6 +514,7 @@ public class SetupScreen : Screen
         menuView.ItemClicked -= MenuViewOnItemClicked;
         themeView.ItemClicked -= ThemeViewOnItemClicked;
 
+        headerView.Items.Clear();
         menuView.Items.Clear();
         
         foreach (Control control in Controls) {

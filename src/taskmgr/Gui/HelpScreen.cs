@@ -72,7 +72,7 @@ public class HelpScreen : Screen
                                                 " / high".ToColour(runContext.AppConfig.DefaultTheme.RangeHighBackground, runContext.AppConfig.DefaultTheme.Background) + 
                                                 " ] Mbps".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
         helpText.AppendLine();
-        helpText.AppendLine("Process and Path Colours");
+        helpText.AppendLine("Process and Path Colours".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
         helpText.AppendLine("Normal process".ToColour(runContext.AppConfig.DefaultTheme.ColumnCommandNormalUserSpace, runContext.AppConfig.DefaultTheme.Background));
         helpText.AppendLine("Low priority (nice) process".ToColour(runContext.AppConfig.DefaultTheme.ColumnCommandLowPriority, runContext.AppConfig.DefaultTheme.Background));
         helpText.AppendLine("High Cpu usage (> 1 core)".ToColour(runContext.AppConfig.DefaultTheme.ColumnCommandHighCpu, runContext.AppConfig.DefaultTheme.Background));
@@ -85,19 +85,22 @@ public class HelpScreen : Screen
         helpText.AppendLine("ESC  Exit current screen or dialog".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
         helpText.AppendLine();
         helpText.AppendLine("List Navigation".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
-        helpText.AppendLine("\u2191    Scroll up".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
-        helpText.AppendLine("\u2193    Scroll down".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
-        helpText.AppendLine("\u21B5    Select item in List".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
+        helpText.AppendLine("\u2191    Arrow to scroll up".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
+        helpText.AppendLine("\u2193    Arrow to scroll down".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
+        helpText.AppendLine("\u21B5    Enter to select item in list".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
+        helpText.AppendLine("\u2423    Space-bar to check/uncheck item in list".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
         helpText.AppendLine();
-        helpText.AppendLine("Function Keys".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
-        helpText.AppendLine("F1   Show this help screen".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
-        helpText.AppendLine("F2   Show setup screen".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
-        helpText.AppendLine("F3   Prompt to sort process list by Process, Pid, User, Pri, Cpu%, Threads, Memory, Disk or Path".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
-        helpText.AppendLine("F4   Filter the current process list. If --pid, --username or --process used on start, filter is applied to existing filters".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
-        helpText.AppendLine("F5   Show detailed process info, including threads, cpu time, loaded modules and handles".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
-        helpText.AppendLine("F6   Terminate selected task in the process list".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
-        helpText.AppendLine("F7   Show About dialog".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
-        helpText.AppendLine();
-        helpText.AppendLine("Press ESC to exit Help".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
+        
+        helpText.AppendLine(
+@"Function Keys
+  F1   Show this help screen
+  F2   Show setup screen
+  F3   Prompt to sort process list by Process, Pid, User, Pri, Cpu%, Threads, Memory, Disk or Path
+  F4   Filter the current process list. If --pid, --username or --process used on start, filter is applied to existing filters
+  F5   Show detailed process info, including threads, cpu time, loaded modules and handles
+  F6   Terminate selected task in the process list
+  F7   Show About dialog
+
+  Press ESC to exit Help".ToColour(runContext.AppConfig.DefaultTheme.Foreground, runContext.AppConfig.DefaultTheme.Background));
     }
 }
