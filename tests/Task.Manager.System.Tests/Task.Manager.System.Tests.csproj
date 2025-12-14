@@ -1,49 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+    <Import Project="..\..\eng\Test.props" />
+    <Import Project="..\..\eng\Lang.props" />
+    <Import Project="..\..\eng\TargetFramework.props" />
+    <Import Project="..\..\eng\Preprocessor.props" />
 
+    <PropertyGroup>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
-        <DefineConstants>__WIN32__</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('MacOS'))">
-        <DefineConstants>__APPLE__</DefineConstants>
-    </PropertyGroup>
-
     <ItemGroup>
-        <PackageReference Include="coverlet.collector" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.0-rc.2.25502.107" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
-        <PackageReference Include="Moq" Version="4.20.72" />
-        <PackageReference Include="Unofficial.Microsoft.DotNet.XUnitExtensions" Version="8.0.0-beta.25310.3" />
-        <PackageReference Include="xunit" Version="2.5.3"/>
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3"/>
-        <PackageReference Include="System.Net.Http" Version="4.3.4" />
-        <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-        <PackageReference Include="Xunit.SkippableFact" Version="1.5.23" />
+        <Using Include="Xunit"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Task.Manager.System\Task.Manager.System.csproj" />
         <ProjectReference Include="..\Task.Manager.Tests.Common\Task.Manager.Tests.Common.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="Xunit"/>
     </ItemGroup>
 
 </Project>
