@@ -1,0 +1,11 @@
+<Project>
+    <PropertyGroup>
+        <MajorVersion>1</MajorVersion>
+        <MinorVersion>2</MinorVersion>
+        <PatchVersion>0</PatchVersion>
+        <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion).$([System.DateTime]::UtcNow.ToString(HHmm))</Version>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+        <FileVersion>$(Version)</FileVersion>
+        <InformationalVersion>$(Version)</InformationalVersion>
+    </PropertyGroup>
+</Project>
