@@ -97,7 +97,7 @@ public sealed class ScreenApplication
                 }
                 
                 // Small delay to prevent busy-wait.
-                Thread.Sleep(50);
+                Thread.Sleep(100);
             }
 
             lock (@lock) {

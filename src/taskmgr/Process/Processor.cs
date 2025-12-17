@@ -343,7 +343,6 @@ public class Processor : IProcessor
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryMapProcessTimeInfo(ProcessInfo processInfo, ref ProcessTimeInfo ptInfo)
     {
         ptInfo.DiskOperations = 0;
@@ -359,7 +358,6 @@ public class Processor : IProcessor
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryMapProcessInfo(ProcessInfo processInfo, ProcessorInfo processorInfo)
     {
         try {
