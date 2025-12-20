@@ -10,7 +10,7 @@ public static class ExceptionHelper
     
     public static void HandleException(Exception ex, string message)
     {
-        if (string.IsNullOrWhiteSpace(message)) {
+        if (string.IsNullOrEmpty(message)) {
             message = ex.Message;
         }
         
