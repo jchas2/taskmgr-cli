@@ -27,7 +27,7 @@ public class FormattedTextWriterTraceListener(string fileName) : TextWriterTrace
     
     public static string UseNextFileName(string prefix = "debug", string extension = "txt")
     {
-        /* Use a timestamp format that sorts chronologically: "yyyyMMdd_HHmmss_fff" */
+        // Use a timestamp format that sorts chronologically: "yyyyMMdd_HHmmss_fff".
         var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
         return $"{prefix}_{timestamp}.{extension}";
     }

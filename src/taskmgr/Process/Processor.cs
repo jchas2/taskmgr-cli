@@ -56,10 +56,8 @@ public class Processor : IProcessor
             : DefaultDelayInMilliseconds;
     }
 
-    private void GetSystemTimes(out SystemTimes systemTimes)
+    private void GetSystemTimes(ref SystemTimes systemTimes)
     {
-        systemTimes = new SystemTimes();
-
         if (!SystemInfo.GetCpuTimes(ref systemTimes)) {
             systemTimes.Idle = 0;
             systemTimes.Kernel = 0;
@@ -94,9 +92,16 @@ public class Processor : IProcessor
 
     private void RunInternal(CancellationToken cancellationToken)
     {
+        SystemTimes prevSysTimes = new();
+        SystemTimes currSysTimes = new();
+        SystemTimes sysTimesDeltas = new();
+        ProcessTimeInfo prevProcTimes = new();
+        ProcessTimeInfo currProcTimes = new();
         TimeSpan delayInMs = new TimeSpan(0, 0, 0, 0, Delay);
         int iterationCount = 0;
         int irixFactor = 0;
+        
+        SystemInfo.GetSystemInfo(ref systemStatistics);
 
         while (!cancellationToken.IsCancellationRequested && iterationCount <= IterationLimit) {
             ProcessInfo[] processInfos = processService.GetProcesses();
@@ -121,8 +126,6 @@ public class Processor : IProcessor
                 if (!TryGetProcessHandle(processInfos[index], out _)) {
                     continue;
                 }
-
-                ProcessTimeInfo prevProcTimes = new();
 
                 if (!TryMapProcessTimeInfo(processInfos[index], ref prevProcTimes)) {
                     continue;
@@ -172,7 +175,7 @@ public class Processor : IProcessor
                 return;
             }
 
-            GetSystemTimes(out SystemTimes prevSysTimes);
+            GetSystemTimes(ref prevSysTimes);
             
             ThreadSleep(cancellationToken, Delay);
             
@@ -180,20 +183,17 @@ public class Processor : IProcessor
                 return;
             }            
             
-            GetSystemTimes(out SystemTimes currSysTimes);
-            
-            SystemTimes sysTimesDeltas = new() {
-                Idle = currSysTimes.Idle - prevSysTimes.Idle,
-                Kernel = currSysTimes.Kernel - prevSysTimes.Kernel,
-                User = currSysTimes.User - prevSysTimes.User
-            };
+            GetSystemTimes(ref currSysTimes);
 
+            sysTimesDeltas.Idle = currSysTimes.Idle - prevSysTimes.Idle;
+            sysTimesDeltas.Kernel = currSysTimes.Kernel - prevSysTimes.Kernel;
+            sysTimesDeltas.User = currSysTimes.User - prevSysTimes.User;
+            
             systemStatistics.CpuPercentIdleTime = 0.0;
             systemStatistics.CpuPercentUserTime = 0.0;
             systemStatistics.CpuPercentKernelTime = 0.0;
             systemStatistics.DiskUsage = 0;
 
-            SystemInfo.GetSystemInfo(ref systemStatistics);
             SystemInfo.GetSystemMemory(ref systemStatistics);
 #if __WIN32__
             long totalSysTime = Environment.ProcessorCount * delayInMs.Ticks;
@@ -201,8 +201,6 @@ public class Processor : IProcessor
 #if __APPLE__
             long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User + sysTimesDeltas.Idle;
 #endif
-            ProcessTimeInfo currProcTimes = new();
-
             for (int i = 0; i < allProcessorInfos.Count; i++) {
                 
                 if (cancellationToken.IsCancellationRequested) {
@@ -298,7 +296,7 @@ public class Processor : IProcessor
     public void Stop()
     {
         cancellationTokenSource?.Cancel();
-        WorkerTask[] workerTasks = { workerTask!, monitorTask! };
+        WorkerTask[] workerTasks = [workerTask!, monitorTask!];
 
         try {
             WorkerTask.WaitAll(workerTasks);
@@ -314,12 +312,12 @@ public class Processor : IProcessor
         // with checks every ExitIntervalInMilliseconds. For example, if the delay is 
         // 3000ms, check every 250ms for a cancellation.
         TimeSpan remainingDelay = new TimeSpan(0, 0, 0, 0, delay);
-
+        
         while (remainingDelay > TimeSpan.Zero) {
             if (cancellationToken.IsCancellationRequested) {
                 return;
             }
-
+        
             Thread.Sleep((int)Math.Min(ExitIntervalInMilliseconds, remainingDelay.TotalMilliseconds));
             remainingDelay = remainingDelay.Subtract(TimeSpan.FromMilliseconds(ExitIntervalInMilliseconds));
         }
@@ -346,7 +344,10 @@ public class Processor : IProcessor
     private bool TryMapProcessTimeInfo(ProcessInfo processInfo, ref ProcessTimeInfo ptInfo)
     {
         ptInfo.DiskOperations = 0;
-         // On MacOS, these properties can still throw an Exception when running as root.
+        ptInfo.KernelTime = 0;
+        ptInfo.UserTime = 0;
+
+        // On MacOS, these properties can still throw an Exception when running as root.
         try {
             ptInfo.KernelTime = processInfo.KernelTime;
             ptInfo.UserTime = processInfo.UserTime;

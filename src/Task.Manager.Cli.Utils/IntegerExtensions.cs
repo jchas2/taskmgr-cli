@@ -1,7 +1,11 @@
+using System.Text;
+
 namespace Task.Manager.Cli.Utils;
 
 public static class IntegerExtensions
 {
+    private static readonly CompositeFormat MbpsFormat = CompositeFormat.Parse("{0,5:####0.0} MB/s");
+
     public static string ToFormattedByteSize(this int num) => ToFormattedByteSize((long)num);
 
     public static string ToFormattedByteSize(this long num) =>
@@ -23,18 +27,25 @@ public static class IntegerExtensions
 
         return $"{count:0.#} {byteFormatters[index]}";
     }
-
+    
     public static string ToFormattedMbpsFromBytes(this long num)
     {
         double mbps = ToMbpsFromBytes(num);
-        return string.Format("{0,5:####0.0} MB/s", mbps);
+        return string.Format(null, MbpsFormat, mbps);
     }
-
+    
     public static string ToHexadecimal(this long num) =>
         ((ulong)num).ToHexadecimal();
     
-    public static string ToHexadecimal(this ulong num) =>
-        "0x" + num.ToString("X16");
+    public static string ToHexadecimal(this ulong num)
+    {
+        return string.Create(18, num, static (span, value) =>
+        {
+            span[0] = '0';
+            span[1] = 'x';
+            value.TryFormat(span.Slice(2), out _, "X16");
+        });
+    }
     
     public static double ToMbpsFromBytes(this long num) =>
          Math.Ceiling((double)num / 1000000.0 * 10.0) / 10.0;

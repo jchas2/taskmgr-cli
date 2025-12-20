@@ -45,6 +45,9 @@ public sealed class TaskMgrApp(RunContext runContext)
         Option<bool?> debugOption = new(
             name: "--debug",
             description: "Pause execution on startup until a debugger is attached to the process.");
+        Option<bool?> bypassOption = new(
+            name: "--bypass-root",
+            description: "Bypass run as root user.");
         
         RootCommand rootCommand = new("Task Manager for the command line.") {
             pidOption,
@@ -57,6 +60,7 @@ public sealed class TaskMgrApp(RunContext runContext)
             nprocsOption,
             themeOption,
             debugOption,
+            bypassOption
         };
         
         rootCommand.SetHandler(context =>
@@ -154,8 +158,10 @@ public sealed class TaskMgrApp(RunContext runContext)
     {
 #if !DEBUG
         if (false == SystemInfo.IsRunningAsRoot()) {
-            OutputWriter.Error.WriteLine("Application must be run as root user.".ToRed());
-            return -1;
+            if (!args.Any(arg => arg.Equals("--bypass-root", StringComparison.CurrentCultureIgnoreCase))) {
+                OutputWriter.Error.WriteLine("Application must be run as root user.".ToRed());
+                return -1;
+            }
         }
 #endif
         bool createdMutex = true;

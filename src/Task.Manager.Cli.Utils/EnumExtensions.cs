@@ -7,16 +7,16 @@ public static class EnumExtensions
 {
     public static string GetDescription(this Enum value)
     {
-        FieldInfo? fieldInfo = value.GetType().GetField(value.ToString());
-        if (fieldInfo == null) {
+        Type type = value.GetType();
+        string? name = Enum.GetName(type, value);
+
+        if (name == null) {
             return value.ToString();
         }
-        
-        DescriptionAttribute? attribute = fieldInfo.GetCustomAttribute<DescriptionAttribute>();
-        if (attribute == null) {
-            return value.ToString();
-        }
-        
-        return attribute.Description;
-    }
+
+        FieldInfo? fieldInfo = type.GetField(name);
+        DescriptionAttribute? attribute = fieldInfo?.GetCustomAttribute<DescriptionAttribute>();
+    
+        return attribute?.Description ?? name;
+    }    
 }
