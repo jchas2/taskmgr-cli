@@ -13,26 +13,19 @@ public sealed class ConfigSection
     public ConfigSection(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
-
+        
         this.name = name;
         keys = new Dictionary<string, string>();
     }
     
     public ConfigSection Add(string key, string value)
     {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(value);
-
         keys[key] = value;
-
         return this;
     }
 
     public ConfigSection AddIfMissing(string key, string value)
     {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(value);
-
         if (!keys.ContainsKey(key)) {
             Add(key, value);
         }
@@ -56,10 +49,7 @@ public sealed class ConfigSection
     public string GetString(string key) => GetString(key, string.Empty);
 
     public string GetString(string key, string defaultValue)
-    {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(defaultValue);
-        
+    { 
         if (!Contains(key)) {
             return defaultValue;
         }

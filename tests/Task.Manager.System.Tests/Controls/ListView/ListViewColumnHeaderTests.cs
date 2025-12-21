@@ -8,7 +8,7 @@ public sealed class ListViewColumnHeaderTests
     public void Constructor_With_Text_Initialises_Correctly()
     {
         string headerText = "Test Header";
-        var header = new ListViewColumnHeader(headerText);
+        ListViewColumnHeader header = new(headerText);
         
         Assert.Equal(headerText, header.Text);
         Assert.Null(header.BackgroundColour);
@@ -17,12 +17,12 @@ public sealed class ListViewColumnHeaderTests
     }
 
     [Fact]
-    public void Constructor_With_Text_Throws_ArgumentNullException_For_Null_Text()
+    public void Constructor_Accepts_Empty_Text()
     {
-        string? nullText = null;
-        Assert.Throws<ArgumentNullException>(() => new ListViewColumnHeader(nullText!));
+        ListViewColumnHeader header = new(string.Empty);
+        Assert.True(header.Text == string.Empty);
     }
-    
+
     [Fact]
     public void Constructor_With_All_Parameters_Initialises_Correctly()
     {
@@ -38,12 +38,12 @@ public sealed class ListViewColumnHeaderTests
     }
     
     [Fact]
-    public void Constructor_With_All_Parameters_Throws_ArgumentNullException_For_Null_Text()
+    public void Constructor_With_All_Parameters_Accepts_Empty_Text()
     {
-        string? nullText = null;
         ConsoleColor bgColor = ConsoleColor.Blue;
         ConsoleColor fgColor = ConsoleColor.Yellow;
 
-        Assert.Throws<ArgumentNullException>(() => new ListViewColumnHeader(nullText!, bgColor, fgColor));
+        ListViewColumnHeader header = new(string.Empty, bgColor, fgColor);
+        Assert.True(header.Text == String.Empty);
     }    
 }

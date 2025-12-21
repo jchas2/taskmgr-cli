@@ -296,8 +296,8 @@ public sealed class ListViewTests
             new ListViewItem("Item 1")
         });
 
-        listView.Items[0].SubItems.Add(new ListViewSubItem(listView.Items[0], "Item 0 SubItem1"));
-        listView.Items[1].SubItems.Add(new ListViewSubItem(listView.Items[1], "Item 1 SubItem1"));
+        listView.Items[0].SubItems.Add(new ListViewSubItem(listView.Items[0], "0 SubItem1"));
+        listView.Items[1].SubItems.Add(new ListViewSubItem(listView.Items[1], "1 SubItem1"));
         
         listView.Draw();        
         
@@ -305,9 +305,9 @@ public sealed class ListViewTests
         terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Header 0"))), Times.Once);
         terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Header 1"))), Times.Once);
         terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Item 0"))), Times.Once);
-        terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Item 0 SubItem1"))), Times.Once);
+        terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("0 SubItem1"))), Times.Once);
         terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Item 1"))), Times.Once);
-        terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Item 1 SubItem1"))), Times.Once);
+        terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("1 SubItem1"))), Times.Once);
     }
 
     [Fact]

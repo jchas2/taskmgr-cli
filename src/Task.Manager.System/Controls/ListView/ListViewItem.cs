@@ -85,10 +85,8 @@ public class ListViewItem
     
     internal void ClearSubItems() => subItems.Clear();
 
-    internal bool Contains(ListViewSubItem subItem)
-    {
-        return subItems.Contains(subItem);
-    }
+    internal bool Contains(ListViewSubItem subItem) =>
+        subItems.Contains(subItem);
 
     public ConsoleColor ForegroundColour 
     {

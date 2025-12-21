@@ -43,8 +43,6 @@ public class Config
     
     public ConfigSection GetConfigSection(string name)
     {
-        ArgumentNullException.ThrowIfNull(name);
-
         if (!ContainsSection(name)) {
             throw new InvalidOperationException();
         }
@@ -62,7 +60,7 @@ public class Config
 
     public static void ToFile(IFileSystem fileSys, string path, Config config)
     {
-        StringBuilder buffer = new(1024*16);
+        StringBuilder buffer = new(1024 * 16);
         
         foreach (ConfigSection configSection in config.ConfigSections) {
             buffer.AppendLine(configSection.ToString());
