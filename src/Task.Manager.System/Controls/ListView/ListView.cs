@@ -6,15 +6,15 @@ namespace Task.Manager.System.Controls.ListView;
 
 public class ListView : Control
 {
-    /* 
-     * The Collections act as a proxy for updates to the underlying List<T>.
-     * This provides a clean api for interacting with Collections on the ListView
-     * control, similar to the Win32 ListView common control. 
-     */
+    //
+    // The Collections act as a proxy for updates to the underlying List<T>.
+    // This provides a clean api for interacting with Collections on the ListView
+    // control, similar to the Win32 ListView common control. 
+    //
     private readonly ListViewColumnHeaderCollection columnHeaderCollection;
     private readonly ListViewItemCollection itemCollection;
 
-    /* The containers holding the List<T> for rendering. We don't expose them via a public api. */
+    // The containers holding the List<T> for rendering. We don't expose them via a public api.
     private List<ListViewColumnHeader> columnHeaders = [];
     private List<ListViewItem> items = [];
 
@@ -22,9 +22,6 @@ public class ListView : Control
 
     private ISystemTerminal terminal;
     
-    /* Buffer for working with strings when writing out terminal content */
-    private StringBuilder buffer = new(1024);
-
     private const int DefaultColumnWidth = 30;
     private const int DefaultHeaderWidth = 80;
 
@@ -73,19 +70,11 @@ public class ListView : Control
 
     public ListViewColumnHeaderCollection ColumnHeaders => columnHeaderCollection;
     
-    internal bool Contains(ListViewColumnHeader columnHeader)
-    {
-        ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
-        
-        return columnHeaders.Contains(columnHeader);
-    }
+    internal bool Contains(ListViewColumnHeader columnHeader) =>
+        columnHeaders.Contains(columnHeader);
     
-    internal bool Contains(ListViewItem item)
-    {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
-        
-        return items.Contains(item);
-    }
+    internal bool Contains(ListViewItem item) =>
+        items.Contains(item);
     
     private void DoScroll(ConsoleKey consoleKey, out bool redrawAllItems)
     {
@@ -173,7 +162,7 @@ public class ListView : Control
         }
 
         if (EmptyListViewText.Length > Width) {
-            EmptyListViewText = EmptyListViewText.Substring(0, Width);
+            EmptyListViewText = EmptyListViewText[..Width];
         }
         
         Point p = new Point((X + (Width - EmptyListViewText.Length)) / 2, Y + (Height / 2));
@@ -194,14 +183,11 @@ public class ListView : Control
             terminal.WriteEmptyLineTo(viewPort.Bounds.Width);
             return;
         }
-
-        buffer.Clear();
-
-        /* TODO: Will look into span<T> + stackalloc char[] to fast build strings */
+        
         int c = 0;
 
         if (ShowCheckboxes) {
-            buffer.Append(' ', CheckboxWidth);
+            terminal.WriteEmptyLineTo(CheckboxWidth);
             c += CheckboxWidth;
         }
         
@@ -214,32 +200,40 @@ public class ListView : Control
                 break;
             }
 
-            int columnHeaderFormatWidth = columnHeaders[i].Width > 0 
-                ? columnHeaders[i].Width - 1
-                : columnHeaders[i].Width;
-            
-            string formatStr = columnHeaders[i].RightAligned 
-                ? "{0," + columnHeaderFormatWidth + "}"
-                : "{0,-" + columnHeaderFormatWidth + "}";
+            int colWidth = columnHeaders[i].Width;
+            var text = columnHeaders[i].Text;
+            bool rightAligned = columnHeaders[i].RightAligned;
+        
+            string columnStr = string.Create(colWidth, (text, colWidth, rightAligned), static (span, state) =>
+            {
+                var (txt, width, rightAlign) = state;
+                int contentWidth = width - 1;
 
+                // Truncate if needed.
+                ReadOnlySpan<char> content = txt.Length >= width 
+                    ? txt.AsSpan(0, width - 1)
+                    : txt.AsSpan();
+
+                if (rightAlign) {
+                    int padding = contentWidth - content.Length;
+                    span.Slice(0, padding).Fill(' ');
+                    content.CopyTo(span.Slice(padding));
+                }
+                else {
+                    content.CopyTo(span);
+                    span.Slice(content.Length, contentWidth - content.Length).Fill(' ');
+                }
+
+                span[width - 1] = ' ';
+            });
+            
             ConsoleColor foreground = columnHeaders[i].ForegroundColour ?? HeaderForegroundColour;
             ConsoleColor background = columnHeaders[i].BackgroundColour ?? HeaderBackgroundColour;
 
-            if (columnHeaders[i].Text.Length >= columnHeaders[i].Width) {
-                buffer.Append((string.Format(formatStr, columnHeaders[i].Text.Substring(0, columnHeaders[i].Width - 1)) + ' ')
-                    .ToBold()
-                    .ToColour(foreground, background));
-            }
-            else {
-                buffer.Append((string.Format(formatStr, columnHeaders[i].Text) + ' ')
-                    .ToBold()
-                    .ToColour(foreground, background));
-            }
-
-            c+= columnHeaders[i].Width;
+            terminal.Write(columnStr.ToBold().ToColour(foreground, background));
+            c += colWidth;
         }
         
-        terminal.Write(buffer.ToString());
         Terminal.BackgroundColor = HeaderBackgroundColour;
         terminal.WriteEmptyLineTo(viewPort.Bounds.Width - c);
     }
@@ -252,18 +246,10 @@ public class ListView : Control
         Terminal.BackgroundColor = BackgroundColour;
         Terminal.ForegroundColor = ForegroundColour;
 
-        buffer.Clear();
-
-        /* TODO: Will look into span<T> + stackalloc char[] to fast build strings */
         int c = 0;
 
         if (ShowCheckboxes) {
-            if (item.Checked) {
-                buffer.Append(CheckedText);
-            }
-            else {
-                buffer.Append(UnCheckedText);
-            }
+            terminal.Write(item.Checked ? CheckedText : UnCheckedText);
             c += CheckboxWidth;
         }
 
@@ -286,13 +272,29 @@ public class ListView : Control
                 break;
             }
 
-            int columnFormatWidth = columnWidth > 0
-                ? columnWidth - 1
-                : columnWidth;
+            string columnStr = string.Create(columnWidth, (subItem.Text, columnWidth, rightAligned), 
+                static (span, state) =>
+            {
+                var (text, width, rightAlign) = state;
+                int contentWidth = width - 1;
 
-            string formatStr = rightAligned
-                ? "{0," + columnFormatWidth + "}"
-                : "{0,-" + columnFormatWidth + "}";
+                // Truncate if needed
+                ReadOnlySpan<char> content = text.Length >= width 
+                    ? text.AsSpan(0, width - 1)
+                    : text.AsSpan();
+
+                if (rightAlign) {
+                    int padding = contentWidth - content.Length;
+                    span.Slice(0, padding).Fill(' ');
+                    content.CopyTo(span.Slice(padding));
+                }
+                else {
+                    content.CopyTo(span);
+                    span.Slice(content.Length, contentWidth - content.Length).Fill(' ');
+                }
+
+                span[width - 1] = ' ';
+            });
 
             ConsoleColor backgroundHighlightColour = Focused
                 ? BackgroundHighlightColour
@@ -309,20 +311,11 @@ public class ListView : Control
                     ? backgroundHighlightColour
                     : subItem.BackgroundColor
                 : subItem.BackgroundColor;
-            
-            if (subItem.Text.Length >= columnWidth) {
-                buffer.Append((string.Format(formatStr, subItem.Text.Substring(0, columnWidth - 1)) + ' ')
-                    .ToColour(foregroundColour, backgroundColour));
-            }
-            else {
-                buffer.Append((string.Format(formatStr, subItem.Text) + ' ')
-                    .ToColour(foregroundColour, backgroundColour));
-            }
 
+            terminal.Write(columnStr.ToColour(foregroundColour, backgroundColour));
             c += columnWidth;
         }
 
-        terminal.Write(buffer.ToString());
         terminal.BackgroundColor = item.SubItems[item.SubItemCount - 1].BackgroundColor;
         terminal.WriteEmptyLineTo(viewPort.Bounds.Width - c);
     }
@@ -382,8 +375,6 @@ public class ListView : Control
     
     internal int IndexOfColumnHeader(ListViewColumnHeader columnHeader)
     {
-        ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
-
         for (int i = 0; i < columnHeaders.Count; i++) {
             if (columnHeaders[i] == columnHeader) {
                 return i;
@@ -395,8 +386,6 @@ public class ListView : Control
     
     internal int IndexOfItem(ListViewItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
-
         for (int i = 0; i < items.Count; i++) {
             if (items[i] == item) {
                 return i;
@@ -409,18 +398,13 @@ public class ListView : Control
     internal void InsertColumnHeader(int index, ListViewColumnHeader columnHeader)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-        ArgumentNullException.ThrowIfNull(columnHeader, nameof(columnHeader));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, items.Count, nameof(index));
         
         columnHeaders.Insert(index, columnHeader);
     }
 
-    internal void InsertColumnHeaders(ListViewColumnHeader[] columnHeaders)
-    {
-        ArgumentNullException.ThrowIfNull(columnHeaders, nameof(columnHeaders));
-        
+    internal void InsertColumnHeaders(ListViewColumnHeader[] columnHeaders) => 
         this.columnHeaders.AddRange(columnHeaders);
-    }
     
     internal void InsertItem(int index, ListViewItem item)
     {
@@ -433,8 +417,6 @@ public class ListView : Control
 
     internal void InsertItems(ListViewItem[] items)
     {
-        ArgumentNullException.ThrowIfNull(items, nameof(items));
-
         for (int i = 0; i < items.Length; i++) {
             items[i].Parent = this;
         }

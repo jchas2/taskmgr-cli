@@ -4,11 +4,11 @@ namespace Task.Manager.System.Controls.ListView;
 
 public sealed class ViewPort
 {
-    public int CurrentIndex { get; set; } = 0;
-    public int SelectedIndex { get; set; } = 0;
-    public int PreviousSelectedIndex { get; set; } = 0;
-    public int RowCount { get; set; } = 0;
-    public Rectangle Bounds { get; set; } = new Rectangle();
+    public int CurrentIndex { get; set; }
+    public int SelectedIndex { get; set; }
+    public int PreviousSelectedIndex { get; set; }
+    public int RowCount { get; set; }
+    public Rectangle Bounds { get; set; }
 
     public void Reset()
     {

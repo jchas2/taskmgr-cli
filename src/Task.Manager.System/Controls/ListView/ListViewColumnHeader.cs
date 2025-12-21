@@ -6,7 +6,7 @@ public class ListViewColumnHeader
     private const int DefaultColumnWidth = 30;
     
     public ListViewColumnHeader(string text) =>
-        this.text = text ?? throw new ArgumentNullException(nameof(text));
+        this.text = text;
 
     public ListViewColumnHeader(
         string text,
@@ -19,9 +19,7 @@ public class ListViewColumnHeader
     }
 
     public ConsoleColor? BackgroundColour { get; set; }
-    
     public ConsoleColor? ForegroundColour { get; set; }
-
     public bool RightAligned { get; set; } = false;
     
     public string Text

@@ -12,7 +12,7 @@ public class ConfigSectionTests
     }
 
     [Fact]
-    public void Constructor_With_Null_Name_Throws_ArgumentNullException() =>
+    public void Constructor_With_Empty_Name_Throws_ArgumentNullException() =>
         Assert.Throws<ArgumentException>(() => new ConfigSection(string.Empty));
 
     [Fact]

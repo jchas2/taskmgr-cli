@@ -4,6 +4,8 @@ namespace Task.Manager.System;
 
 public partial class SystemTerminal : ISystemTerminal
 {
+    private const int MaxStackChars = 256;
+    
     public SystemTerminal()
     {
         Console.OutputEncoding = Encoding.UTF8;
@@ -52,18 +54,32 @@ public partial class SystemTerminal : ISystemTerminal
     public void SetCursorPosition(int left, int top) => Console.SetCursorPosition(left, top);
     public int WindowWidth => Console.WindowWidth;
     public int WindowHeight => Console.WindowHeight;
-    public void Write(char ch) => Console.Write(ch);
-    public void Write(string message) => Console.Write(message);
+    public void Write(char ch) => Console.Out.Write(ch);
+    public void Write(ReadOnlySpan<char> chars) => Console.Out.Write(chars);
+    public void Write(string message) => Console.Out.Write(message);
     public void WriteEmptyLine() => WriteEmptyLineTo(Console.WindowWidth);
 
     public void WriteEmptyLineTo(int x)
     {
-        if (x <= 0) {
-            return;
+        switch (x) {
+            case <= 0:
+                return;
+            case <= MaxStackChars: {
+                Span<char> buffer = stackalloc char[x];
+                buffer.Fill(' ');
+                Write(buffer);
+                break;
+            }
+            default:
+                Write(
+                    string.Create(
+                        x, 
+                        x, 
+                        static (span, _) => span.Fill(' ')));
+                break;
         }
-        Write(new string(' ', x));
     }
     
-    public void WriteLine(char ch) => Console.WriteLine(ch);
-    public void WriteLine(string message) => Console.WriteLine(message);   
+    public void WriteLine(char ch) => Console.Out.WriteLine(ch);
+    public void WriteLine(string message) => Console.Out.WriteLine(message);   
 }

@@ -94,7 +94,7 @@ public sealed class InputBox(ISystemTerminal terminal) : Control(terminal)
 
                 if (textBuffer.InsertMode) {
                     int currentCursorPosition = Terminal.CursorLeft;
-                    Terminal.Write(textBuffer.Text.Substring(textBuffer.CursorBufferPosition - 1));
+                    Terminal.Write(textBuffer.Text[(textBuffer.CursorBufferPosition - 1)..]);
                     Terminal.CursorLeft = currentCursorPosition + 1;
                 }
                 else {

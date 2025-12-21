@@ -9,34 +9,22 @@ public sealed class ListViewItemCollection : IEnumerable<ListViewItem>
     public ListViewItemCollection(ListView owner) =>
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
     
-    public void Add(ListViewItem item)
-    {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
-        
+    public void Add(ListViewItem item) =>
         owner.InsertItems([item]);
-    }
 
-    public void AddRange(params ListViewItem[] items)
-    {
-        ArgumentNullException.ThrowIfNull(items, nameof(items));
-        
+    public void AddRange(params ListViewItem[] items) =>
         owner.InsertItems(items);
-    }
 
     public void Clear() => owner.ClearItems();
 
-    public bool Contains(ListViewItem item)
-    {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
-        
-        return owner.Contains(item);
-    }
+    public bool Contains(ListViewItem item) =>
+        owner.Contains(item);
 
     public int Count => owner.ItemCount;
 
     public IEnumerator<ListViewItem> GetEnumerator()
     {
-        /* Shallow copy the items and return an enumerator off that container. */
+        // Shallow copy the items and return an enumerator off that container.
         List<ListViewItem> items = new(owner.Items.Count);
         
         for (int i = 0; i < owner.ItemCount; i++) {
@@ -48,28 +36,19 @@ public sealed class ListViewItemCollection : IEnumerable<ListViewItem>
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public int IndexOf(ListViewItem item)
-    {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
-        
-        return owner.IndexOfItem(item);
-    }
+    public int IndexOf(ListViewItem item) =>
+        owner.IndexOfItem(item);
 
     public void InsertAt(int index, ListViewItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
         ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(index, owner.Items.Count, nameof(index));
         
         owner.InsertItem(index, item);
     }
     
-    public void Remove(ListViewItem item)
-    {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
-        
+    public void Remove(ListViewItem item) =>
         owner.RemoveItem(item);
-    }
 
     public void RemoveAt(int index)
     {
@@ -83,12 +62,10 @@ public sealed class ListViewItemCollection : IEnumerable<ListViewItem>
     {
         get {
             ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-            
             return owner.GetItemByIndex(index);
         }
         set {
             ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-            
             owner.RemoveAt(index);
             owner.InsertItem(index, value);
         }

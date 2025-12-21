@@ -14,17 +14,12 @@ public class ConfigParser : IDisposable
     
     public ConfigParser(string str)
     {
-        ArgumentNullException.ThrowIfNull(str);
-
         reader = new StringReader(str);
         sections = new List<ConfigSection>();
     }
 
     public ConfigParser(IFileSystem fileSys, string path)
     {
-        ArgumentNullException.ThrowIfNull(fileSys);
-        ArgumentNullException.ThrowIfNull(path);
-
         if (!fileSys.Exists(path)) {
             throw new FileNotFoundException(path);
         }
