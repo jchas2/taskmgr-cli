@@ -5,7 +5,7 @@
   <Import Project="..\eng\TargetFramework.props" />
   <Import Project="..\eng\Preprocessor.props" />
 
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+  <!-- <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
       <Optimize>true</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('MacOS'))">
@@ -15,6 +15,6 @@
   <PropertyGroup>
       <ServerGarbageCollection>false</ServerGarbageCollection>
       <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
-  </PropertyGroup>
+  </PropertyGroup> -->
 
 </Project>

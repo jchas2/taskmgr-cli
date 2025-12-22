@@ -1,12 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.Process;
 using Task.Manager.System;
 using Task.Manager.System.Controls.ListView;
-using Task.Manager.System.Process;
 
 namespace Task.Manager.Gui.Controls;
 
@@ -24,64 +22,55 @@ public partial class ProcessControl
             ProcessorInfo processorInfo,
             ref SystemStatistics systemStatistics,
             AppConfig appConfig) 
-            : base(processorInfo.FileDescription ?? string.Empty)
+            : base(processorInfo.FileDescription)
         {
-            ArgumentNullException.ThrowIfNull(processorInfo);
-
             AppConfig = appConfig;
             Pid = processorInfo.Pid;
-
-            SubItems.AddRange(
-                new ListViewSubItem(this, processorInfo.Pid.ToString()),
-                new ListViewSubItem(this, processorInfo.UserName ?? string.Empty),
-                new ListViewSubItem(this, processorInfo.BasePriority.ToString()),
-                new ListViewSubItem(this, processorInfo.CpuTimePercent.ToString(CultureInfo.InvariantCulture)),
-                new ListViewSubItem(this, processorInfo.ThreadCount.ToString()),
-                new ListViewSubItem(this, processorInfo.UsedMemory.ToString()),
-                new ListViewSubItem(this, processorInfo.DiskUsage.ToString()),
-                new ListViewSubItem(this, processorInfo.CmdLine ?? string.Empty));
-
-            UpdateItem(processorInfo, ref systemStatistics);
+            AddSubItems(processorInfo);
+            FormatSubItems(processorInfo, ref systemStatistics);
         }
 
         public int Pid { get; private set; }
 
         private AppConfig AppConfig { get; }
 
-        private void UpdateSubItem(ListViewSubItem subItem, Func<bool> condition)
+        private void AddSubItems(ProcessorInfo processorInfo)
         {
-            if (condition.Invoke()) {
-                subItem.ForegroundColor = AppConfig.DefaultTheme.RangeMidForeground;
-            }
+            SubItems.AddRange(
+                new ListViewSubItem(this, processorInfo.Pid.ToString()),
+                new ListViewSubItem(this, processorInfo.UserName),
+                new ListViewSubItem(this, processorInfo.BasePriority.ToString()),
+                new ListViewSubItem(this, processorInfo.CpuTimePercent.ToString("00.00%", CultureInfo.InvariantCulture)),
+                new ListViewSubItem(this, processorInfo.ThreadCount.ToString()),
+                new ListViewSubItem(this, processorInfo.UsedMemory.ToFormattedByteSize()),
+                new ListViewSubItem(this, processorInfo.DiskUsage.ToFormattedMbpsFromBytes()),
+                new ListViewSubItem(this, processorInfo.CmdLine));
         }
-        
-        public void UpdateItem(ProcessorInfo processorInfo, ref SystemStatistics systemStatistics)
+
+        private void FormatSubItems(ProcessorInfo processorInfo, ref SystemStatistics systemStatistics)
         {
-            ArgumentNullException.ThrowIfNull(processorInfo);
-            Debug.Assert(processorInfo.Pid == Pid);
+            void FormatSubItem(ListViewSubItem subItem, Func<bool> condition)
+            {
+                if (condition.Invoke()) {
+                    subItem.ForegroundColor = AppConfig.DefaultTheme.RangeMidForeground;
+                }
+            }
             
             for (int i = 0; i < (int)Columns.Count; i++) {
                 SubItems[i].BackgroundColor = AppConfig.DefaultTheme.Background;
                 SubItems[i].ForegroundColor = AppConfig.DefaultTheme.Foreground;
             }
             
-            SubItems[(int)Columns.Process].Text = processorInfo.FileDescription ?? string.Empty;
-            SubItems[(int)Columns.Pid].Text = processorInfo.Pid.ToString();
-            SubItems[(int)Columns.User].Text = processorInfo.UserName ?? string.Empty;
-
             if (!SubItems[(int)Columns.User].Text.Equals(Environment.UserName, StringComparison.OrdinalIgnoreCase)) {
                 SubItems[(int)Columns.User].ForegroundColor = ConsoleColor.DarkGray;
             }
             
-            SubItems[(int)Columns.Priority].Text = processorInfo.BasePriority.ToString();
-
             if (AppConfig.HighlightStatisticsColumnUpdate) {
-                UpdateSubItem(
+                FormatSubItem(
                     SubItems[(int)Columns.Priority],
                     () => processorInfo.BasePriority != lastBasePriority);
             }
 
-            SubItems[(int)Columns.Cpu].Text = processorInfo.CpuTimePercent.ToString("00.00%", CultureInfo.InvariantCulture);
             bool cpuHighCoreUsage = SystemInfo.GetCpuHighCoreUsage(processorInfo.CpuTimePercent);
             
             if (cpuHighCoreUsage) {
@@ -91,22 +80,18 @@ public partial class ProcessControl
             }
             else {
                 if (AppConfig.HighlightStatisticsColumnUpdate) {
-                    UpdateSubItem(
+                    FormatSubItem(
                         SubItems[(int)Columns.Cpu],
                         () => processorInfo.CpuTimePercent != lastCpu);
                 }
             }
             
-            SubItems[(int)Columns.Threads].Text = processorInfo.ThreadCount.ToString();
-
             if (AppConfig.HighlightStatisticsColumnUpdate) {
-                UpdateSubItem(
+                FormatSubItem(
                     SubItems[(int)Columns.Threads],
                     () => processorInfo.ThreadCount != lastThreadCount);
             }
-
-            SubItems[(int)Columns.Memory].Text = processorInfo.UsedMemory.ToFormattedByteSize();
-
+            
             double memRatio = (double)processorInfo.UsedMemory / (double)systemStatistics.TotalPhysical;
             
             if (memRatio > 0.1 && memRatio <= 0.2) {
@@ -123,13 +108,12 @@ public partial class ProcessControl
             }
             else {
                 if (AppConfig.HighlightStatisticsColumnUpdate) {
-                    UpdateSubItem(
+                    FormatSubItem(
                         SubItems[(int)Columns.Memory],
                         () => processorInfo.UsedMemory != lastUsedMemory);
                 }
             }
             
-            SubItems[(int)Columns.Disk].Text = processorInfo.DiskUsage.ToFormattedMbpsFromBytes();
             double mbps = processorInfo.DiskUsage.ToMbpsFromBytes(); 
             
             if (mbps > 1.0) {
@@ -148,7 +132,7 @@ public partial class ProcessControl
             }
             else {
                 if (AppConfig.HighlightStatisticsColumnUpdate) {
-                    UpdateSubItem(
+                    FormatSubItem(
                         SubItems[(int)Columns.Disk],
                         () => processorInfo.DiskUsage != lastDiskUsage);
                 }
@@ -172,13 +156,29 @@ public partial class ProcessControl
             if (cpuHighCoreUsage) {
                 SubItems[(int)Columns.Process].ForegroundColor = AppConfig.DefaultTheme.ColumnCommandHighCpu;
                 SubItems[(int)Columns.CommandLine].ForegroundColor = AppConfig.DefaultTheme.ColumnCommandHighCpu;
-            }            
-
+            }
+            
             lastCpu = processorInfo.CpuTimePercent;
             lastBasePriority = processorInfo.BasePriority;
             lastThreadCount = processorInfo.ThreadCount;
             lastUsedMemory = processorInfo.UsedMemory;
             lastDiskUsage = processorInfo.DiskUsage;
+        }
+        
+        public void UpdateSubItems(ProcessorInfo processorInfo, ref SystemStatistics systemStatistics)
+        {
+            Debug.Assert(processorInfo.Pid == Pid);
+            
+            SubItems[(int)Columns.Process].Text = processorInfo.FileDescription;
+            SubItems[(int)Columns.Pid].Text = processorInfo.Pid.ToString();
+            SubItems[(int)Columns.User].Text = processorInfo.UserName;
+            SubItems[(int)Columns.Priority].Text = processorInfo.BasePriority.ToString();
+            SubItems[(int)Columns.Cpu].Text = processorInfo.CpuTimePercent.ToString("00.00%", CultureInfo.InvariantCulture);
+            SubItems[(int)Columns.Threads].Text = processorInfo.ThreadCount.ToString();
+            SubItems[(int)Columns.Memory].Text = processorInfo.UsedMemory.ToFormattedByteSize();
+            SubItems[(int)Columns.Disk].Text = processorInfo.DiskUsage.ToFormattedMbpsFromBytes();
+            
+            FormatSubItems(processorInfo, ref systemStatistics);
         }
     }
 }
