@@ -393,10 +393,16 @@ public partial class ProcessInfoControl : Control
 
             int selectedIndex = threadsView.SelectedIndex;
 
+            HashSet<int> sortedThreadIds = new(threads.Count);
+            
+            for (int i = 0; i < threads.Count; i++) {
+                sortedThreadIds.Add(threads[i].ThreadId);
+            }
+            
             for (int i = threadsView.Items.Count - 1; i >= 0; i--) {
                 var item = (ThreadListViewItem)threadsView.Items[i];
 
-                if (!threads.Any(t => t.ThreadId == item.ThreadId)) {
+                if (!sortedThreadIds.Contains(item.ThreadId)) {
                     threadsView.Items.RemoveAt(i);
                 }
             }
@@ -437,7 +443,7 @@ public partial class ProcessInfoControl : Control
                 TryUpdateListViewThreadItems();
                 Draw();
             }
-            Thread.Sleep(1000);
+            Thread.Sleep(1500);
         }
     }
 }

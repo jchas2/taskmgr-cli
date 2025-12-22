@@ -323,44 +323,39 @@ public sealed partial class ProcessControl : Control
 
     private void UpdateListViewItems()
     {
+        IEnumerable<ProcessorInfo> filteredProcesses = allProcesses;
+        
         if (cmdLineFilters.Pid > -1) {
-            allProcesses = allProcesses
-                .Where(p => p.Pid == cmdLineFilters.Pid)
-                .ToList();
+            filteredProcesses = filteredProcesses
+                .Where(p => p.Pid == cmdLineFilters.Pid);
         }
         else if (!string.IsNullOrWhiteSpace(cmdLineFilters.UserName)) {
-            allProcesses = allProcesses
-                .Where(p => p.UserName.Contains(cmdLineFilters.UserName, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            filteredProcesses = filteredProcesses
+                .Where(p => p.UserName.Contains(cmdLineFilters.UserName, StringComparison.OrdinalIgnoreCase));
         }
         else if (!string.IsNullOrWhiteSpace(cmdLineFilters.Process)) {
-            allProcesses = allProcesses
-                .Where(p => p.ProcessName.Contains(cmdLineFilters.Process, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            filteredProcesses = filteredProcesses
+                .Where(p => p.ProcessName.Contains(cmdLineFilters.Process, StringComparison.OrdinalIgnoreCase));
         }
 
         if (!string.IsNullOrWhiteSpace(FilterText)) {
-            allProcesses = allProcesses
+            filteredProcesses = filteredProcesses
                 .Where(p => p.ProcessName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
                             p.FileDescription.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
                             p.CmdLine.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
-                            p.UserName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase))
-                .ToList();
+                            p.UserName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase));
         }
 
-        // .DynamicOrderBy in Utils.QueryableExtensions is not supported for .net native compilation targets
-        // hence the manual build out of the sorting below.
-
         List<ProcessorInfo> sortedProcesses = sortColumn switch {
-            Columns.Cpu         => allProcesses.OrderByDescending(p => p.CpuTimePercent).ToList(),
-            Columns.Disk        => allProcesses.OrderByDescending(p => p.DiskUsage).ToList(),
-            Columns.Memory      => allProcesses.OrderByDescending(p => p.UsedMemory).ToList(),
-            Columns.Pid         => allProcesses.OrderByDescending(p => p.Pid).ToList(),
-            Columns.Priority    => allProcesses.OrderByDescending(p => p.BasePriority).ToList(),
-            Columns.Process     => allProcesses.OrderByDescending(p => p.FileDescription).ToList(),
-            Columns.Threads     => allProcesses.OrderByDescending(p => p.ThreadCount).ToList(),
-            Columns.User        => allProcesses.OrderByDescending(p => p.UserName).ToList(),
-            Columns.CommandLine => allProcesses.OrderByDescending(p => p.CmdLine).ToList(),
+            Columns.Cpu         => filteredProcesses.OrderByDescending(p => p.CpuTimePercent).ToList(),
+            Columns.Disk        => filteredProcesses.OrderByDescending(p => p.DiskUsage).ToList(),
+            Columns.Memory      => filteredProcesses.OrderByDescending(p => p.UsedMemory).ToList(),
+            Columns.Pid         => filteredProcesses.OrderByDescending(p => p.Pid).ToList(),
+            Columns.Priority    => filteredProcesses.OrderByDescending(p => p.BasePriority).ToList(),
+            Columns.Process     => filteredProcesses.OrderByDescending(p => p.FileDescription).ToList(),
+            Columns.Threads     => filteredProcesses.OrderByDescending(p => p.ThreadCount).ToList(),
+            Columns.User        => filteredProcesses.OrderByDescending(p => p.UserName).ToList(),
+            Columns.CommandLine => filteredProcesses.OrderByDescending(p => p.CmdLine).ToList(),
             _                   => []
         };
 
@@ -377,44 +372,30 @@ public sealed partial class ProcessControl : Control
 
         int selectedIndex = processView.SelectedIndex;
         
+        HashSet<int> sortedPids = new(sortedProcesses.Count);
+        
+        for (int i = 0; i < sortedProcesses.Count; i++) {
+            sortedPids.Add(sortedProcesses[i].Pid);
+        }
+        
         for (int i = processView.Items.Count - 1; i >= 0; i--) {
             var item = (ProcessListViewItem)processView.Items[i];
-            var exists = false;
-            
-            for (int j = 0; j < sortedProcesses.Count; j++) {
-                if (sortedProcesses[j].Pid == item.Pid) {
-                    exists = true;
-                    break;
-                }
-            }
-        
-            if (!exists) {
+    
+            if (!sortedPids.Contains(item.Pid)) {
                 processView.Items.RemoveAt(i);
             }
-        }
+        }        
+
+        var processLookup = processView.Items.Cast<ProcessListViewItem>().ToDictionary(p => p.Pid);
 
         for (int i = 0; i < sortedProcesses.Count; i++) {
-            var exists = false;
-            
-            for (int j = 0; j < processView.Items.Count; j++) {
-                var item = (ProcessListViewItem)processView.Items[j];
-                
-                if (sortedProcesses[i].Pid == item.Pid) {
-                    item.UpdateItem(sortedProcesses[i], ref systemStatistics);
-        
-                    int insertAt = i > processView.Items.Count - 1 
-                        ? processView.Items.Count - 1 
-                        : i;
-        
-                    processView.Items.RemoveAt(j);
-                    processView.Items.InsertAt(insertAt, item);
-                    
-                    exists = true;
-                    break;
-                }
+            if (processLookup.TryGetValue(sortedProcesses[i].Pid, out var foundItem)) {
+                foundItem.UpdateSubItems(sortedProcesses[i], ref systemStatistics);
+                int insertAt = Math.Min(i, processView.Items.Count - 1);
+                processView.Items.Remove(foundItem);
+                processView.Items.InsertAt(insertAt, foundItem);
             }
-        
-            if (!exists) {
+            else {
                 ProcessListViewItem item = new(sortedProcesses[i], ref systemStatistics, appConfig);
                 processView.Items.InsertAt(i, item);
             }

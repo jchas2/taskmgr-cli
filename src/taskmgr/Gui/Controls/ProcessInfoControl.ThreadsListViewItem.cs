@@ -50,7 +50,6 @@ public partial class ProcessInfoControl
         
         public void UpdateItem(ThreadInfo threadInfo)
         {
-            ArgumentNullException.ThrowIfNull(threadInfo);
             Debug.Assert(threadInfo.ThreadId == ThreadId);
 
             foreach (ListViewSubItem subItem in SubItems) {
