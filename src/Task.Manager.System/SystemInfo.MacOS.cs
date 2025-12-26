@@ -41,16 +41,23 @@ public static partial class SystemInfo
         byte* buffer = null;
         int bytesLength = 0;
 
-        if (false == Sys.Sysctl(sysctlName, ref buffer, ref bytesLength)) {
+        if (!Sys.Sysctl(
+            sysctlName, 
+            ref buffer, 
+            ref bytesLength)) {
+            
+            Sys.FreeMemory(buffer);
             return false;
         }
 
-        /* Byte array returned contains a null terminator byte. */
+        // Byte array returned contains a null terminator byte.
         var chars = new byte[bytesLength - 1];
         Marshal.Copy((IntPtr)buffer, chars, 0, bytesLength - 1);
         systemStatistics.CpuName = Encoding.UTF8.GetString(chars);
+        
+        Sys.FreeMemory(buffer);
 
-        /* Sysctl does not work for Frequency on Apple M silicon chips, need alternative. */        
+        // Sysctl does not work for Frequency on Apple M silicon chips, need alternative.        
         
         return true;
     }
@@ -109,13 +116,20 @@ public static partial class SystemInfo
         byte* buffer = null;
         int bytesLength = 0;
 
-        if (!Sys.Sysctl(sysctlName, ref buffer, ref bytesLength)) {
+        if (!Sys.Sysctl(
+            sysctlName, 
+            ref buffer, 
+            ref bytesLength)) {
+            
+            Sys.FreeMemory(buffer);
             return 0;
         }
 
         if (bytesLength == sizeof(int)) {
             pageSize = *(int*)buffer;
         }
+        
+        Sys.FreeMemory(buffer);
 
         return pageSize;
     }
@@ -134,10 +148,10 @@ public static partial class SystemInfo
         IntPtr vmStatisticsPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MachHost.VmStatistics64>());
         
         if (0 != MachHost.host_statistics64(
-                host,
-                MachHost.HOST_VM_INFO64,
-                vmStatisticsPtr,
-                ref count)) {
+            host,
+            MachHost.HOST_VM_INFO64,
+            vmStatisticsPtr,
+            ref count)) {
             
             Marshal.FreeHGlobal(vmStatisticsPtr);
             return false;
@@ -146,28 +160,38 @@ public static partial class SystemInfo
         var info = Marshal.PtrToStructure<MachHost.VmStatistics64>(vmStatisticsPtr);
         int pageSize = GetPageSize();
 
-        // TODO: byte* buffer needs to be freed, or does sysctl stack alloc.
         ReadOnlySpan<int> sysctlName = [(int)Sys.Selectors.CTL_HW, (int)Sys.Hardware.HW_MEMSIZE];
         byte* buffer = null;
         int bytesLength = 0;
 
-        if (!Sys.Sysctl(sysctlName, ref buffer, ref bytesLength) || bytesLength != 8) {
+        if (!Sys.Sysctl(
+            sysctlName, 
+            ref buffer, 
+            ref bytesLength) || bytesLength != 8) {
+
+            Sys.FreeMemory(buffer);
             return false;
         }
         
         ulong totalPhysical = *(ulong*)buffer;
+        Sys.FreeMemory(buffer);
+        
         long totalUsedCount = info.wire_count + info.inactive_count + info.active_count + info.compressor_page_count;
         long totalUsed = totalUsedCount * pageSize;
-
+        
         systemStatistics.TotalPhysical = totalPhysical;
         systemStatistics.AvailablePhysical = totalPhysical - (ulong)totalUsed;
 
-        // TODO: byte* buffer needs to be freed, or does sysctl stack alloc.
         sysctlName = [(int)Sys.Selectors.CTL_VM, Sys.VM_SWAPUSAGE];
         buffer = null;
         bytesLength = 0;
 
-        if (!Sys.Sysctl(sysctlName, ref buffer, ref bytesLength) || bytesLength != 32) {
+        if (!Sys.Sysctl(
+            sysctlName, 
+            ref buffer, 
+            ref bytesLength) || bytesLength != 32) {
+
+            Sys.FreeMemory(buffer);
             return false;
         }
         
@@ -175,7 +199,8 @@ public static partial class SystemInfo
 
         systemStatistics.TotalPageFile = xswUsage->total;
         systemStatistics.AvailablePageFile = xswUsage->avail;
-        
+
+        Sys.FreeMemory(buffer);
         Marshal.FreeHGlobal(vmStatisticsPtr);
         
         return true;
