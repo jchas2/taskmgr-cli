@@ -46,6 +46,18 @@ public static unsafe class Sys
         void* value,
         size_t* len);
 
+    [DllImport(Libraries.LibSystemNative, EntryPoint = "SystemNative_Free")]
+    private static extern unsafe void Free(void* ptr);
+    
+    public static unsafe void FreeMemory(void* ptr)
+    {
+        if ((IntPtr)ptr == IntPtr.Zero) {
+            return;
+        }
+
+        Sys.Free(ptr);
+    }
+    
     public static unsafe bool Sysctl(ReadOnlySpan<int> name, ref byte* value, ref int len)
     {
         fixed (int* ptr = &MemoryMarshal.GetReference(name)) {
