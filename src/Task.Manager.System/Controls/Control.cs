@@ -370,7 +370,7 @@ public class Control
     
     public void Unload() => OnUnload();
 
-    public bool Visible { get; set; } = true;
+    public virtual bool Visible { get; set; } = true;
     
     public int Width { get; set; } = 0;
 

@@ -192,10 +192,7 @@ public partial class Screen : Control
         string title, 
         Action<string, InputBoxResult> onInputResult)
     {
-        ArgumentNullException.ThrowIfNull(title);
-
         Control.RedrawEnabled = false;
-        
         onInputBoxResult = onInputResult;
 
         inputBox.Visible = true;
@@ -214,9 +211,6 @@ public partial class Screen : Control
         Action action,
         int width = MessageBoxWidth)
     {
-        ArgumentNullException.ThrowIfNull(title);
-        ArgumentNullException.ThrowIfNull(text);
-
         RedrawEnabled = false;
         onMessageBoxResult = action;
 
