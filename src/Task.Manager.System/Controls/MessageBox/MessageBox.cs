@@ -153,8 +153,6 @@ public sealed class MessageBox : Control
          string help = "Use \u2190 \u2192 and \u21B5 to select";
          Terminal.SetCursorPosition(X, ++y);
          Terminal.Write(help.CentreWithLength(Width));
-         
-         Terminal.CursorVisible = false;
     }
 
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)

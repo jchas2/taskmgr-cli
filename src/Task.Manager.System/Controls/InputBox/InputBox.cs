@@ -32,8 +32,6 @@ public sealed class InputBox(ISystemTerminal terminal) : Control(terminal)
             Terminal.ForegroundColor = ConsoleColor.Black;
             Terminal.Write(Text);
         }
-        
-        Terminal.CursorVisible = true;
     }
 
     protected override void OnKeyPressed(ConsoleKeyInfo keyInfo, ref bool handled)
@@ -114,6 +112,15 @@ public sealed class InputBox(ISystemTerminal terminal) : Control(terminal)
     }
 
     public string Text => textBuffer.Text;
-    
+
+    public override bool Visible
+    {
+        get => base.Visible;
+        set {
+            Terminal.CursorVisible = value;
+            base.Visible = value;
+        }
+    }
+
     public string Title { get; set; } = string.Empty;
 }
