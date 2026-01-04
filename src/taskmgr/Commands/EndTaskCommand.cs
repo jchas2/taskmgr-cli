@@ -10,7 +10,7 @@ public sealed class EndTaskCommand(
     MainScreen mainScreen,
     AppConfig appConfig) : ProcessCommand(text, mainScreen)
 {
-    private const int EndTaskTimeout = 3000;
+    private const int EndTaskTimeout = 0;
 
     public override void Execute()
     {
@@ -18,13 +18,31 @@ public sealed class EndTaskCommand(
             return;
         }
 
-        int selectedProcessId = SelectedProcessId;
-        Action action = () => ProcessUtils.EndTask(selectedProcessId, EndTaskTimeout);
+        List<int> selectedProcesses = [];
+        
+        if (appConfig.MultiSelectProcesses && ProcessControl.CheckedProcesses.Count > 0) {
+            selectedProcesses.AddRange(ProcessControl.CheckedProcesses);
+        }
+        else {
+            selectedProcesses.Add(SelectedProcessId);
+        }
 
+        Action action = () => {
+            foreach (int pid in selectedProcesses) {
+                ProcessUtils.EndTask(pid, EndTaskTimeout);
+            }
+        };
+
+        string pidStr = string.Join(", ", selectedProcesses.Take(3));
+
+        if (selectedProcesses.Count > 3) {
+            pidStr += "...";
+        }
+        
         if (appConfig.ConfirmTaskDelete) {
             MainScreen.ShowMessageBox(
-                "End Task",
-                $"Force Task termination with Pid {selectedProcessId}\n\nAre you sure you want to continue?",
+                "End Task(s)",
+                $"Force Task termination for Pid(s):\n{pidStr}\n\nAre you sure you want to continue?",
                 MessageBoxButtons.OkCancel,
                 action);
         }
