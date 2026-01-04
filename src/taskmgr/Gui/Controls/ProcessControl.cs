@@ -269,20 +269,58 @@ public sealed partial class ProcessControl : Control
     private void ProcessViewOnItemSelected(object? sender, ListViewItemEventArgs e) =>
         ProcessItemSelected?.Invoke(sender, e);
 
+    public List<int> CheckedProcesses
+    {
+        get {
+            try {
+                Control.DrawingLockAcquire();
+                
+                int GetItemPid(ListViewItem item)
+                {
+                    ListViewSubItem selectedSubItem = item.SubItems[(int)Columns.Pid];
+
+                    if (int.TryParse(selectedSubItem.Text, out int pid)) {
+                        return pid;
+                    }
+
+                    return InvalidSelectedItemIndex;
+                }
+
+                List<int> checkedProcesses = processView.ShowCheckboxes
+                    ? processView.Items
+                        .Where(item => item.Checked)
+                        .Select(item => GetItemPid(item))
+                        .ToList()
+                    : [];
+
+                return checkedProcesses;
+            }
+            finally {
+                Control.DrawingLockRelease();
+            }
+        }
+    }
+    
     public int SelectedProcessId
     {
         get {
-            if (processView.SelectedItem == null) {
+            try {
+                Control.DrawingLockAcquire();
+                if (processView.SelectedItem == null) {
+                    return InvalidSelectedItemIndex;
+                }
+
+                ListViewSubItem selectedSubItem = processView.SelectedItem.SubItems[(int)Columns.Pid];
+
+                if (int.TryParse(selectedSubItem.Text, out int pid)) {
+                    return pid;
+                }
+
                 return InvalidSelectedItemIndex;
             }
-            
-            ListViewSubItem selectedSubItem = processView.SelectedItem.SubItems[(int)Columns.Pid];
-            
-            if (int.TryParse(selectedSubItem.Text, out int pid)) {
-                return pid;
+            finally {
+                Control.DrawingLockRelease();
             }
-            
-            return InvalidSelectedItemIndex;
         }
     }
 
