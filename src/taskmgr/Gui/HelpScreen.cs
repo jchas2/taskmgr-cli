@@ -31,7 +31,7 @@ public class HelpScreen : Screen
 
     protected override void OnLoad()
     {
-        string version = "1.0.0";
+        string version = AssemblyVersionInfo.GetVersion();
         
         helpText.Clear();
         helpText.AppendLine($"taskmgr {version}".ToColour(runContext.AppConfig.DefaultTheme.BackgroundHighlight, runContext.AppConfig.DefaultTheme.Background));

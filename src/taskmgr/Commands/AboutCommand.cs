@@ -1,6 +1,6 @@
-﻿using Task.Manager.Gui;
+﻿using Task.Manager.Cli.Utils;
+using Task.Manager.Gui;
 using Task.Manager.System.Controls.MessageBox;
-using Task.Manager.System.Process;
 
 namespace Task.Manager.Commands;
 
@@ -8,9 +8,11 @@ public sealed class AboutCommand(string text, MainScreen mainScreen) : AbstractC
 {
     public override void Execute()
     {
+        string version = AssemblyVersionInfo.GetVersion();
+
         mainScreen.ShowMessageBox(
             "About Task Manager",
-            $"Designed and Programmed by Jason Chase\n\nVersion 1.0.0.0",
+            $"Designed and Programmed by Jason Chase\n\nVersion {version}",
             MessageBoxButtons.Ok,
             () => { });
     }

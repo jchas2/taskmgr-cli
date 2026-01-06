@@ -30,6 +30,8 @@ public partial class ProcessInfoControl : Control
     private const int ProcessInfoViewHeight = 8;
     private const int MenuViewWidth = 10;
 
+    private const string MsgNotYetImplemented = "Not yet implemented on this OS";
+
     public ProcessInfoControl(
         IProcessService processService,
         IModuleService moduleService,
@@ -81,6 +83,7 @@ public partial class ProcessInfoControl : Control
             .Add(new ListViewColumnHeader("TOTAL TIME"));
         
         modulesView = new ListView(terminal) {
+            EmptyListViewText = MsgNotYetImplemented,
             TabStop = true,
             TabIndex = 4,
             Visible = false
@@ -91,7 +94,7 @@ public partial class ProcessInfoControl : Control
             .Add(new ListViewColumnHeader("PATH"));
 
         handlesView = new ListView(terminal) {
-            EmptyListViewText = "Not yet implemented on this OS",
+            EmptyListViewText = MsgNotYetImplemented,
             TabStop = true,
             TabIndex = 5,
             Visible = false
@@ -117,10 +120,8 @@ public partial class ProcessInfoControl : Control
 
     private void MenuViewOnItemClicked(object? sender, ListViewItemEventArgs e)
     {
-        tabControls.ForEach(ctrl => ctrl.Visible = false);
-        
         var menuListViewItem = e.Item as MenuListViewItem;
-        menuListViewItem!.AssociatedControl.Visible = true;
+        SetActiveControl(menuListViewItem!.AssociatedControl);
         
         Clear();
         Resize();
@@ -227,6 +228,7 @@ public partial class ProcessInfoControl : Control
         TryLoadProcessInfo();
         TryUpdateListViewThreadItems();
         TryUpdateListViewModuleItems();
+        SetActiveControl(threadsView);
 
         menuView.SetFocus();
         menuView.ItemClicked += MenuViewOnItemClicked;
@@ -302,6 +304,12 @@ public partial class ProcessInfoControl : Control
     }
 
     public int SelectedProcessId { get; set; } = -1;
+
+    private void SetActiveControl(Control activeControl)
+    {
+        tabControls.ForEach(ctrl => ctrl.Visible = false);
+        activeControl.Visible = true;
+    }
 
     private void TryLoadProcessInfo()
     {
