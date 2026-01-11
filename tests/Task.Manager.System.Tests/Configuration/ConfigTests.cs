@@ -60,7 +60,7 @@ public sealed class ConfigTests
         FileSystem fileSystem = new();
         fileSystem.WriteAllText(fileName, ConfigParserTests.MinConfigFileWithAllDataTypes);
         
-        Config? config = Config.FromFile(fileSystem, fileName);
+        Config config = Config.FromFile(fileSystem, fileName);
         Assert.NotNull(config);
 
         ConfigSection configSection = config.GetConfigSection("data-types");

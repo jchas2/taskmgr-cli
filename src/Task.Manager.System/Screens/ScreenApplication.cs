@@ -3,7 +3,7 @@ using Task.Manager.System.Controls.MessageBox;
 
 namespace Task.Manager.System.Screens;
 
-public sealed class ScreenApplication
+public class ScreenApplication
 {
     public sealed class ScreenApplicationContext(ISystemTerminal terminal)
     {

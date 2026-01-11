@@ -11,6 +11,7 @@ public sealed class EndTaskCommand(
     AppConfig appConfig) : ProcessCommand(text, mainScreen)
 {
     private const int EndTaskTimeout = 0;
+    private const int MaxPidsToShow = 3;
 
     public override void Execute()
     {
@@ -33,9 +34,9 @@ public sealed class EndTaskCommand(
             }
         };
 
-        string pidStr = string.Join(", ", selectedProcesses.Take(3));
+        string pidStr = string.Join(", ", selectedProcesses.Take(MaxPidsToShow));
 
-        if (selectedProcesses.Count > 3) {
+        if (selectedProcesses.Count > MaxPidsToShow) {
             pidStr += "...";
         }
         
