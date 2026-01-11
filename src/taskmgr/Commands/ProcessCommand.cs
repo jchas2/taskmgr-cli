@@ -16,5 +16,5 @@ public class ProcessCommand(string text, MainScreen mainScreen) : AbstractComman
     protected ProcessControl ProcessControl
         => MainScreen.GetControl<ProcessControl>();
     
-    protected int SelectedProcessId => ProcessControl.SelectedProcessId; 
+    internal protected int SelectedProcessId => ProcessControl.SelectedProcessId; 
 }

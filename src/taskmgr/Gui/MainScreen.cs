@@ -21,7 +21,7 @@ public sealed class MainScreen : Screen
     
     private const int HeaderHeight = 9;
     private const int FooterHeight = 1;
-    
+
     public MainScreen(ScreenApplication screenApp, RunContext runContext)
     : base(runContext.Terminal)
     {
@@ -55,7 +55,7 @@ public sealed class MainScreen : Screen
         commandControl = new CommandControl(runContext.Terminal, runContext.AppConfig) {
             TabStop = false
         };
-        
+
         commandControl
             .AddCommand(ConsoleKey.F1, () => new HelpCommand("Help", screenApp))
             .AddCommand(ConsoleKey.F2, () => new SetupCommand("Setup", screenApp))
@@ -63,7 +63,8 @@ public sealed class MainScreen : Screen
             .AddCommand(ConsoleKey.F4, () => new FilterCommand("Filter", this))
             .AddCommand(ConsoleKey.F5, () => new ProcessInfoCommand("Info", this))
             .AddCommand(ConsoleKey.F6, () => new EndTaskCommand("End Task", this, runContext.AppConfig))
-            .AddCommand(ConsoleKey.F7, () => new AboutCommand("About", this));
+            .AddCommand(ConsoleKey.F7, () => new AboutCommand("About", this))
+            .AddCommand(ConsoleKey.F10, () => new ExitCommand("Exit"));
 
         filterControl = new FilterControl(runContext.Terminal, runContext.AppConfig) {
             TabStop = false
@@ -80,9 +81,9 @@ public sealed class MainScreen : Screen
             .Add(filterControl);
     } 
 
-    public Control? GetActiveControl => activeControl;
+    internal Control? GetActiveControl => activeControl;
 
-    public T GetControl<T>() where T : Control => (T)Controls.Single(ctrl => ctrl is T);
+    internal T GetControl<T>() where T : Control => (T)Controls.Single(ctrl => ctrl is T);
     
     protected override void OnDraw()
     {
@@ -192,7 +193,7 @@ public sealed class MainScreen : Screen
         Terminal.CursorVisible = true;
     }
 
-    public T SetActiveControl<T>() where T : Control
+    internal T SetActiveControl<T>() where T : Control
     {
         Debug.Assert(activeControl != null);
        
@@ -213,14 +214,14 @@ public sealed class MainScreen : Screen
         return (T)activeControl;
     }
 
-    public void ShowCommandControl()
+    internal void ShowCommandControl()
     {
         filterControl.Visible = false;
         
         ShowFooterControl(commandControl);   
     }
 
-    public void ShowFilterControl(Action<string, InputBoxResult> onInputBoxResult)
+    internal void ShowFilterControl(Action<string, InputBoxResult> onInputBoxResult)
     {
         commandControl.Visible = false;
         

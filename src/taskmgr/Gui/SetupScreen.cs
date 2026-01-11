@@ -431,6 +431,8 @@ public class SetupScreen : Screen
 
     protected override void OnLoad()
     {
+        Terminal.CursorVisible = false;
+        
         foreach (Control control in Controls) {
             control.Load();
         }
@@ -521,6 +523,8 @@ public class SetupScreen : Screen
             control.Unload();
             (control as ListView)?.Items.Clear();
         }
+
+        Terminal.CursorVisible = true;
     }
 
     private void SaveConfig()

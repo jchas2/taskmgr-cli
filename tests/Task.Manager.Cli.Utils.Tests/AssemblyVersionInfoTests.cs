@@ -1,6 +1,6 @@
 namespace Task.Manager.Cli.Utils.Tests;
 
-public class AssemblyVersionInfoTests
+public sealed class AssemblyVersionInfoTests
 {
     [Fact]
     public void Should_Get_VersionInfo()

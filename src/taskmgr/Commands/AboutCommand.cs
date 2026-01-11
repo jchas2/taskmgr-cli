@@ -12,7 +12,7 @@ public sealed class AboutCommand(string text, MainScreen mainScreen) : AbstractC
 
         mainScreen.ShowMessageBox(
             "About Task Manager",
-            $"Designed and Programmed by Jason Chase\n\nVersion {version}",
+            $"\nVersion {version}",
             MessageBoxButtons.Ok,
             () => { });
     }

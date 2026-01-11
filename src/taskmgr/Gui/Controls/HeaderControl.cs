@@ -216,6 +216,10 @@ public sealed class HeaderControl : Control
         
         diskMetre.Draw();
 
+        if (statisticsView.Items.Count == 0) {
+            return;
+        }
+
         for (int i = 0; i < statisticsView.Items.Count; i++) {
             statisticsView.Items[i].BackgroundColour = BackgroundColour;
             statisticsView.Items[i].ForegroundColour = ForegroundColour;
@@ -237,27 +241,35 @@ public sealed class HeaderControl : Control
 
         statisticsView.Items[1].SubItems[1].Text = systemStatistics.CpuPercentUserTime.ToString("000.0%");
         statisticsView.Items[1].SubItems[1].ForegroundColor = userColour;
-        statisticsView.Items[1].SubItems[3].Text = ((double)(systemStatistics.TotalPhysical) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[1].SubItems[3].Text =
+            ((double)(systemStatistics.TotalPhysical) / 1024 / 1024 / 1024).ToString("0000.0GB");
         statisticsView.Items[1].SubItems[3].ForegroundColor = ForegroundColour;
-        statisticsView.Items[1].SubItems[5].Text = ((double)(systemStatistics.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[1].SubItems[5].Text =
+            ((double)(systemStatistics.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB");
         statisticsView.Items[1].SubItems[5].ForegroundColor = ForegroundColour;
         statisticsView.Items[1].SubItems[7].Text = string.Format("{0,5:####0.0} MB/s", maxMbps);
         statisticsView.Items[1].SubItems[7].ForegroundColor = mbpsColour;
 
         statisticsView.Items[2].SubItems[1].Text = systemStatistics.CpuPercentKernelTime.ToString("000.0%");
         statisticsView.Items[2].SubItems[1].ForegroundColor = kernelColour;
-        statisticsView.Items[2].SubItems[3].Text = ((double)(systemStatistics.TotalPhysical - systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[2].SubItems[3].Text =
+            ((double)(systemStatistics.TotalPhysical - systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024)
+            .ToString("0000.0GB");
         statisticsView.Items[2].SubItems[3].ForegroundColor = ForegroundColour;
-        statisticsView.Items[2].SubItems[5].Text = ((double)(systemStatistics.TotalPageFile - systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[2].SubItems[5].Text =
+            ((double)(systemStatistics.TotalPageFile - systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024)
+            .ToString("0000.0GB");
         statisticsView.Items[2].SubItems[5].ForegroundColor = ForegroundColour;
         statisticsView.Items[2].SubItems[7].Text = string.Empty;
         statisticsView.Items[2].SubItems[7].ForegroundColor = ForegroundColour;
-        
+
         statisticsView.Items[3].SubItems[1].Text = systemStatistics.CpuPercentIdleTime.ToString("000.0%");
         statisticsView.Items[3].SubItems[1].ForegroundColor = ForegroundColour;
-        statisticsView.Items[3].SubItems[3].Text = ((double)(systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[3].SubItems[3].Text =
+            ((double)(systemStatistics.AvailablePhysical) / 1024 / 1024 / 1024).ToString("0000.0GB");
         statisticsView.Items[3].SubItems[3].ForegroundColor = ForegroundColour;
-        statisticsView.Items[3].SubItems[5].Text = ((double)(systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[3].SubItems[5].Text =
+            ((double)(systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB");
         statisticsView.Items[3].SubItems[5].ForegroundColor = ForegroundColour;
         statisticsView.Items[3].SubItems[7].Text = string.Empty;
         statisticsView.Items[3].SubItems[7].ForegroundColor = ForegroundColour;
@@ -270,7 +282,7 @@ public sealed class HeaderControl : Control
         statisticsView.Items[4].SubItems[5].ForegroundColor = ForegroundColour;
         statisticsView.Items[4].SubItems[7].Text = string.Empty;
         statisticsView.Items[4].SubItems[7].ForegroundColor = ForegroundColour;
-        
+
         statisticsView.Draw();
     }
 
