@@ -24,7 +24,8 @@ public class ConfigParser : IDisposable
             throw new FileNotFoundException(path);
         }
 
-        reader = new StreamReader(path);
+        string buffer = fileSys.ReadAllText(path);
+        reader = new StringReader(buffer);
         sections = new List<ConfigSection>();
     }
 

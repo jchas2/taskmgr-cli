@@ -41,12 +41,12 @@ public sealed class AppConfig
         { Constants.Keys.MenubarForeground,     "white"       },
         { Constants.Keys.MenubarBackground,     "darkblue"    },
         { Constants.Keys.RangeHighBackground,   "red"         },
-        { Constants.Keys.RangeLowBackground,    "darkgreen"   },
-        { Constants.Keys.RangeMidBackground,    "darkyellow"  },
+        { Constants.Keys.RangeLowBackground,    "green"       },
+        { Constants.Keys.RangeMidBackground,    "yellow"      },
         { Constants.Keys.RangeHighForeground,   "white"       },
         { Constants.Keys.RangeLowForeground,    "black"       },
         { Constants.Keys.RangeMidForeground,    "black"       },
-        { Constants.Keys.HeaderBackground,      "green"       },
+        { Constants.Keys.HeaderBackground,      "darkgreen"   },
         { Constants.Keys.HeaderForeground,      "black"       }};
 
     private readonly string[,] monoMap = {
@@ -267,8 +267,8 @@ public sealed class AppConfig
 
     public Statistics SortColumn
     {
-        get => statsSection?.GetEnum(Constants.Keys.Col, Statistics.Cpu) ?? Statistics.Cpu;
-        set => statsSection?.Add(Constants.Keys.Col, value.ToString());
+        get => sortSection?.GetEnum(Constants.Keys.Col, Statistics.Cpu) ?? Statistics.Cpu;
+        set => sortSection?.Add(Constants.Keys.Col, value.ToString());
     }
 
     public bool SortAscending
@@ -349,7 +349,7 @@ public sealed class AppConfig
             : new ConfigSection(Constants.Sections.Sort);
 
         sortSection
-            .AddIfMissing(Constants.Keys.Col, Statistics.Pid.ToString())
+            .AddIfMissing(Constants.Keys.Col, Statistics.Cpu.ToString())
             .AddIfMissing(Constants.Keys.Asc, false.ToString());
 
         if (!iniConfig.ContainsSection(sortSection.Name)) {

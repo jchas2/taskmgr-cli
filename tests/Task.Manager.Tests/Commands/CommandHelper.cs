@@ -9,21 +9,21 @@ public static class CommandHelper
     
     public static (RunContext context, MainScreen mainScreen) SetupMainScreenWithContext()
     {
-        var (context, _, mainScreen) = SetupMainScreenWithAll();
+        (RunContext context, ScreenApplication _, MainScreen mainScreen) = SetupMainScreenWithAll();
         return (context, mainScreen);
     }
 
     public static (ScreenApplication screenApp, MainScreen mainScreen) SetupMainScreenWithScreenApp()
     {
-        var (_, screenApp, mainScreen) = SetupMainScreenWithAll();
+        (RunContext _, ScreenApplication screenApp, MainScreen mainScreen) = SetupMainScreenWithAll();
         return (screenApp, mainScreen);
     }
 
     private static (RunContext context, ScreenApplication screenApp, MainScreen mainScreen) SetupMainScreenWithAll()
     {
-        var context = new RunContextHelper().GetRunContext();
-        var screenApp = new ScreenApplication(context.Terminal);
-        var mainScreen = new MainScreen(screenApp, context);
+        RunContext context = new RunContextHelper().GetRunContext();
+        ScreenApplication screenApp = new(context.Terminal);
+        MainScreen mainScreen = new(screenApp, context);
 
         return (context, screenApp, mainScreen);
     }

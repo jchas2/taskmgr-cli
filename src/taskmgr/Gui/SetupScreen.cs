@@ -32,6 +32,7 @@ public class SetupScreen : Screen
         this.runContext = runContext;
 
         headerView = new(runContext.Terminal) {
+            Name = nameof(headerView),
             TabIndex = 0,
             TabStop = false,
             ShowColumnHeaders = false,
@@ -42,6 +43,7 @@ public class SetupScreen : Screen
         headerView.ColumnHeaders.Add(new ListViewColumnHeader("SETUP"));
         
         menuView = new(runContext.Terminal) {
+            Name = nameof(menuView),
             TabIndex = 1,
             TabStop = true
         };
@@ -49,6 +51,7 @@ public class SetupScreen : Screen
         menuView.ColumnHeaders.Add(new ListViewColumnHeader("CATEGORIES"));
 
         generalView = new(runContext.Terminal) {
+            Name = nameof(generalView),
             EnableScroll = true,
             ShowCheckboxes = true,
             ShowColumnHeaders = true,
@@ -61,6 +64,7 @@ public class SetupScreen : Screen
         generalView.ColumnHeaders.Add(new ListViewColumnHeader("key"));
 
         themeView = new(runContext.Terminal) {
+            Name = nameof(themeView),
             EnableScroll = true,
             ShowColumnHeaders = true,
             TabIndex = 3,
@@ -71,6 +75,7 @@ public class SetupScreen : Screen
         themeView.ColumnHeaders.Add(new ListViewColumnHeader("Available themes"));
 
         metreView = new(runContext.Terminal) {
+            Name = nameof(metreView),
             EnableScroll = true,
             ShowColumnHeaders = true,
             TabIndex = 4,
@@ -81,6 +86,7 @@ public class SetupScreen : Screen
         metreView.ColumnHeaders.Add(new ListViewColumnHeader("Metre Styles"));
         
         delayView = new(runContext.Terminal) {
+            Name = nameof(delayView),
             EnableScroll = true,
             ShowColumnHeaders = true,
             TabIndex = 5,
@@ -91,6 +97,7 @@ public class SetupScreen : Screen
         delayView.ColumnHeaders.Add(new ListViewColumnHeader("Delay between updates, in milliseconds"));
         
         limitView = new(runContext.Terminal) {
+            Name = nameof(limitView),
             EnableScroll = true,
             ShowColumnHeaders = true,
             TabIndex = 6,
@@ -101,6 +108,7 @@ public class SetupScreen : Screen
         limitView.ColumnHeaders.Add(new ListViewColumnHeader("Limit the number of process iterations, 0 = loop forever"));
         
         numProcsView = new(runContext.Terminal) {
+            Name = nameof(numProcsView),
             EnableScroll = true,
             ShowColumnHeaders = true,
             TabIndex = 7,
@@ -111,6 +119,7 @@ public class SetupScreen : Screen
         numProcsView.ColumnHeaders.Add(new ListViewColumnHeader("Number of processes to display, -1 for all"));
 
         Controls
+            .Add(headerView)
             .Add(menuView)
             .Add(generalView)
             .Add(themeView)

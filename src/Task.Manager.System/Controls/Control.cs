@@ -16,6 +16,8 @@ public class Control
     /* The container holding the List<T> for rendering. We don't expose it via a public api. */
     private List<Control> controls = [];
 
+    private string? name = null;
+
     private static readonly object drawingLock = new();
     private static int drawingLocksAcquired = 0;
     
@@ -159,6 +161,12 @@ public class Control
     }
     
     public void KeyPressed(ConsoleKeyInfo keyInfo, ref bool handled) => OnKeyPressed(keyInfo, ref handled);
+
+    public string? Name
+    {
+        get => name ?? string.Empty;
+        set => name = value ?? string.Empty;
+    }
     
     public void Load() => OnLoad();
 
