@@ -160,13 +160,13 @@ public sealed class Theme
 
     public ConsoleColor RangeLowForeground
     {
-        get => themeSection?.GetColour(Constants.Keys.RangeLowForeground, ConsoleColor.Black) ?? ConsoleColor.Black;
+        get => themeSection?.GetColour(Constants.Keys.RangeLowForeground, ConsoleColor.White) ?? ConsoleColor.White;
         set => themeSection?.Add(Constants.Keys.RangeLowForeground, value.ToString());
     }
 
     public ConsoleColor RangeMidForeground
     {
-        get => themeSection?.GetColour(Constants.Keys.RangeMidForeground, ConsoleColor.Black) ?? ConsoleColor.Black;
+        get => themeSection?.GetColour(Constants.Keys.RangeMidForeground, ConsoleColor.DarkYellow) ?? ConsoleColor.DarkYellow;
         set => themeSection?.Add(Constants.Keys.RangeMidForeground, value.ToString());
     }
 }

@@ -44,8 +44,8 @@ public sealed class AppConfig
         { Constants.Keys.RangeLowBackground,    "green"       },
         { Constants.Keys.RangeMidBackground,    "yellow"      },
         { Constants.Keys.RangeHighForeground,   "white"       },
-        { Constants.Keys.RangeLowForeground,    "black"       },
-        { Constants.Keys.RangeMidForeground,    "black"       },
+        { Constants.Keys.RangeLowForeground,    "white"       },
+        { Constants.Keys.RangeMidForeground,    "darkyellow"  },
         { Constants.Keys.HeaderBackground,      "darkgreen"   },
         { Constants.Keys.HeaderForeground,      "black"       }};
 
@@ -71,9 +71,9 @@ public sealed class AppConfig
         { Constants.Keys.RangeHighBackground,   "gray"        },
         { Constants.Keys.RangeLowBackground,    "gray"        },
         { Constants.Keys.RangeMidBackground,    "gray"        },
-        { Constants.Keys.RangeHighForeground,   "gray"        },
-        { Constants.Keys.RangeLowForeground,    "gray"        },
-        { Constants.Keys.RangeMidForeground,    "gray"        },
+        { Constants.Keys.RangeHighForeground,   "darkgray"    },
+        { Constants.Keys.RangeLowForeground,    "darkgray"    },
+        { Constants.Keys.RangeMidForeground,    "darkgray"    },
         { Constants.Keys.HeaderBackground,      "darkgray"    },
         { Constants.Keys.HeaderForeground,      "white"       }};
 
@@ -157,7 +157,7 @@ public sealed class AppConfig
         { Constants.Keys.RangeMidBackground,    "darkgreen"   },
         { Constants.Keys.RangeHighForeground,   "black"       },
         { Constants.Keys.RangeLowForeground,    "black"       },
-        { Constants.Keys.RangeMidForeground,    "black"       },
+        { Constants.Keys.RangeMidForeground,    "darkgreen"   },
         { Constants.Keys.HeaderBackground,      "green"       },
         { Constants.Keys.HeaderForeground,      "black"       }};
 
