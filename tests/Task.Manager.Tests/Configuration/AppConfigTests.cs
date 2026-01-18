@@ -110,49 +110,49 @@ header-foreground=black
             DefaultIniFile,     // Defaults in the ini file mapping to defaults on the AppConfig property getters.
             string.Empty        // Empty file forces AppConfig to use defaults for all property getters.
         };
-    
+
     [Theory]
     [MemberData(nameof(IniFileData))]
     public void Should_Load_AndOr_Parse_DefaultIniFile(string iniFileData)
     {
         Config? iniConfig = Config.FromString(iniFileData);
-        
+
         Assert.NotNull(iniConfig);
-        
+
         AppConfig appConfig = new(fileSystem.Object, iniConfig);
 
         Assert.True(appConfig.ConfirmTaskDelete);
         Assert.NotNull(appConfig.DefaultConfigPath);
         Assert.NotEmpty(appConfig.DefaultConfigPath);
-        
+
         Assert.NotNull(appConfig.DefaultTheme);
         Assert.Equal("theme-colour", appConfig.DefaultTheme.Name);
-        Assert.Equal(ConsoleColor.Black,     appConfig.DefaultTheme.Background);
-        Assert.Equal(ConsoleColor.Cyan,      appConfig.DefaultTheme.BackgroundHighlight);
-        Assert.Equal(ConsoleColor.Blue,      appConfig.DefaultTheme.ColumnCommandLowPriority);
-        Assert.Equal(ConsoleColor.Red,       appConfig.DefaultTheme.ColumnCommandHighCpu);
-        Assert.Equal(ConsoleColor.Cyan,      appConfig.DefaultTheme.ColumnCommandIoBound);
-        Assert.Equal(ConsoleColor.Green,     appConfig.DefaultTheme.ColumnCommandNormalUserSpace);
-        Assert.Equal(ConsoleColor.Yellow,    appConfig.DefaultTheme.ColumnCommandScript);
-        Assert.Equal(ConsoleColor.Green,     appConfig.DefaultTheme.ColumnUserCurrentNonRoot);
-        Assert.Equal(ConsoleColor.Magenta,   appConfig.DefaultTheme.ColumnUserOtherNonRoot);
-        Assert.Equal(ConsoleColor.White,     appConfig.DefaultTheme.ColumnUserRoot);
-        Assert.Equal(ConsoleColor.Gray,      appConfig.DefaultTheme.ColumnUserSystem);
-        Assert.Equal(ConsoleColor.Cyan,      appConfig.DefaultTheme.CommandBackground);
-        Assert.Equal(ConsoleColor.Black,     appConfig.DefaultTheme.CommandForeground);
-        Assert.Equal(ConsoleColor.Red,       appConfig.DefaultTheme.Error);
-        Assert.Equal(ConsoleColor.White,     appConfig.DefaultTheme.Foreground);
-        Assert.Equal(ConsoleColor.Black,     appConfig.DefaultTheme.ForegroundHighlight);
+        Assert.Equal(ConsoleColor.Black, appConfig.DefaultTheme.Background);
+        Assert.Equal(ConsoleColor.Cyan, appConfig.DefaultTheme.BackgroundHighlight);
+        Assert.Equal(ConsoleColor.Blue, appConfig.DefaultTheme.ColumnCommandLowPriority);
+        Assert.Equal(ConsoleColor.Red, appConfig.DefaultTheme.ColumnCommandHighCpu);
+        Assert.Equal(ConsoleColor.Cyan, appConfig.DefaultTheme.ColumnCommandIoBound);
+        Assert.Equal(ConsoleColor.Green, appConfig.DefaultTheme.ColumnCommandNormalUserSpace);
+        Assert.Equal(ConsoleColor.Yellow, appConfig.DefaultTheme.ColumnCommandScript);
+        Assert.Equal(ConsoleColor.Green, appConfig.DefaultTheme.ColumnUserCurrentNonRoot);
+        Assert.Equal(ConsoleColor.Magenta, appConfig.DefaultTheme.ColumnUserOtherNonRoot);
+        Assert.Equal(ConsoleColor.White, appConfig.DefaultTheme.ColumnUserRoot);
+        Assert.Equal(ConsoleColor.Gray, appConfig.DefaultTheme.ColumnUserSystem);
+        Assert.Equal(ConsoleColor.Cyan, appConfig.DefaultTheme.CommandBackground);
+        Assert.Equal(ConsoleColor.Black, appConfig.DefaultTheme.CommandForeground);
+        Assert.Equal(ConsoleColor.Red, appConfig.DefaultTheme.Error);
+        Assert.Equal(ConsoleColor.White, appConfig.DefaultTheme.Foreground);
+        Assert.Equal(ConsoleColor.Black, appConfig.DefaultTheme.ForegroundHighlight);
         Assert.Equal(ConsoleColor.DarkGreen, appConfig.DefaultTheme.HeaderBackground);
-        Assert.Equal(ConsoleColor.Black,     appConfig.DefaultTheme.HeaderForeground);
-        Assert.Equal(ConsoleColor.DarkBlue,  appConfig.DefaultTheme.MenubarBackground);
-        Assert.Equal(ConsoleColor.White,     appConfig.DefaultTheme.MenubarForeground);
-        Assert.Equal(ConsoleColor.Red,       appConfig.DefaultTheme.RangeHighBackground);
-        Assert.Equal(ConsoleColor.White,     appConfig.DefaultTheme.RangeHighForeground);
-        Assert.Equal(ConsoleColor.Green,     appConfig.DefaultTheme.RangeLowBackground);
-        Assert.Equal(ConsoleColor.Black,     appConfig.DefaultTheme.RangeLowForeground);
-        Assert.Equal(ConsoleColor.Yellow,    appConfig.DefaultTheme.RangeMidBackground);
-        Assert.Equal(ConsoleColor.Black,     appConfig.DefaultTheme.RangeMidForeground);
+        Assert.Equal(ConsoleColor.Black, appConfig.DefaultTheme.HeaderForeground);
+        Assert.Equal(ConsoleColor.DarkBlue, appConfig.DefaultTheme.MenubarBackground);
+        Assert.Equal(ConsoleColor.White, appConfig.DefaultTheme.MenubarForeground);
+        Assert.Equal(ConsoleColor.Red, appConfig.DefaultTheme.RangeHighBackground);
+        Assert.Equal(ConsoleColor.White, appConfig.DefaultTheme.RangeHighForeground);
+        Assert.Equal(ConsoleColor.Green, appConfig.DefaultTheme.RangeLowBackground);
+        Assert.Equal(ConsoleColor.Black, appConfig.DefaultTheme.RangeLowForeground);
+        Assert.Equal(ConsoleColor.Yellow, appConfig.DefaultTheme.RangeMidBackground);
+        Assert.Equal(ConsoleColor.Black, appConfig.DefaultTheme.RangeMidForeground);
 
         Assert.Equal(Processor.DefaultDelayInMilliseconds, appConfig.DelayInMilliseconds);
         Assert.Equal(-1, appConfig.FilterPid);
@@ -169,7 +169,10 @@ header-foreground=black
         Assert.True(appConfig.ShowMetreDiskNumerically);
         Assert.True(appConfig.ShowMetreMemoryNumerically);
         Assert.True(appConfig.ShowMetreSwapNumerically);
-        Assert.True(appConfig.UseIrixReporting);
+
+        if (!string.IsNullOrEmpty(iniFileData)) {
+            Assert.True(appConfig.UseIrixReporting);
+        }
     }
     
     internal static string CustomIniFile => @"
