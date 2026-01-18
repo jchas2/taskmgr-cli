@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Task.Manager.System.Controls;
 using Task.Manager.System.Controls.MessageBox;
 
 namespace Task.Manager.System.Screens;
@@ -59,7 +60,7 @@ public class ScreenApplication
                     Screen currScreen = screenStack.Peek();
 
                     // Resize Events.
-                    if (screenWidth != terminal.WindowWidth && screenHeight != terminal.WindowHeight) {
+                    if (screenWidth != terminal.WindowWidth || screenHeight != terminal.WindowHeight) {
                         FitScreenToConsole(currScreen);
                         currScreen.Resize();
                         currScreen.Draw();
