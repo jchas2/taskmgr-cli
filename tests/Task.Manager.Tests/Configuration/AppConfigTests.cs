@@ -98,8 +98,8 @@ range-high-background=red
 range-low-background=green
 range-mid-background=yellow
 range-high-foreground=white
-range-low-foreground=black
-range-mid-foreground=black
+range-low-foreground=white
+range-mid-foreground=darkyellow
 header-background=darkgreen
 header-foreground=black
 ";
@@ -150,9 +150,9 @@ header-foreground=black
         Assert.Equal(ConsoleColor.Red, appConfig.DefaultTheme.RangeHighBackground);
         Assert.Equal(ConsoleColor.White, appConfig.DefaultTheme.RangeHighForeground);
         Assert.Equal(ConsoleColor.Green, appConfig.DefaultTheme.RangeLowBackground);
-        Assert.Equal(ConsoleColor.Black, appConfig.DefaultTheme.RangeLowForeground);
+        Assert.Equal(ConsoleColor.White, appConfig.DefaultTheme.RangeLowForeground);
         Assert.Equal(ConsoleColor.Yellow, appConfig.DefaultTheme.RangeMidBackground);
-        Assert.Equal(ConsoleColor.Black, appConfig.DefaultTheme.RangeMidForeground);
+        Assert.Equal(ConsoleColor.DarkYellow, appConfig.DefaultTheme.RangeMidForeground);
 
         Assert.Equal(Processor.DefaultDelayInMilliseconds, appConfig.DelayInMilliseconds);
         Assert.Equal(-1, appConfig.FilterPid);
