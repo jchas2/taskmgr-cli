@@ -32,6 +32,7 @@ public class HelpScreen : Screen
     protected override void OnLoad()
     {
         Terminal.CursorVisible = false;
+        
         ConsoleColor fg = runContext.AppConfig.DefaultTheme.Foreground;
         ConsoleColor bg = runContext.AppConfig.DefaultTheme.Background;
         Theme theme = runContext.AppConfig.DefaultTheme;

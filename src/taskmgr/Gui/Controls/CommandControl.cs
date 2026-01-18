@@ -39,10 +39,16 @@ public sealed class CommandControl(ISystemTerminal terminal, AppConfig appConfig
         
         foreach (ConsoleKey key in commandMap.Keys) {
             AbstractCommand cmd = commandMap[key];
+
+            string keyStr = key.ToString();
             
             string commandText = cmd.Text.Length > CommandLength
                 ? cmd.Text.Substring(0, CommandLength - 1)
                 : cmd.Text.PadRight(CommandLength);
+
+            if (nchars + keyStr.Length + CommandLength + 1 > Width) {
+                break;
+            }
             
             nchars += KeyBindControl.Draw(
                 key.ToString(),

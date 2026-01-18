@@ -74,9 +74,9 @@ public sealed class MainScreen : Screen
         footerControl = commandControl;
 
         Controls
+            .Add(headerControl)
             .Add(processControl)
             .Add(processInfoControl)
-            .Add(headerControl)
             .Add(commandControl)
             .Add(filterControl);
     } 
