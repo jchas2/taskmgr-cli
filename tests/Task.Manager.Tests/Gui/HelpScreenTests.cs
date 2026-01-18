@@ -70,7 +70,12 @@ public sealed class HelpScreenTests
             "taskmgr",
             "Cpu metre:",
             "Memory metre:",
+#if __WIN32__
+            "Virtual metre:",
+#endif
+#if __APPLE__
             "Swap metre:",
+#endif            
             "Disk metre:",
             "Screen Navigation",
             "List Navigation",

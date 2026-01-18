@@ -169,12 +169,7 @@ header-foreground=black
         Assert.True(appConfig.ShowMetreDiskNumerically);
         Assert.True(appConfig.ShowMetreMemoryNumerically);
         Assert.True(appConfig.ShowMetreSwapNumerically);
-#if __WIN32__        
-        Assert.False(appConfig.UseIrixReporting);
-#endif
-#if __APPLE__        
         Assert.True(appConfig.UseIrixReporting);
-#endif        
     }
     
     internal static string CustomIniFile => @"
