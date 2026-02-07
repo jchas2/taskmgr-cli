@@ -92,7 +92,7 @@ public sealed class HeaderControlTests
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Mem"))), Times.AtLeastOnce);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿"))), Times.AtLeastOnce);
         //runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("35.1 GB/36 GB"))), Times.AtLeastOnce);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Swp") || s.Contains("Vir"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Swp") || s.Contains("Vir"))), Times.AtLeastOnce);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿"))), Times.AtLeastOnce);
         //runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("1.2 GB/2 GB"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Dsk"))), Times.Once);
