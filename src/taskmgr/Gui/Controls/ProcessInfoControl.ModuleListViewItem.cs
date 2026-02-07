@@ -6,7 +6,7 @@ namespace Task.Manager.Gui.Controls;
 
 public partial class ProcessInfoControl
 {
-    private class ModuleListViewItem : ListViewItem
+    public class ModuleListViewItem : ListViewItem
     {
         public ModuleListViewItem(ModuleInfo moduleInfo, AppConfig appConfig)
             : base(moduleInfo.ModuleName)

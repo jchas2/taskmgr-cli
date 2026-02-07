@@ -14,7 +14,7 @@ public partial class ProcessControl
     internal const int ColumnDiskWidth = 12;
     internal const int ColumnCommandlineWidth = 32;
 
-    internal enum Columns
+    public enum Columns
     {
         [ColumnTitle("PROCESS")]
         [ColumnProperty("FileDescription")]

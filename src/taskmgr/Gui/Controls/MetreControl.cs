@@ -8,8 +8,8 @@ public sealed class MetreControl : Control
 {
     private const int MetreMargin = 2;
     private const char BlockChar = ' ';
-    private const char BarChar = '|';
-    private const char DotChar = '⣿';
+
+    private char[] UnitChars = [' ', '|', '⣿'];
     
     public MetreControl(ISystemTerminal terminal) : base(terminal) { }
 
@@ -59,13 +59,7 @@ public sealed class MetreControl : Control
 
         // Filler between the metre and the text (if any).
         int unitFillerLen = Math.Max(0, segmentWidth - units - labelSegmentWidth);
-        
-        char unitChar = MetreStyle switch {
-            MetreControlStyle.Bars => BarChar,
-            MetreControlStyle.Blocks => BlockChar,
-            MetreControlStyle.Dots => DotChar,
-            _ => BlockChar
-        };
+        char unitChar = UnitChars[(int)MetreStyle];
 
         string unitStr = new string(unitChar, units).ToColour(unitFg, unitBg);
         Terminal.Write(unitStr);
