@@ -86,10 +86,10 @@ public sealed class ProcessInfoControlTests
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Pid:"))), Times.Once);
         // No verification for Pid.
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("File:"))), Times.Once);                                                                                       
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("dotnet"))), Times.AtLeastOnce);                                                                               
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("dotnet") || s.Contains("testhost.exe"))), Times.AtLeastOnce);                                                                               
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Description:"))), Times.Once);                                                                                
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Path:"))), Times.Once);                                                                                       
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("dotnet"))), Times.AtLeastOnce);                                                              
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("dotnet") || s.Contains("testhost.exe"))), Times.AtLeastOnce);                                                              
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("User:"))), Times.Once);
         // No verification for User.
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Version:"))), Times.Once);                                                                                    
