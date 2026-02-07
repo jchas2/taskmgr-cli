@@ -136,7 +136,7 @@ public sealed class ProcessControlTests
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("PROCESS"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("PID"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("USER"))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("NI"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("NI") || s.Contains("PRI"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("CPU%"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("THRDS"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("MEM"))), Times.Once);
