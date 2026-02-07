@@ -16,10 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\taskmgr\taskmgr.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Gui\Controls\" />
+      <ProjectReference Include="..\Task.Manager.Tests.Common\Task.Manager.Tests.Common.csproj" />
     </ItemGroup>
 
 </Project>

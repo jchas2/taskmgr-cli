@@ -5,7 +5,7 @@ public partial class ProcessInfoControl
     internal const int ColumnInfoKeyWidth = 14;
     internal const int ColumnInfoValueWidth = 60;
  
-    private enum InfoColumns
+    public enum InfoColumns
     {
         Key = 0,
         Value,
@@ -15,7 +15,7 @@ public partial class ProcessInfoControl
     internal const int ColumnModuleNameWidth = 32;
     internal const int ColumnFileNameWidth = 32;
     
-    private enum ModuleColumns
+    internal enum ModuleColumns
     {
         ModuleName = 0,
         FileName,
@@ -31,7 +31,7 @@ public partial class ProcessInfoControl
     internal const int ColumnThreadCpuUserTimeWidth = 20;
     internal const int ColumnThreadCpuTotalTimeWidth = 20;
 
-    public enum ThreadColumns
+    internal enum ThreadColumns
     {
         Id = 0,
         State,

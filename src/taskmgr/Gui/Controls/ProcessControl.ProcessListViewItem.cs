@@ -10,7 +10,7 @@ namespace Task.Manager.Gui.Controls;
 
 public partial class ProcessControl
 {
-    private class ProcessListViewItem : ListViewItem
+    public class ProcessListViewItem : ListViewItem
     {
         private int lastThreadCount;
         private long lastBasePriority;

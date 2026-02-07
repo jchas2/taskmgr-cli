@@ -118,6 +118,8 @@ public partial class ProcessInfoControl : Control
         });
     }
 
+    public bool AutoRefresh { get; set; } = true;
+
     private void MenuViewOnItemClicked(object? sender, ListViewItemEventArgs e)
     {
         var menuListViewItem = e.Item as MenuListViewItem;
@@ -234,8 +236,10 @@ public partial class ProcessInfoControl : Control
         menuView.ItemClicked += MenuViewOnItemClicked;
         
         cancellationTokenSource = new CancellationTokenSource();
-        
-        workerTask = WorkerTask.Run(() => UpdateListViewItemsLoop(cancellationTokenSource.Token));
+
+        workerTask = AutoRefresh
+            ? WorkerTask.Run(() => UpdateListViewItemsLoop(cancellationTokenSource.Token))
+            : null;
     }
 
     protected override void OnResize()

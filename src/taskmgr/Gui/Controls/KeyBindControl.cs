@@ -16,6 +16,7 @@ public static class KeyBindControl
         bool enabled,
         ISystemTerminal terminal)
     {
+        terminal.SetCursorPosition(x, y);
         terminal.BackgroundColor = theme.Background;
         terminal.ForegroundColor = enabled ? theme.Foreground : ConsoleColor.DarkGray;
         terminal.Write(keyBinding + " ");
