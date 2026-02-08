@@ -8,7 +8,7 @@ namespace Task.Manager.Gui.Controls;
 
 public partial class ProcessInfoControl
 {
-    private class ThreadListViewItem : ListViewItem
+    public class ThreadListViewItem : ListViewItem
     {
         private string? lastThreadState;
         private string? lastReason;
