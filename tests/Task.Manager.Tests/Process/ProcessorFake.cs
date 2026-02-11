@@ -20,6 +20,8 @@ public sealed class ProcessorFake : IProcessor
     
     public bool IrixMode { get; set; }
     
+    public bool IsRunning => false;
+
     public int IterationLimit { get; set; }
     
     public int ProcessCount { get; }
