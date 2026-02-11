@@ -28,7 +28,7 @@ public class Processor : IProcessor
     private CancellationTokenSource? cancellationTokenSource;
     private readonly Lock @lock;
     private readonly bool isWindows = false;
-    private bool dataInitialised = false;
+    private volatile bool dataInitialised = false;
     private int processCount = 0;
     private int threadCount = 0;
     private int delayInMilliseconds = DefaultDelayInMilliseconds;
@@ -70,7 +70,9 @@ public class Processor : IProcessor
 #endif
 #if __APPLE__
     public bool IrixMode { get; set; } = true;
-#endif    
+#endif
+
+    public bool IsRunning => workerTask?.IsCompleted == false && monitorTask?.IsCompleted == false;
     
     public int IterationLimit
     {
@@ -90,6 +92,10 @@ public class Processor : IProcessor
         monitorTask = WorkerTask.Run(() => RunMonitorInternal(cancellationTokenSource.Token));
     }
 
+    // NOTE: NoOptimization is REQUIRED on macOS Release builds.                                                                                  
+    // Without it, the JIT aggressively optimizes and pegs the CPU.                                                                                  
+    // This only affects macOS ARM64 Release builds. 
+    [MethodImpl(MethodImplOptions.NoOptimization)]
     private void RunInternal(CancellationToken cancellationToken)
     {
         SystemTimes prevSysTimes = new();
@@ -273,6 +279,7 @@ public class Processor : IProcessor
         }
     }
 
+    [MethodImpl(MethodImplOptions.NoOptimization)]
     private void RunMonitorInternal(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested) {
@@ -297,7 +304,7 @@ public class Processor : IProcessor
     {
         cancellationTokenSource?.Cancel();
         WorkerTask[] workerTasks = [workerTask!, monitorTask!];
-
+        
         try {
             WorkerTask.WaitAll(workerTasks);
         }
@@ -306,6 +313,10 @@ public class Processor : IProcessor
         }
     }
 
+    // NOTE: NoOptimization is REQUIRED on macOS Release builds.                                                                                  
+    // Without it, the JIT aggressively optimizes and pegs the CPU.                                                                                  
+    // This only affects macOS ARM64 Release builds. 
+    [MethodImpl(MethodImplOptions.NoOptimization)] 
     private void ThreadSleep(CancellationToken cancellationToken, int delay)
     {
         // Method to only sleep the thread the minimum amount of required time

@@ -7,6 +7,19 @@ namespace Task.Manager.System.Tests.Process;
 public sealed class ProcessTimeInfoTests
 {
     [Fact]
+    public void ProcessTimeInfo_Canary_Test()
+    {
+        // If this fails, review all tests in this class                                                                                   
+        // and update the expected count after adding tests                                                                                
+        const int ExpectedFieldCount = 3;
+
+        int actualCount = typeof(ProcessTimeInfo).GetFields(
+            BindingFlags.Public | BindingFlags.Instance).Length;
+
+        Assert.Equal(ExpectedFieldCount, actualCount);
+    }
+    
+    [Fact]
     public void Should_Clear_All_Properties()
     {
         const int FieldsTested = 3;
