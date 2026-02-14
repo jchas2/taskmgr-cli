@@ -1,5 +1,7 @@
-﻿using Moq;
+﻿using System.Reflection;
+using Moq;
 using Task.Manager.System.Controls.InputBox;
+using Task.Manager.Tests.Common;
 using InputBoxControl = Task.Manager.System.Controls.InputBox.InputBox;
 
 namespace Task.Manager.System.Tests.Controls.InputBox;
@@ -7,17 +9,24 @@ namespace Task.Manager.System.Tests.Controls.InputBox;
 public sealed class InputBoxTests
 {
     [Fact]
+    public void InputBox_Canary_Test() =>
+        Assert.Equal(14, CanaryTestHelper.GetProperties<InputBoxControl>());
+    
+    [Fact]
     public void Should_Construct_Default()
     {
         Mock<ISystemTerminal> terminal = TerminalMock.Setup();
         InputBoxControl control = new(terminal.Object);
         
         Assert.Equal(ConsoleColor.Black, control.BackgroundColour);
-        Assert.Equal(0, control.ControlCount);
         Assert.Empty(control.Controls);
         Assert.Equal(ConsoleColor.White, control.ForegroundColour);
         Assert.Equal(0, control.Height);
+        Assert.NotNull(control.Name);
+        Assert.Empty(control.Name);
         Assert.Equal(InputBoxResult.Enter, control.Result);
+        Assert.True(0 == control.TabIndex);
+        Assert.False(control.TabStop);
         Assert.NotNull(control.Text);
         Assert.Empty(control.Text);
         Assert.NotNull(control.Title);

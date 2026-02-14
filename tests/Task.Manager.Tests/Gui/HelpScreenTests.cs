@@ -1,5 +1,7 @@
+using System.Reflection;
 using Moq;
 using Task.Manager.Gui;
+using Task.Manager.Tests.Common;
 
 namespace Task.Manager.Tests.Gui;
 
@@ -14,6 +16,10 @@ public sealed class HelpScreenTests
         runContext = runContextHelper.GetRunContext();
     }
     
+    [Fact]
+    public void HelpScreen_Canary_Test() =>
+        Assert.Equal(12, CanaryTestHelper.GetProperties<HelpScreen>());
+
     [Fact]
     public void Constructor_With_Valid_Run_Context_Initialises_Successfully()
     {
@@ -31,15 +37,19 @@ public sealed class HelpScreenTests
     {
         HelpScreen helpScreen = new(runContext);
 
+        Assert.Equal(ConsoleColor.Black, helpScreen.BackgroundColour);
+        Assert.Empty(helpScreen.Controls);
+        Assert.True(helpScreen.CursorVisible);
+        Assert.Equal(ConsoleColor.White, helpScreen.ForegroundColour);
+        Assert.Equal(0, helpScreen.Height);
+        Assert.NotNull(helpScreen.Name);
+        Assert.Empty(helpScreen.Name);
+        Assert.True(0 == helpScreen.TabIndex);
+        Assert.False(helpScreen.TabStop);
         Assert.True(helpScreen.Visible);
+        Assert.Equal(0, helpScreen.Width);
         Assert.Equal(0, helpScreen.X);
         Assert.Equal(0, helpScreen.Y);
-        Assert.Equal(0, helpScreen.Width);
-        Assert.Equal(0, helpScreen.Height);
-        Assert.Equal(ConsoleColor.Black, helpScreen.BackgroundColour);
-        Assert.Equal(ConsoleColor.White, helpScreen.ForegroundColour);
-        Assert.False(helpScreen.TabStop);
-        Assert.Equal(0u, helpScreen.TabIndex);
     }
     
     [Fact]

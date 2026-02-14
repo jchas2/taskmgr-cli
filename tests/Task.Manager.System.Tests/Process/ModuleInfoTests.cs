@@ -1,23 +1,15 @@
 ﻿using System.Reflection;
 using Task.Manager.System.Process;
+using Task.Manager.Tests.Common;
 
 namespace Task.Manager.System.Tests.Process;
 
 public sealed class ModuleInfoTests
 {
     [Fact]
-    public void ModuleInfo_Canary_Test()
-    {
-        // If this fails, review all tests in this class                                                                                   
-        // and update the expected count after adding tests                                                                                
-        const int ExpectedPropertyCount = 2;
+    public void ModuleInfo_Canary_Test() =>
+        Assert.Equal(2, CanaryTestHelper.GetProperties<ModuleInfo>());
 
-        int actualCount = typeof(ModuleInfo).GetProperties(
-            BindingFlags.Public | BindingFlags.Instance).Length;
-
-        Assert.Equal(ExpectedPropertyCount, actualCount);
-    }
-    
     [Fact]
     public void ModuleInfo_Write_Read_Test()
     {

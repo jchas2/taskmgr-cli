@@ -1,5 +1,6 @@
 ﻿using Moq;
 using Task.Manager.System.Controls.MessageBox;
+using Task.Manager.Tests.Common;
 using MessageBoxControl = Task.Manager.System.Controls.MessageBox.MessageBox;
 
 namespace Task.Manager.System.Tests.Controls.MessageBox;
@@ -7,18 +8,24 @@ namespace Task.Manager.System.Tests.Controls.MessageBox;
 public sealed class MessageBoxTests
 {
     [Fact]
+    public void MessageBox_Canary_Test() =>
+        Assert.Equal(15, CanaryTestHelper.GetProperties<MessageBoxControl>());
+
+    [Fact]
     public void Should_Construct_Default()
     {
         Mock<ISystemTerminal> terminal = TerminalMock.Setup();
         MessageBoxControl control = new(terminal.Object);
         
         Assert.Equal(ConsoleColor.Black, control.BackgroundColour);
-        Assert.Equal(0, control.ControlCount);
         Assert.Empty(control.Controls);
         Assert.Equal(ConsoleColor.White, control.ForegroundColour);
         Assert.Equal(0, control.Height);
         Assert.Equal(MessageBoxButtons.OkCancel, control.Buttons);
+        Assert.NotNull(control.Name);
         Assert.Equal(MessageBoxResult.None, control.Result);
+        Assert.True(0 == control.TabIndex);
+        Assert.False(control.TabStop);
         Assert.NotNull(control.Text);
         Assert.Empty(control.Text);
         Assert.NotNull(control.Title);

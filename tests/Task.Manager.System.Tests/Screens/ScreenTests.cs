@@ -1,6 +1,7 @@
 ﻿using Moq;
 using Task.Manager.System.Screens;
 using Task.Manager.System.Tests.Controls;
+using Task.Manager.Tests.Common;
 
 namespace Task.Manager.System.Tests.Screens;
 
@@ -10,17 +11,24 @@ public sealed class ScreenTests
     public class TestScreen2(ISystemTerminal systemTerminal) : Screen(systemTerminal);
 
     [Fact]
+    public void InputBox_Canary_Test() =>
+        Assert.Equal(12, CanaryTestHelper.GetProperties<TestScreen1>());
+
+    [Fact]
     public void Should_Construct_Default()
     {
         Mock<ISystemTerminal> terminalMock = TerminalMock.Setup();
         TestScreen1 testScreen = new(terminalMock.Object);
 
         Assert.Equal(ConsoleColor.Black, testScreen.BackgroundColour);
-        Assert.Equal(0, testScreen.ControlCount);
         Assert.Empty(testScreen.Controls);
         Assert.True(testScreen.CursorVisible);
         Assert.Equal(ConsoleColor.White, testScreen.ForegroundColour);
         Assert.Equal(0, testScreen.Height);
+        Assert.NotNull(testScreen.Name);
+        Assert.Empty(testScreen.Name);
+        Assert.True(0 == testScreen.TabIndex);
+        Assert.False(testScreen.TabStop);
         Assert.True(testScreen.Visible);
         Assert.Equal(0, testScreen.Width);
         Assert.Equal(0, testScreen.X);

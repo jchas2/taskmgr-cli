@@ -1,5 +1,6 @@
 ﻿using Moq;
 using Task.Manager.System.Controls.ListView;
+using Task.Manager.Tests.Common;
 
 namespace Task.Manager.System.Tests.Controls.ListView;
 
@@ -23,6 +24,10 @@ public sealed class ListViewTests
     }
     
     [Fact]
+    public void ListView_Canary_Test() =>
+        Assert.Equal(24, CanaryTestHelper.GetProperties<System.Controls.ListView.ListView>());
+    
+    [Fact]
     public void Should_Construct_Default()
     {
         Mock<ISystemTerminal> terminal = TerminalMock.Setup();
@@ -30,10 +35,9 @@ public sealed class ListViewTests
         
         Assert.Equal(ConsoleColor.Black, listView.BackgroundColour);
         Assert.Equal(ConsoleColor.White, listView.BackgroundHighlightColour);
-        Assert.Equal(0, listView.ColumnHeaderCount);
-        Assert.NotNull(listView.ColumnHeaders);
-        Assert.Equal(0, listView.ControlCount);
+        Assert.Empty(listView.ColumnHeaders);
         Assert.Empty(listView.Controls);
+        Assert.Empty(listView.EmptyListViewText);
         Assert.True(listView.EnableRowSelect);
         Assert.True(listView.EnableScroll);
         Assert.Equal(ConsoleColor.White, listView.ForegroundColour);
@@ -41,11 +45,14 @@ public sealed class ListViewTests
         Assert.Equal(ConsoleColor.Black, listView.HeaderBackgroundColour);
         Assert.Equal(ConsoleColor.White, listView.HeaderForegroundColour);        
         Assert.Equal(0, listView.Height);
-        Assert.Equal(0, listView.ItemCount);
-        Assert.NotNull(listView.Items);
+        Assert.Empty(listView.Items);
+        Assert.NotNull(listView.Name);
         Assert.Null(listView.SelectedItem);
         Assert.Equal(0, listView.SelectedIndex); // TODO: This should be -1.
+        Assert.False(listView.ShowCheckboxes);
         Assert.True(listView.ShowColumnHeaders);
+        Assert.True(0 == listView.TabIndex);
+        Assert.False(listView.TabStop);
         Assert.True(listView.Visible);
         Assert.Equal(0, listView.Width);
         Assert.Equal(0, listView.X);
@@ -59,6 +66,7 @@ public sealed class ListViewTests
         System.Controls.ListView.ListView listView = new(terminal.Object) {
             BackgroundColour = ConsoleColor.Gray,
             BackgroundHighlightColour = ConsoleColor.DarkGray,
+            EmptyListViewText = "No Items",
             EnableRowSelect = false,
             EnableScroll = false,
             ForegroundColour = ConsoleColor.Blue,
@@ -74,6 +82,7 @@ public sealed class ListViewTests
         
         Assert.Equal(ConsoleColor.Gray, listView.BackgroundColour);
         Assert.Equal(ConsoleColor.DarkGray, listView.BackgroundHighlightColour);
+        Assert.Equal("No Items", listView.EmptyListViewText);
         Assert.False(listView.EnableRowSelect);
         Assert.False(listView.EnableScroll);
         Assert.Equal(ConsoleColor.Blue, listView.ForegroundColour);
