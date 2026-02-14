@@ -25,6 +25,22 @@ public sealed class CommandControlTests
         runContext = runContextHelper.GetRunContext();
     }
     
+    [Fact]                                                                                                                                        
+    public void Should_Construct_Default()                                                                                                        
+    {                                                                                                                                             
+        CommandControl control = new(runContext.Terminal, runContext.AppConfig);                                                                  
+                                                                                                                                                
+        Assert.Equal(ConsoleColor.Black, control.BackgroundColour);                                                                               
+        Assert.Equal(0, control.Controls.Count);                                                                                                    
+        Assert.Empty(control.Controls);                                                                                                           
+        Assert.Equal(ConsoleColor.White, control.ForegroundColour);                                                                               
+        Assert.Equal(0, control.Height);                                                                                                          
+        Assert.True(control.Visible);                                                                                                             
+        Assert.Equal(0, control.Width);                                                                                                           
+        Assert.Equal(0, control.X);                                                                                                               
+        Assert.Equal(0, control.Y);                                                                                                               
+    }                 
+    
     [Fact]
     public void Constructor_With_Valid_Args_Initialises_Successfully()
     {

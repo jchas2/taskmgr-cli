@@ -1,23 +1,15 @@
 ﻿using System.Reflection;
 using Task.Manager.System.Process;
+using Task.Manager.Tests.Common;
 
 namespace Task.Manager.System.Tests.Process;
 
 public sealed class ThreadInfoTests
 {
     [Fact]
-    public void ThreadInfo_Canary_Test()
-    {
-        // If this fails, review all tests in this class                                                                                   
-        // and update the expected count after adding tests                                                                                
-        const int ExpectedPropertyCount = 8;
+    public void InputBox_Canary_Test() =>
+        Assert.Equal(8, CanaryTestHelper.GetProperties<ThreadInfo>());
 
-        int actualCount = typeof(ThreadInfo).GetProperties(
-            BindingFlags.Public | BindingFlags.Instance).Length;
-
-        Assert.Equal(ExpectedPropertyCount, actualCount);
-    }
-    
     [Fact]
     public void ThreadInfo_Write_Read_Test()
     {

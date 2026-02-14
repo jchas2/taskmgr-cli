@@ -2,6 +2,7 @@ using Moq;
 using Task.Manager.Configuration;
 using Task.Manager.Gui;
 using Task.Manager.System.Controls.ListView;
+using Task.Manager.Tests.Common;
 
 namespace Task.Manager.Tests.Gui;
 
@@ -15,6 +16,10 @@ public sealed class SetupScreenTests
         runContextHelper = new RunContextHelper();
         runContext = runContextHelper.GetRunContext();
     }
+
+    [Fact]
+    public void SetupScreen_Canary_Test() =>
+        Assert.Equal(12, CanaryTestHelper.GetProperties<SetupScreen>());
 
     [Fact]
     public void Constructor_With_Valid_Run_Context_Initialises_Successfully()
@@ -33,15 +38,19 @@ public sealed class SetupScreenTests
     {
         SetupScreen setupScreen = new(runContext);
 
+        Assert.Equal(ConsoleColor.Black, setupScreen.BackgroundColour);
+        Assert.NotEmpty(setupScreen.Controls);
+        Assert.True(setupScreen.CursorVisible);
+        Assert.Equal(ConsoleColor.White, setupScreen.ForegroundColour);
+        Assert.Equal(0, setupScreen.Height);
+        Assert.NotNull(setupScreen.Name);
+        Assert.Empty(setupScreen.Name);
+        Assert.True(0 == setupScreen.TabIndex);
+        Assert.False(setupScreen.TabStop);
         Assert.True(setupScreen.Visible);
+        Assert.Equal(0, setupScreen.Width);
         Assert.Equal(0, setupScreen.X);
         Assert.Equal(0, setupScreen.Y);
-        Assert.Equal(0, setupScreen.Width);
-        Assert.Equal(0, setupScreen.Height);
-        Assert.Equal(ConsoleColor.Black, setupScreen.BackgroundColour);
-        Assert.Equal(ConsoleColor.White, setupScreen.ForegroundColour);
-        Assert.False(setupScreen.TabStop);
-        Assert.Equal(0u, setupScreen.TabIndex);
     }
 
     [Fact]

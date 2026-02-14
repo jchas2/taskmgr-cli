@@ -1,23 +1,15 @@
 using System.Reflection;
 using Task.Manager.Process;
+using Task.Manager.Tests.Common;
 
 namespace Task.Manager.Tests.Process;
 
 public sealed class ProcessorInfoTests
 {
     [Fact]
-    public void ProcessorInfo_Canary_Test()
-    {
-        // If this fails, review all tests in this class                                                                                   
-        // and update the expected count after adding tests                                                                                
-        const int ExpectedPropertyCount = 22;
-
-        int actualCount = typeof(ProcessorInfo).GetProperties(
-            BindingFlags.Public | BindingFlags.Instance).Length;
-
-        Assert.Equal(ExpectedPropertyCount, actualCount);
-    }
-
+    public void ProcessorInfo_Canary_Test() =>
+        Assert.Equal(22, CanaryTestHelper.GetProperties<ProcessorInfo>());
+    
     [Fact]                                                                                                                             
     public void Default_Constructor_Initializes_With_Default_Values()                                                                  
     {                                                                                                                                  
