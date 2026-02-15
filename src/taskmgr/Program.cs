@@ -62,11 +62,12 @@ class Program
         FormattedTextWriterTraceListener.Initialise();
 #endif
         ProcessService processService = new();
+        GpuService gpuService = new();
         SystemTerminal terminal = new();
         ModuleService moduleService = new();
         ThreadService threadService = new();
         FileSystem fileSystem = new();
-        Processor processor = new(processService);
+        Processor processor = new(processService, gpuService);
         AppConfig appConfig = new(fileSystem);
         
         try {
@@ -74,6 +75,7 @@ class Program
                 fileSystem,
                 terminal,
                 processService,
+                gpuService,
                 moduleService,
                 threadService,
                 processor,

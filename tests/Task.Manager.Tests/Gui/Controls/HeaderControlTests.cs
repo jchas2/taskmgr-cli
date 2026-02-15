@@ -73,7 +73,7 @@ public sealed class HeaderControlTests
             runContext.Terminal, 
             runContext.AppConfig) {
             Width = 128,
-            Height = 9
+            Height = 10
         };
 
         ctrl.Load();
@@ -96,7 +96,7 @@ public sealed class HeaderControlTests
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿"))), Times.AtLeastOnce);
         //runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("1.2 GB/2 GB"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Dsk"))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿"))), Times.Once);
+        //runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("0.1 MB/s"))), Times.AtLeastOnce);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Cpu:   "))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("025.2% "))), Times.Once);

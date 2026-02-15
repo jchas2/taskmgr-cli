@@ -14,6 +14,7 @@ internal class RunContextHelper
     internal Mock<IFileSystem> fileSystem = new();
     internal Mock<ISystemTerminal> terminal = new();
     internal Mock<IProcessService> processService = new();
+    internal Mock<IGpuService> gpuService = new();
     internal Mock<IModuleService> moduleService = new();
     internal Mock<IThreadService> threadService = new();
     internal Mock<IProcessor> processor = new();
@@ -38,6 +39,7 @@ internal class RunContextHelper
             fileSystem.Object,
             terminal.Object,
             processService.Object,
+            gpuService.Object,
             moduleService.Object,
             threadService.Object,
             processor.Object,

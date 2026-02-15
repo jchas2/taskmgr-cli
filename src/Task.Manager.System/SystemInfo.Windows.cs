@@ -84,6 +84,11 @@ public static partial class SystemInfo
         return true;
 	}
 
+    private static bool GetGpuMemoryInternal(ref SystemStatistics systemStatistics)
+    {
+        return false;        
+    }
+
     private static unsafe bool GetSystemMemoryInternal(ref SystemStatistics systemStatistics)
     {
         systemStatistics.AvailablePageFile = 0;

@@ -10,6 +10,24 @@ public static partial class SystemInfo
 
     public static bool GetCpuTimes(ref SystemTimes systemTimes) => GetCpuTimesInternal(ref systemTimes);
 
+    public static bool GetGpuMemory(ref SystemStatistics systemStatistics) => GetGpuMemoryInternal(ref systemStatistics);
+    
+    private static IEnumerable<IPAddress> GetIpAddresses(NetworkInterfaceType networkInterfaceType)
+    {
+        List<NetworkInterface> activeNics = NetworkInterface
+            .GetAllNetworkInterfaces()
+            .Where(nic => nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType == networkInterfaceType)
+            .ToList();
+
+        foreach (NetworkInterface nic in activeNics) {
+            foreach (UnicastIPAddressInformation ipInfo in nic.GetIPProperties().UnicastAddresses) {
+                if (ipInfo.Address.AddressFamily == AddressFamily.InterNetwork) {
+                    yield return ipInfo.Address;
+                }
+            }
+        }
+    }
+
     private static IPAddress? GetPreferredIpAddress()
     {
         List<IPAddress> ipAddresses = GetIpAddresses(NetworkInterfaceType.Ethernet).ToList();
@@ -25,22 +43,6 @@ public static partial class SystemInfo
         }
 
         return null;
-    }
-
-    private static IEnumerable<IPAddress> GetIpAddresses(NetworkInterfaceType networkInterfaceType)
-    {
-        List<NetworkInterface> activeNics = NetworkInterface
-            .GetAllNetworkInterfaces()
-            .Where(nic => nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType == networkInterfaceType)
-            .ToList();
-
-        foreach (NetworkInterface nic in activeNics) {
-            foreach (UnicastIPAddressInformation ipInfo in nic.GetIPProperties().UnicastAddresses) {
-                if (ipInfo.Address.AddressFamily == AddressFamily.InterNetwork) {
-                    yield return ipInfo.Address;
-                }
-            }
-        }
     }
 
     public static bool GetSystemMemory(ref SystemStatistics systemStatistics) => GetSystemMemoryInternal(ref systemStatistics);

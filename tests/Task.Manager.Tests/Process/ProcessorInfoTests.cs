@@ -8,7 +8,7 @@ public sealed class ProcessorInfoTests
 {
     [Fact]
     public void ProcessorInfo_Canary_Test() =>
-        Assert.Equal(22, CanaryTestHelper.GetProperties<ProcessorInfo>());
+        Assert.Equal(25, CanaryTestHelper.GetProperties<ProcessorInfo>());
     
     [Fact]                                                                                                                             
     public void Default_Constructor_Initializes_With_Default_Values()                                                                  
@@ -36,7 +36,10 @@ public sealed class ProcessorInfoTests
         Assert.Equal(0, info.PrevCpuKernelTime);                                                                                       
         Assert.Equal(0, info.PrevCpuUserTime);                                                                                         
         Assert.Equal(0, info.CurrCpuKernelTime);                                                                                       
-        Assert.Equal(0, info.CurrCpuUserTime);                                                                                         
+        Assert.Equal(0, info.CurrCpuUserTime);   
+        Assert.Equal(0.0, info.GpuTimePercent);
+        Assert.Equal(0, info.PrevGpuTime);
+        Assert.Equal(0, info.CurrGpuTime);
     }                                                                                                                                  
                                                                                                                                          
     [Fact]                                                                                                                             
@@ -65,7 +68,10 @@ public sealed class ProcessorInfoTests
             PrevCpuKernelTime = 1000,                                                                                                  
             PrevCpuUserTime = 2000,                                                                                                    
             CurrCpuKernelTime = 1100,                                                                                                  
-            CurrCpuUserTime = 2200                                                                                                     
+            CurrCpuUserTime = 2200,
+            GpuTimePercent = 4.1,
+            PrevGpuTime = 2500,
+            CurrGpuTime = 2400
         };                                                                                                                             
                                                                                                                                      
         Assert.Equal(1234, info.Pid);                                                                                                  
@@ -89,7 +95,10 @@ public sealed class ProcessorInfoTests
         Assert.Equal(1000, info.PrevCpuKernelTime);                                                                                    
         Assert.Equal(2000, info.PrevCpuUserTime);                                                                                      
         Assert.Equal(1100, info.CurrCpuKernelTime);                                                                                    
-        Assert.Equal(2200, info.CurrCpuUserTime);                                                                                      
+        Assert.Equal(2200, info.CurrCpuUserTime);   
+        Assert.Equal(4.1, info.GpuTimePercent);
+        Assert.Equal(2500, info.PrevGpuTime);
+        Assert.Equal(2400, info.CurrGpuTime);
     }                                                                                                                                  
                                                                                                                                          
     [Fact]                                                                                                                             
@@ -118,7 +127,10 @@ public sealed class ProcessorInfoTests
             PrevCpuKernelTime = 1000,                                                                                                  
             PrevCpuUserTime = 2000,                                                                                                    
             CurrCpuKernelTime = 1100,                                                                                                  
-            CurrCpuUserTime = 2200                                                                                                     
+            CurrCpuUserTime = 2200,
+            GpuTimePercent = 3.9,
+            PrevGpuTime = 2200,
+            CurrGpuTime = 2500
         };                                                                                                                             
                                                                                                                                      
         ProcessorInfo copy = new(original);                                                                                            
@@ -145,7 +157,10 @@ public sealed class ProcessorInfoTests
         Assert.Equal(original.PrevCpuKernelTime, copy.PrevCpuKernelTime);                                                              
         Assert.Equal(original.PrevCpuUserTime, copy.PrevCpuUserTime);                                                                  
         Assert.Equal(original.CurrCpuKernelTime, copy.CurrCpuKernelTime);                                                              
-        Assert.Equal(original.CurrCpuUserTime, copy.CurrCpuUserTime);                                                                  
+        Assert.Equal(original.CurrCpuUserTime, copy.CurrCpuUserTime);
+        Assert.Equal(original.GpuTimePercent, copy.GpuTimePercent);
+        Assert.Equal(original.PrevGpuTime, copy.PrevGpuTime);
+        Assert.Equal(original.CurrGpuTime, copy.CurrGpuTime);
     }                                                                                                                                  
                                                                                                                                          
     [Fact]                                                                                                                             
@@ -240,7 +255,10 @@ public sealed class ProcessorInfoTests
             PrevCpuKernelTime = 1000,                                                                                                  
             PrevCpuUserTime = 2000,                                                                                                    
             CurrCpuKernelTime = 1100,                                                                                                  
-            CurrCpuUserTime = 2100                                                                                                     
+            CurrCpuUserTime = 2100,
+            GpuTimePercent = 2.7,
+            PrevGpuTime = 1800,
+            CurrGpuTime = 1600
         };                                                                                                                             
                                                                                                                                      
         ProcessorInfo info2 = new(info1);                                                                                              

@@ -18,6 +18,8 @@ public sealed class HeaderControl : Control
     private readonly MetreControl memoryMetre;
     private readonly MetreControl virtualMemoryMetre;
     private readonly MetreControl diskMetre;
+    private readonly MetreControl gpuMetre;
+    private readonly MetreControl gpuMemMetre;
     private readonly ListView statisticsView;
     
     private double maxMbps = 0;
@@ -43,27 +45,37 @@ public sealed class HeaderControl : Control
         this.appConfig = appConfig;
         
         cpuMetre = new MetreControl(terminal) {
-            Text = "Cpu",
+            Text = "Cpu    ",
             DrawStacked = true,
         };
 
         memoryMetre = new MetreControl(terminal) {
-            Text = "Mem",
+            Text = "Mem    ",
             DrawStacked = false,
         };
 
         virtualMemoryMetre = new MetreControl(terminal) {
 #if __WIN32__            
-            Text = "Vir",
+            Text = "Vir    ",
 #endif
 #if __APPLE__            
-            Text = "Swp",
+            Text = "Swp    ",
 #endif
             DrawStacked = false,
         };
 
         diskMetre = new MetreControl(terminal) {
-            Text = "Dsk",
+            Text = "Dsk    ",
+            DrawStacked = false,
+        };
+
+        gpuMetre = new MetreControl(terminal) {
+            Text = "Gpu    ",
+            DrawStacked = false,
+        };
+
+        gpuMemMetre = new MetreControl(terminal) {
+            Text = "Gpu Mem",
             DrawStacked = false,
         };
         
@@ -83,6 +95,8 @@ public sealed class HeaderControl : Control
             .Add(memoryMetre)
             .Add(virtualMemoryMetre)
             .Add(diskMetre)
+            .Add(gpuMetre)
+            .Add(gpuMemMetre)
             .Add(statisticsView);
     }
     
@@ -147,23 +161,6 @@ public sealed class HeaderControl : Control
         if (systemStatistics.TotalPageFile > 0) {
             virRatio = 1.0 - ((double)(systemStatistics.AvailablePageFile) / (double)(systemStatistics.TotalPageFile));    
         }
-
-        var userColour = totalCpu < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
-            : totalCpu < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
-            : appConfig.DefaultTheme.RangeHighBackground;
-
-        // Switch the kernel colours around to provide some contrast to the User Cpu %.
-        var kernelColour = totalCpu < 0.25 ? appConfig.DefaultTheme.RangeMidBackground
-            : totalCpu < 0.75 ? appConfig.DefaultTheme.RangeLowBackground
-            : appConfig.DefaultTheme.RangeMidBackground;
-
-        var memColour = memRatio < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
-            : memRatio < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
-            : appConfig.DefaultTheme.RangeHighBackground;
-
-        var virColour = virRatio < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
-            : virRatio < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
-            : appConfig.DefaultTheme.RangeHighBackground;
         
         double mbps = systemStatistics.DiskUsage.ToMbpsFromBytes();
 
@@ -175,10 +172,42 @@ public sealed class HeaderControl : Control
             ? mbps / maxMbps
             : 0;
 
+        double gpuCpu = systemStatistics.GpuPercentTime;
+        double gpuMemRatio = 0.0;
+
+        if (systemStatistics.TotalGpuMemory > 0) {
+            gpuMemRatio = 1.0 - ((double)(systemStatistics.AvailableGpuMemory) / (double)(systemStatistics.TotalGpuMemory));
+        }
+        
+        ConsoleColor userColour = totalCpu < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
+            : totalCpu < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
+            : appConfig.DefaultTheme.RangeHighBackground;
+
+        // Switch the kernel colours around to provide some contrast to the User Cpu %.
+        ConsoleColor kernelColour = totalCpu < 0.25 ? appConfig.DefaultTheme.RangeMidBackground
+            : totalCpu < 0.75 ? appConfig.DefaultTheme.RangeLowBackground
+            : appConfig.DefaultTheme.RangeMidBackground;
+
+        ConsoleColor memColour = memRatio < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
+            : memRatio < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
+            : appConfig.DefaultTheme.RangeHighBackground;
+
+        ConsoleColor virColour = virRatio < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
+            : virRatio < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
+            : appConfig.DefaultTheme.RangeHighBackground;
+        
         ConsoleColor mbpsColour = mbps < 10.0 ? appConfig.DefaultTheme.RangeLowBackground 
             : mbps < 100.0 ? appConfig.DefaultTheme.RangeMidBackground
             : appConfig.DefaultTheme.RangeHighBackground;
 
+        ConsoleColor gpuCpuColour = gpuCpu < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
+            : gpuCpu < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
+            : appConfig.DefaultTheme.RangeHighBackground;
+
+        ConsoleColor gpuMemColour = gpuMemRatio < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
+            : gpuMemRatio < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
+            : appConfig.DefaultTheme.RangeHighBackground;
+        
         cpuMetre.PercentageSeries1 = systemStatistics.CpuPercentKernelTime;
         cpuMetre.PercentageSeries2 = systemStatistics.CpuPercentUserTime;
         cpuMetre.ColourSeries1 = kernelColour;
@@ -215,6 +244,23 @@ public sealed class HeaderControl : Control
             : string.Empty;
         
         diskMetre.Draw();
+        
+        gpuMetre.PercentageSeries1 = gpuCpu;
+        gpuMetre.ColourSeries1 = gpuCpuColour;
+        gpuMetre.LabelSeries1 = appConfig.ShowMetreCpuNumerically
+            ? gpuMetre.LabelSeries1 = gpuCpu.ToString("000.0%")
+            : string.Empty;
+        
+        gpuMetre.Draw();
+        
+        gpuMemMetre.PercentageSeries1 = gpuMemRatio;
+        gpuMemMetre.ColourSeries1 = gpuMemColour;
+        gpuMemMetre.LabelSeries1 = appConfig.ShowMetreMemoryNumerically
+            ? (systemStatistics.TotalGpuMemory - systemStatistics.AvailableGpuMemory).ToFormattedByteSize() + "/" +
+              systemStatistics.TotalGpuMemory.ToFormattedByteSize()
+            : string.Empty;
+        
+        gpuMemMetre.Draw();
 
         if (statisticsView.Items.Count == 0) {
             return;
@@ -374,6 +420,18 @@ public sealed class HeaderControl : Control
         diskMetre.Height = 1;
         diskMetre.Resize();
 
+        gpuMetre.X = X;
+        gpuMetre.Y = Y + 7;
+        gpuMetre.Width = MetreWidth;
+        gpuMetre.Height = 1;
+        gpuMetre.Resize();
+
+        gpuMemMetre.X = X;
+        gpuMemMetre.Y = Y + 8;
+        gpuMemMetre.Width = MetreWidth;
+        gpuMemMetre.Height = 1;
+        gpuMemMetre.Resize();
+        
         statisticsView.X = X + cpuMetre.Width + 2;
         statisticsView.Y = cpuMetre.Y;
         statisticsView.Width = Width - MetreWidth - 2;
