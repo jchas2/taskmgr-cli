@@ -19,6 +19,7 @@ public class Processor : IProcessor
     private const int InitialBufferSize = 512;
 
     private readonly IProcessService processService;
+    private readonly IGpuService gpuService;
     private SystemStatistics systemStatistics;
     private readonly List<ProcessorInfo> allProcessorInfos;
     private readonly List<ProcessorInfo> allProcessorInfosCopy;
@@ -36,9 +37,10 @@ public class Processor : IProcessor
     
     public event EventHandler<ProcessorEventArgs>? ProcessorUpdated;
     
-    public Processor(IProcessService processService)
+    public Processor(IProcessService processService, IGpuService gpuService)
     {
         this.processService = processService;
+        this.gpuService = gpuService;
         Delay = DefaultDelayInMilliseconds;
         systemStatistics = new SystemStatistics();
         allProcessorInfos = new List<ProcessorInfo>(InitialBufferSize);
@@ -110,14 +112,15 @@ public class Processor : IProcessor
         SystemInfo.GetSystemInfo(ref systemStatistics);
 
         while (!cancellationToken.IsCancellationRequested && iterationCount <= IterationLimit) {
+            GetSystemTimes(ref prevSysTimes);
             ProcessInfo[] processInfos = processService.GetProcesses();
-            int index = 0;
+            Dictionary<int, long> gpuTimes = gpuService.GetStats();
 
             allProcessorInfos.Clear();
             processCount = 0;
             threadCount = 0;
 
-            for (index = 0; index < processInfos.Length; index++) {
+            for (int index = 0; index < processInfos.Length; index++) {
                 
                 if (cancellationToken.IsCancellationRequested) {
                     return;
@@ -171,6 +174,9 @@ public class Processor : IProcessor
                 processorInfo.PrevCpuUserTime = prevProcTimes.UserTime;
                 processorInfo.CurrCpuKernelTime = 0;
                 processorInfo.CurrCpuUserTime = 0;
+                processorInfo.GpuTimePercent = 0.0;
+                processorInfo.PrevGpuTime = gpuTimes.GetValueOrDefault(processorInfo.Pid, 0);
+                processorInfo.CurrGpuTime = 0;
 
                 allProcessorInfos.Add(processorInfo);
                 processCount++;
@@ -181,8 +187,6 @@ public class Processor : IProcessor
                 return;
             }
 
-            GetSystemTimes(ref prevSysTimes);
-            
             ThreadSleep(cancellationToken, Delay);
             
             if (cancellationToken.IsCancellationRequested) {
@@ -198,9 +202,13 @@ public class Processor : IProcessor
             systemStatistics.CpuPercentIdleTime = 0.0;
             systemStatistics.CpuPercentUserTime = 0.0;
             systemStatistics.CpuPercentKernelTime = 0.0;
+            systemStatistics.GpuPercentTime = 0.0;
             systemStatistics.DiskUsage = 0;
 
             SystemInfo.GetSystemMemory(ref systemStatistics);
+            SystemInfo.GetGpuMemory(ref systemStatistics);
+            gpuTimes = gpuService.GetStats();
+            
 #if __WIN32__
             long totalSysTime = Environment.ProcessorCount * delayInMs.Ticks;
 #endif              
@@ -243,6 +251,17 @@ public class Processor : IProcessor
                 allProcessorInfos[i].CpuKernelTimePercent = irixFactor * (double)procKernelDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
                 allProcessorInfos[i].CpuUserTimePercent = irixFactor * (double)procUserDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
 #endif
+                allProcessorInfos[i].CurrGpuTime = gpuTimes.GetValueOrDefault(allProcessorInfos[i].Pid, 0);
+                long gpuTimeDelta = allProcessorInfos[i].CurrGpuTime - allProcessorInfos[i].PrevGpuTime;
+
+                if (gpuTimeDelta > 0) {
+                    // Convert nanoseconds to percentage of delay time.
+                    double deltaSeconds = gpuTimeDelta / 1_000_000_000.0;
+                    double gpuPecent = deltaSeconds / ((double)Delay / 1000);
+                    allProcessorInfos[i].GpuTimePercent = gpuPecent;
+                    systemStatistics.GpuPercentTime += gpuPecent;
+                }
+                
                 ulong prevDiskOperations = allProcessorInfos[i].DiskOperations;
                 
                 allProcessorInfos[i].DiskOperations = ProcessUtils.GetProcessIoOperations(allProcessorInfos[i].Pid);

@@ -1,3 +1,4 @@
+using Moq;
 using Task.Manager.Process;
 using Task.Manager.System.Process;
 using SysDiag = System.Diagnostics;
@@ -9,13 +10,14 @@ public sealed class ProcessorTests
       [Fact]                                                                                                                             
       public void Run_With_Single_Process_Completes_One_Iteration()                                                                      
       {                                                                                                                                  
-          ProcessServiceFake processService = new();                                                                                     
+          ProcessServiceFake processService = new();
+          GpuServiceFake gpuService = new();
                                                                                                                                          
           using var currentProcess = SysDiag::Process.GetCurrentProcess();                                                     
           ProcessInfo currentProcessInfo = new(currentProcess);                                                                          
           processService.AddProcessInfo(currentProcessInfo);                                                                             
                                                                                                                                          
-          Processor processor = new(processService) {                                                                                    
+          Processor processor = new(processService, gpuService) {                                                                                    
               IterationLimit = 1,                                                                               
               Delay = Processor.MinimumDelayInMilliseconds                                         
           };                                                                                                                             
@@ -69,13 +71,14 @@ public sealed class ProcessorTests
       [Fact]                                                                                                                                    
       public void Stop_Cancels_Running_Processor()                                                                                              
       {                                                                                                                                         
-          ProcessServiceFake processService = new();                                                                                            
+          ProcessServiceFake processService = new();
+          Mock<IGpuService> gpuService = new();
                                                                                                                                                 
           using var currentProcess = SysDiag::Process.GetCurrentProcess();                                                            
           ProcessInfo currentProcessInfo = new(currentProcess);                                                                                 
           processService.AddProcessInfo(currentProcessInfo);                                                                                    
                                                                                                                                                 
-          Processor processor = new(processService) {                                                                                           
+          Processor processor = new(processService, gpuService.Object) {                                                                                           
               IterationLimit = 0,  // Run indefinitely.                                                                                          
               Delay = Processor.MinimumDelayInMilliseconds * 2                                                                                      
           };                                                                                                                                    

@@ -2,7 +2,7 @@
 
 namespace Task.Manager.System.Process;
 
-public partial class ProcessService : IProcessService
+public class ProcessService : IProcessService
 {
     public ProcessInfo[] GetProcesses()
     {

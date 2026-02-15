@@ -31,6 +31,10 @@ public class ProcessorInfo
     public long CurrCpuKernelTime { get; set; }
     public long CurrCpuUserTime { get; set; }
     
+    public double GpuTimePercent { get; set; }
+    public long PrevGpuTime { get; set; }
+    public long CurrGpuTime { get; set; }
+    
     public ProcessorInfo() { }
 
     public ProcessorInfo(ProcessorInfo other)
@@ -58,33 +62,39 @@ public class ProcessorInfo
         PrevCpuUserTime = other.PrevCpuUserTime;
         CurrCpuKernelTime = other.CurrCpuKernelTime;
         CurrCpuUserTime = other.CurrCpuUserTime;
+        GpuTimePercent = other.GpuTimePercent;
+        CurrGpuTime = other.CurrGpuTime;
+        PrevGpuTime = other.PrevGpuTime;
     }
 
     private bool Equals(ProcessorInfo other)
     {
-        return 
-            Pid == other.Pid && 
-            ThreadCount == other.ThreadCount && 
-            HandleCount == other.HandleCount && 
-            BasePriority == other.BasePriority && 
-            ParentPid == other.ParentPid && 
+        return
+            Pid == other.Pid &&
+            ThreadCount == other.ThreadCount &&
+            HandleCount == other.HandleCount &&
+            BasePriority == other.BasePriority &&
+            ParentPid == other.ParentPid &&
             IsDaemon == other.IsDaemon &&
             IsLowPriority == other.IsLowPriority &&
-            StartTime.Equals(other.StartTime) && 
-            ProcessName == other.ProcessName && 
-            FileDescription == other.FileDescription && 
-            UserName == other.UserName && 
-            CmdLine == other.CmdLine && 
-            DiskUsage == other.DiskUsage && 
-            DiskOperations == other.DiskOperations && 
-            UsedMemory == other.UsedMemory && 
-            CpuTimePercent.Equals(other.CpuTimePercent) && 
-            CpuUserTimePercent.Equals(other.CpuUserTimePercent) && 
-            CpuKernelTimePercent.Equals(other.CpuKernelTimePercent) && 
-            PrevCpuKernelTime == other.PrevCpuKernelTime && 
-            PrevCpuUserTime == other.PrevCpuUserTime && 
-            CurrCpuKernelTime == other.CurrCpuKernelTime && 
-            CurrCpuUserTime == other.CurrCpuUserTime;
+            StartTime.Equals(other.StartTime) &&
+            ProcessName == other.ProcessName &&
+            FileDescription == other.FileDescription &&
+            UserName == other.UserName &&
+            CmdLine == other.CmdLine &&
+            DiskUsage == other.DiskUsage &&
+            DiskOperations == other.DiskOperations &&
+            UsedMemory == other.UsedMemory &&
+            CpuTimePercent.Equals(other.CpuTimePercent) &&
+            CpuUserTimePercent.Equals(other.CpuUserTimePercent) &&
+            CpuKernelTimePercent.Equals(other.CpuKernelTimePercent) &&
+            PrevCpuKernelTime == other.PrevCpuKernelTime &&
+            PrevCpuUserTime == other.PrevCpuUserTime &&
+            CurrCpuKernelTime == other.CurrCpuKernelTime &&
+            CurrCpuUserTime == other.CurrCpuUserTime &&
+            GpuTimePercent.Equals(other.GpuTimePercent) &&
+            CurrGpuTime == other.CurrGpuTime &&
+            PrevGpuTime == other.PrevGpuTime;
     }
 
     public override bool Equals(object? obj)
@@ -129,7 +139,9 @@ public class ProcessorInfo
         hashCode.Add(PrevCpuUserTime);
         hashCode.Add(CurrCpuKernelTime);
         hashCode.Add(CurrCpuUserTime);
-
+        hashCode.Add(GpuTimePercent);
+        hashCode.Add(CurrGpuTime);
+        hashCode.Add(PrevGpuTime);
         return hashCode.ToHashCode();
     }
 }
