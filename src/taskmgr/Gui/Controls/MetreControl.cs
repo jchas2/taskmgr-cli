@@ -1,4 +1,5 @@
-﻿using Task.Manager.Cli.Utils;
+﻿using System.Diagnostics;
+using Task.Manager.Cli.Utils;
 using Task.Manager.System;
 using Task.Manager.System.Controls;
 
@@ -25,14 +26,19 @@ public sealed class MetreControl : Control
         bool isFinalStackSegment = true)
     {
         using TerminalColourRestorer _ = new();
+
+        if (percentage > 1.0) {
+            percentage = 1.0;
+        }
         
-        int segmentWidth = MetreWidth - offsetX;
         int units = (int)(percentage * (double)MetreWidth);
         int labelSegmentWidth = label.Length;
 
         if (units == 0 && percentage > 0) {
             units = 1;
         }
+
+        int segmentWidth = MetreWidth - offsetX;
 
         // The text in the metre is right-aligned.
         if (label.Length > segmentWidth) {
@@ -48,8 +54,9 @@ public sealed class MetreControl : Control
             int numChars = segmentWidth - units;
             int colourStrLen = labelSegmentWidth - numChars;
 
-            label = label.Substring(0, colourStrLen).ToColour(unitFg, unitBg) + 
-                    label.Substring(colourStrLen, label.Length - colourStrLen).ToColour(ForegroundColour, BackgroundColour);
+            label = label.Substring(0, colourStrLen).ToColour(unitFg, unitBg) +
+                    label.Substring(colourStrLen, label.Length - colourStrLen)
+                         .ToColour(ForegroundColour, BackgroundColour);
             
             units -= colourStrLen;
         }

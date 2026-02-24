@@ -2,5 +2,6 @@ namespace Task.Manager.System.Process;
 
 public interface IGpuService
 {
-    Dictionary<int, long> GetStats();
+    bool GetGpuMemory(ref SystemStatistics systemStatistics);
+    Dictionary<int, long> GetProcessStats();
 }
