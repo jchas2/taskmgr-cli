@@ -38,7 +38,7 @@ public static partial class SystemInfo
             return false;
         }
         
-        /* REG_SZ */
+        // REG_SZ
         object? processorName = key.GetValue(RegKeyProcessorName);
         
         if (null == processorName) {
@@ -47,7 +47,7 @@ public static partial class SystemInfo
         
         systemStatistics.CpuName = processorName.ToString() ?? string.Empty;    
 
-        /* Reg DWORD */
+        // Reg DWORD
         object? frequency = key.GetValue(RegKeyFrequencyMhz);
         
         if (null == frequency) {
@@ -83,12 +83,7 @@ public static partial class SystemInfo
         
         return true;
 	}
-
-    private static bool GetGpuMemoryInternal(ref SystemStatistics systemStatistics)
-    {
-        return false;        
-    }
-
+    
     private static unsafe bool GetSystemMemoryInternal(ref SystemStatistics systemStatistics)
     {
         systemStatistics.AvailablePageFile = 0;

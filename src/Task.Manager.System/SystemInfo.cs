@@ -9,8 +9,6 @@ public static partial class SystemInfo
     public static bool GetCpuHighCoreUsage(double processUsagePercent) => GetCpuHighCoreUsageInternal(processUsagePercent); 
 
     public static bool GetCpuTimes(ref SystemTimes systemTimes) => GetCpuTimesInternal(ref systemTimes);
-
-    public static bool GetGpuMemory(ref SystemStatistics systemStatistics) => GetGpuMemoryInternal(ref systemStatistics);
     
     private static IEnumerable<IPAddress> GetIpAddresses(NetworkInterfaceType networkInterfaceType)
     {
