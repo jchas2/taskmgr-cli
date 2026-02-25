@@ -11,7 +11,8 @@ public enum Statistics
     Pri     = 1 << 3,
     Cpu     = 1 << 4,
     Thrd    = 1 << 5,
-    Mem     = 1 << 6,
-    Path    = 1 << 7,
-    Disk    = 1 << 8
+    Gpu     = 1 << 6,
+    Mem     = 1 << 7,
+    Path    = 1 << 8,
+    Disk    = 1 << 9
 }
