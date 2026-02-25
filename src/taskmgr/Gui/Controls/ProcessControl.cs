@@ -61,8 +61,9 @@ public sealed partial class ProcessControl : Control
             Statistics.User    => Columns.User,
             Statistics.Pri     => Columns.Priority,
             Statistics.Cpu     => Columns.Cpu,
-            Statistics.Mem     => Columns.Memory,
             Statistics.Thrd    => Columns.Threads,
+            Statistics.Gpu     => Columns.Gpu,
+            Statistics.Mem     => Columns.Memory,
             Statistics.Disk    => Columns.Disk,
             Statistics.Path    => Columns.CommandLine,
             _ => Columns.Cpu
@@ -89,6 +90,7 @@ public sealed partial class ProcessControl : Control
             .Add(new ListViewColumnHeader(Columns.Priority.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Cpu.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Threads.GetTitle()))
+            .Add(new ListViewColumnHeader(Columns.Gpu.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Memory.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Disk.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.CommandLine.GetTitle()));
@@ -224,6 +226,8 @@ public sealed partial class ProcessControl : Control
         processView.ColumnHeaders[(int)Columns.Cpu].RightAligned = true;
         processView.ColumnHeaders[(int)Columns.Threads].Width = ColumnThreadsWidth;
         processView.ColumnHeaders[(int)Columns.Threads].RightAligned = true;
+        processView.ColumnHeaders[(int)Columns.Gpu].Width = ColumnGpuWidth;
+        processView.ColumnHeaders[(int)Columns.Gpu].RightAligned = true;
         processView.ColumnHeaders[(int)Columns.Memory].Width = ColumnMemoryWidth;
         processView.ColumnHeaders[(int)Columns.Memory].RightAligned = true;
         processView.ColumnHeaders[(int)Columns.Disk].Width = ColumnDiskWidth;
@@ -236,6 +240,7 @@ public sealed partial class ProcessControl : Control
             ColumnPriorityWidth +
             ColumnCpuWidth +
             ColumnThreadsWidth +
+            ColumnGpuWidth +
             ColumnMemoryWidth +
             ColumnDiskWidth;
 
@@ -392,6 +397,7 @@ public sealed partial class ProcessControl : Control
             Columns.Priority    => filteredProcesses.OrderByDescending(p => p.BasePriority).ToList(),
             Columns.Process     => filteredProcesses.OrderByDescending(p => p.FileDescription).ToList(),
             Columns.Threads     => filteredProcesses.OrderByDescending(p => p.ThreadCount).ToList(),
+            Columns.Gpu         => filteredProcesses.OrderByDescending(p => p.GpuTimePercent).ToList(),
             Columns.User        => filteredProcesses.OrderByDescending(p => p.UserName).ToList(),
             Columns.CommandLine => filteredProcesses.OrderByDescending(p => p.CmdLine).ToList(),
             _                   => []

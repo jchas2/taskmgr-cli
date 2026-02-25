@@ -10,6 +10,7 @@ public partial class ProcessControl
     internal const int ColumnPriorityWidth = 4;
     internal const int ColumnCpuWidth = 7;
     internal const int ColumnThreadsWidth = 7;
+    internal const int ColumnGpuWidth = 7;
     internal const int ColumnMemoryWidth = 10;
     internal const int ColumnDiskWidth = 12;
     internal const int ColumnCommandlineWidth = 32;
@@ -41,6 +42,10 @@ public partial class ProcessControl
         [ColumnTitle("THRDS")]
         [ColumnProperty("ThreadCount")]
         Threads,
+        [ColumnTitle("GPU%")]
+        [ColumnProperty("GpuTimePercent")]
+        [ColumnSortKey(ConsoleKey.G)]
+        Gpu,
         [ColumnTitle("MEM")]
         [ColumnProperty("UsedMemory")]
         [ColumnSortKey(ConsoleKey.M)]

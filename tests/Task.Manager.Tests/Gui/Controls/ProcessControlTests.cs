@@ -58,6 +58,9 @@ public sealed class ProcessControlTests
             CpuPercentIdleTime = 0.7482,
             CpuPercentKernelTime = 0.1188,
             CpuPercentUserTime = 0.1333,
+            GpuPercentTime = 0.1222,
+            AvailableGpuMemory = 8279139243,
+            TotalGpuMemory = 12351149720,
             MachineName = "mach01",
             OsVersion = "Unix 14.1.0",
             PublicIPv4Address = "",
@@ -70,27 +73,30 @@ public sealed class ProcessControlTests
         List<ProcessorInfo> pinfos = new() {
             new() {
                 BasePriority = 8,
-                CmdLine = "//usr//bin//coreaudiod",
+                CmdLine = "//usr//bin//app1",
                 CpuKernelTimePercent = 0.13871600000000001,
                 CpuTimePercent = 0.20614333333333335,
                 CpuUserTimePercent = 0.067427333333333339,
                 CurrCpuKernelTime = 35143040,
                 CurrCpuUserTime = 22695730,
+                GpuTimePercent = 0.1222,
+                CurrGpuTime = 35143040,
                 DiskOperations = 421888,
                 DiskUsage = 0,
-                FileDescription = "coreaudiod",
-                ThreadCount = 12,
+                FileDescription = "app1",
+                ThreadCount = 19,
                 Pid = 45,
-                UserName = "_coreaudiod",
+                UserName = "_user1",
                 HandleCount = 0,
                 IsDaemon = true,
                 ParentPid = 0,
-                ProcessName = "coreaudiod",
+                ProcessName = "app1",
                 StartTime = DateTime.Now,
                 UsedMemory = 85000192,
                 IsLowPriority = false,
                 PrevCpuKernelTime = 33062300,
-                PrevCpuUserTime = 21684320
+                PrevCpuUserTime = 21684320,
+                PrevGpuTime = 33062300,
             },
             new() {
                 BasePriority = 8,
@@ -100,6 +106,8 @@ public sealed class ProcessControlTests
                 CpuUserTimePercent = 0.0024889333333333332,
                 CurrCpuKernelTime = 2263333,
                 CurrCpuUserTime = 13702750,
+                GpuTimePercent = 0.00,
+                CurrGpuTime = 0,
                 DiskOperations = 1089536,
                 DiskUsage = 0,
                 FileDescription = "sysmond",
@@ -114,7 +122,8 @@ public sealed class ProcessControlTests
                 UsedMemory = 226911062,
                 IsLowPriority = false,
                 PrevCpuKernelTime = 2248666,
-                PrevCpuUserTime = 13665416
+                PrevCpuUserTime = 13665416,
+                PrevGpuTime = 0,
             }
         };
         
@@ -125,7 +134,7 @@ public sealed class ProcessControlTests
             processorFake,
             runContext.Terminal, 
             runContext.AppConfig) {
-            Width = 128,
+            Width = 142,
             Height = 9
         };
         
@@ -139,19 +148,21 @@ public sealed class ProcessControlTests
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("NI") || s.Contains("PRI"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("CPU%"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("THRDS"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("GPU%"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("MEM"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("DISK"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("PATH"))), Times.Once);
 
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("coreaudiod"))), Times.Exactly(3));
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("app1"))), Times.Exactly(2));
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("45"))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("_coreaudiod"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("_user1"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("8 "))), Times.Exactly(2));
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("20.61%"))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("12"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("19"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("12.22%"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("81.1 MB"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("0.0 MB/s"))), Times.Exactly(2));
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("//usr//bin//coreaudiod"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("//usr//bin//app1"))), Times.Once);
 
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("sysmond"))), Times.Exactly(2));
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("431"))), Times.Once);
@@ -159,6 +170,7 @@ public sealed class ProcessControlTests
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("8 "))), Times.Exactly(2));
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("00.35%"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("13"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("00.00%"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("216.4 MB"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("0.0 MB/s"))), Times.Exactly(2));
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("//usr//libexec//sysmond"))), Times.Once);
