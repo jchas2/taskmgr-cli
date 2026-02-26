@@ -76,6 +76,17 @@ public class HelpScreen : Screen
                                                 " / mid".ToColour(theme.RangeMidBackground, bg) + 
                                                 " / high".ToColour(theme.RangeHighBackground, bg) + 
                                                 " ] Mbps".ToColour(fg, bg));
+        helpText.AppendLine("Gpu metre:     [".ToColour(fg, bg) +
+                            "low".ToColour(theme.RangeLowBackground, bg) + 
+                            " / mid".ToColour(theme.RangeMidBackground, bg) + 
+                            " / high".ToColour(theme.RangeHighBackground, bg) + 
+                            " ]".ToColour(fg, bg));
+        helpText.AppendLine("Gpu Mem metre: [".ToColour(fg, bg) +
+                            "low".ToColour(theme.RangeLowBackground, bg) + 
+                            " / mid".ToColour(theme.RangeMidBackground, bg) + 
+                            " / high".ToColour(theme.RangeHighBackground, bg) + 
+                            " used / total] Dedicated Memory".ToColour(fg, bg));
+        
         helpText.AppendLine();
         helpText.AppendLine("Process and Path Colours".ToColour(fg, bg));
         helpText.AppendLine("Normal process".ToColour(theme.ColumnCommandNormalUserSpace, bg));
@@ -100,14 +111,14 @@ public class HelpScreen : Screen
 @"Function Keys
   F1   Show this help screen
   F2   Show setup screen
-  F3   Prompt to sort process list by Process, Pid, User, Pri, Cpu%, Threads, Memory, Disk or Path
+  F3   Prompt to sort process list by Process, Pid, User, Pri, Cpu%, Threads, Gpu%, Memory, Disk or Path
   F4   Filter the current process list. If --pid, --username or --process used on start, filter is applied to existing filters
   F5   Show detailed process info, including threads, cpu time, loaded modules and handles
   F6   Terminate selected task in the process list
   F7   Show About dialog
   F10  Exit App
 
-  Press ESC to exit Help".ToColour(fg, bg));
+Press ESC to exit Help".ToColour(fg, bg));
     }
 
     protected override void OnUnload()

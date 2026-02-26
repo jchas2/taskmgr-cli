@@ -9,7 +9,7 @@ public sealed class MessageBoxTests
 {
     [Fact]
     public void MessageBox_Canary_Test() =>
-        Assert.Equal(15, CanaryTestHelper.GetProperties<MessageBoxControl>());
+        Assert.Equal(15, CanaryTestHelper.GetPropertyCount<MessageBoxControl>());
 
     [Fact]
     public void Should_Construct_Default()

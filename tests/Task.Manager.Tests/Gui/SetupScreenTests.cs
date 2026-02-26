@@ -19,7 +19,7 @@ public sealed class SetupScreenTests
 
     [Fact]
     public void SetupScreen_Canary_Test() =>
-        Assert.Equal(12, CanaryTestHelper.GetProperties<SetupScreen>());
+        Assert.Equal(12, CanaryTestHelper.GetPropertyCount<SetupScreen>());
 
     [Fact]
     public void Constructor_With_Valid_Run_Context_Initialises_Successfully()
@@ -98,68 +98,72 @@ public sealed class SetupScreenTests
 
     public static TheoryData<string, string> ControlSettingData()
         => new() {
-            { "GENERAL",                                    "menuView" },
-            { "THEMES",                                     "menuView" },
-            { "METRES",                                     "menuView" },
-            { "DELAY",                                      "menuView" },
-            { "LIMIT",                                      "menuView" },
-            { "PROCESSES",                                  "menuView" },
+            { "GENERAL",                                           "menuView" },
+            { "THEMES",                                            "menuView" },
+            { "METRES",                                            "menuView" },
+            { "DELAY",                                             "menuView" },
+            { "LIMIT",                                             "menuView" },
+            { "PROCESSES",                                         "menuView" },
             
-            { "Confirm Task delete",                        "generalView" },
+            { "Confirm Task delete",                               "generalView" },
 #if __WIN32__
-            { "Highlight Windows Services",                 "generalView" },
+            { "Highlight Windows Services",                        "generalView" },
 #endif
 #if __APPLE__
-            { "Highlight daemons",                          "generalView" },
+            { "Highlight daemons",                                 "generalView" },
 #endif
-            { "Highlight changed values",                   "generalView" },
-            { "Enable multiple process selection",          "generalView" },
-            { "Show Cpu meter numerically",                 "generalView" },
-            { "Show Disk metre numerically",                "generalView" },
-            { "Show Memory metre numerically",              "generalView" },
+            { "Highlight changed values",                          "generalView" },
+            { "Enable multiple process selection",                 "generalView" },
+            { "Show Cpu meter numerically",                        "generalView" },
+            { "Show Disk metre numerically",                       "generalView" },
+            { "Show Memory metre numerically",                     "generalView" },
 #if __WIN32__
-            { "Show Virtual memory numerically",            "generalView" },
+            { "Show Virtual memory numerically",                   "generalView" },
 #endif
 #if __APPLE__
-            { "Show Swap memory numerically",               "generalView" },
+            { "Show Swap memory numerically",                      "generalView" },
 #endif
-            { "Use Irix mode CPU reporting (Unix default)", "generalView" },
+#if __WIN32__
+            { "Use Irix mode for process CPU% (Unix default)",     "generalView" },
+#endif
+#if __APPLE__
+            { "Use Irix mode for process CPU% (Activity Monitor)", "generalView" },
+#endif
+            { Constants.Sections.ThemeColour,                      "themeView" },
+            { Constants.Sections.ThemeMono,                        "themeView" },
+            { Constants.Sections.ThemeMsDos,                       "themeView" },
+            { Constants.Sections.ThemeTokyoNight,                  "themeView" },
+            { Constants.Sections.ThemeMatrix,                      "themeView" },
             
-            { Constants.Sections.ThemeColour,               "themeView" },
-            { Constants.Sections.ThemeMono,                 "themeView" },
-            { Constants.Sections.ThemeMsDos,                "themeView" },
-            { Constants.Sections.ThemeTokyoNight,           "themeView" },
-            { Constants.Sections.ThemeMatrix,               "themeView" },
+            { "Blocks",                                            "metreView" },
+            { "Bars",                                              "metreView" },
+            { "Dots",                                              "metreView" },
             
-            { "Blocks",                                     "metreView" },
-            { "Bars",                                       "metreView" },
-            { "Dots",                                       "metreView" },
-            
-            { "1000",                                       "delayView" },
-            { "1500",                                       "delayView" },
-            { "2000",                                       "delayView" },
-            { "5000",                                       "delayView" },
-            { "10000",                                      "delayView" },
+            { "1000",                                              "delayView" },
+            { "1500",                                              "delayView" },
+            { "2000",                                              "delayView" },
+            { "5000",                                              "delayView" },
+            { "10000",                                             "delayView" },
 
-            { "0",                                          "limitView" },
-            { "1",                                          "limitView" },
-            { "3",                                          "limitView" },
-            { "5",                                          "limitView" },
-            { "10",                                         "limitView" },
-            { "20",                                         "limitView" },
-            { "50",                                         "limitView" },
-            { "100",                                        "limitView" },
-            { "500",                                        "limitView" },
-            { "1000",                                       "limitView" },
+            { "0",                                                 "limitView" },
+            { "1",                                                 "limitView" },
+            { "3",                                                 "limitView" },
+            { "5",                                                 "limitView" },
+            { "10",                                                "limitView" },
+            { "20",                                                "limitView" },
+            { "50",                                                "limitView" },
+            { "100",                                               "limitView" },
+            { "500",                                               "limitView" },
+            { "1000",                                              "limitView" },
 
-            { "-1",                                         "numProcsView" },
-            { "5",                                          "numProcsView" },
-            { "10",                                         "numProcsView" },
-            { "20",                                         "numProcsView" },
-            { "50",                                         "numProcsView" },
-            { "100",                                        "numProcsView" },
-            { "500",                                        "numProcsView" },
-            { "1000",                                       "numProcsView" },
+            { "-1",                                                "numProcsView" },
+            { "5",                                                 "numProcsView" },
+            { "10",                                                "numProcsView" },
+            { "20",                                                "numProcsView" },
+            { "50",                                                "numProcsView" },
+            { "100",                                               "numProcsView" },
+            { "500",                                               "numProcsView" },
+            { "1000",                                              "numProcsView" },
         };
 
     [Theory]

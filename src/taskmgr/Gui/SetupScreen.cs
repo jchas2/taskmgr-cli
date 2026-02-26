@@ -202,7 +202,12 @@ public class SetupScreen : Screen
             runContext.AppConfig.ShowMetreSwapNumerically);
 #endif
         AddGeneralItem(
-            "Use Irix mode CPU reporting (Unix default)",
+#if __WIN32__
+            "Use Irix mode for process CPU% (Unix default)",
+#endif
+#if __APPLE__
+            "Use Irix mode for process CPU% (Activity Monitor)",
+#endif
             Constants.Keys.UseIrixCpuReporting,
             runContext.AppConfig.UseIrixReporting);
     }

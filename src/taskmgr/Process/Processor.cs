@@ -165,7 +165,7 @@ public class Processor : IProcessor
                 }
 
                 processorInfo.UsedMemory = processInfos[index].UsedMemory;
-                processorInfo.DiskOperations = processInfos[index].DiskOperations ;
+                processorInfo.PrevDiskOperations = processInfos[index].DiskOperations ;
                 processorInfo.DiskUsage = 0;
                 processorInfo.CpuTimePercent = 0.0;
                 processorInfo.CpuUserTimePercent = 0.0;
@@ -270,15 +270,11 @@ public class Processor : IProcessor
 #endif
                     systemStatistics.GpuPercentTime += gpuPercent;
                 }
-                
-                ulong prevDiskOperations = allProcessorInfos[i].DiskOperations;
-                
-                allProcessorInfos[i].DiskOperations = ProcessUtils.GetProcessIoOperations(allProcessorInfos[i].Pid);
-                
-                ulong currDiskOperations = allProcessorInfos[i].DiskOperations;
 
+                allProcessorInfos[i].CurrDiskOperations = ProcessUtils.GetProcessIoOperations(allProcessorInfos[i].Pid);
+                
                 allProcessorInfos[i].DiskUsage = 
-                    (long)((double)(currDiskOperations - prevDiskOperations) * (1000.0 / (double)Delay));
+                    (long)((double)(allProcessorInfos[i].CurrDiskOperations - allProcessorInfos[i].PrevDiskOperations) * (1000.0 / (double)Delay));
                 
                 systemStatistics.DiskUsage += allProcessorInfos[i].DiskUsage;
             }

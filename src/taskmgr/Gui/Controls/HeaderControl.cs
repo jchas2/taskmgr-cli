@@ -140,13 +140,14 @@ public sealed class HeaderControl : Control
             systemStatistics.PrivateIPv4Address.Length;
         
         Terminal.WriteEmptyLineTo(Width - nchars);
-        
-        Terminal.Write(
-            $"{systemStatistics.CpuName} (Cores {systemStatistics.CpuCores})");
 
-        nchars =
-            systemStatistics.CpuName.Length + 8 +
-            systemStatistics.CpuCores.ToString().Length + 1;
+        string cpuInfo = $"{systemStatistics.CpuName} (Cores {systemStatistics.CpuCores})";
+        if (appConfig.UseIrixReporting) {
+            cpuInfo += " Irix Mode";
+        }
+        
+        Terminal.Write(cpuInfo);
+        nchars = cpuInfo.Length + 1;
 
         Terminal.WriteEmptyLineTo(Width - nchars);
         
@@ -338,7 +339,7 @@ public sealed class HeaderControl : Control
             control.Load();
         }
         
-        MetreControl[] metres = [cpuMetre, memoryMetre, virtualMemoryMetre, diskMetre];
+        MetreControl[] metres = [cpuMetre, memoryMetre, virtualMemoryMetre, diskMetre, gpuMetre, gpuMemMetre ];
 
         foreach (MetreControl metreControl in metres) {
             metreControl.BackgroundColour = appConfig.DefaultTheme.Background;

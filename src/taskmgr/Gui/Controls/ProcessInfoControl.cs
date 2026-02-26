@@ -56,15 +56,15 @@ public partial class ProcessInfoControl : Control
         processInfoView = new ListView(terminal) {
             EnableScroll = false,
             EnableRowSelect = false,
-            ShowColumnHeaders = false,
+            ShowColumnHeaders = true,
             TabStop = true,
             TabIndex = 2,
             Visible = true,
         };
 
         processInfoView.ColumnHeaders
-            .Add(new ListViewColumnHeader("KEY"))
-            .Add(new ListViewColumnHeader("VALUE"));
+            .Add(new ListViewColumnHeader("Pid:"))
+            .Add(new ListViewColumnHeader(""));
 
         threadsView = new ListView(terminal) {
             TabStop = true,
@@ -247,7 +247,7 @@ public partial class ProcessInfoControl : Control
         Clear();
         
         processInfoView.X = X;
-        processInfoView.Y = Y + 1;
+        processInfoView.Y = Y;
         processInfoView.Width = Width;
         processInfoView.Height = ProcessInfoViewHeight;
         processInfoView.ColumnHeaders[(int)InfoColumns.Key].Width = ColumnInfoKeyWidth;
@@ -326,11 +326,9 @@ public partial class ProcessInfoControl : Control
 
             FileInfo finfo = new(processInfo.FileName);
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(finfo.FullName);
-            
-            processInfoView.Items.Add(
-                new(["Pid:", processInfo.Pid.ToString()],
-                    appConfig.DefaultTheme.Background,
-                    appConfig.DefaultTheme.Foreground));
+
+            processInfoView.ColumnHeaders[0].Text = "Pid:";
+            processInfoView.ColumnHeaders[1].Text = SelectedProcessId.ToString();
             
             processInfoView.Items.Add(
                 new(["File:", processInfo.ModuleName],
@@ -363,7 +361,7 @@ public partial class ProcessInfoControl : Control
                     appConfig.DefaultTheme.Foreground));
             
             processInfoView.Items.Add(
-                new(["", ""],
+                new(["Size on disk:", $"{finfo.Length} bytes"],
                     appConfig.DefaultTheme.Background,
                     appConfig.DefaultTheme.Foreground));
         }
