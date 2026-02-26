@@ -19,7 +19,7 @@ public sealed class MainScreenTests
 
     [Fact]
     public void MainScreen_Canary_Test() =>
-        Assert.Equal(12, CanaryTestHelper.GetProperties<MainScreen>());
+        Assert.Equal(12, CanaryTestHelper.GetPropertyCount<MainScreen>());
 
     [Fact]
     public void Constructor_With_Valid_Run_Context_Initialises_Successfully()

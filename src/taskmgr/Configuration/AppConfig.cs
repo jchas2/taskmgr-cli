@@ -309,14 +309,8 @@ public sealed class AppConfig
 
     public bool UseIrixReporting
     {
-#if __WIN32__
         get => uxSection?.GetBool(Constants.Keys.UseIrixCpuReporting, false) ?? false;
         set => uxSection?.Add(Constants.Keys.UseIrixCpuReporting, value.ToString());
-#endif
-#if __APPLE__        
-        get => uxSection?.GetBool(Constants.Keys.UseIrixCpuReporting, true) ?? true;
-        set => uxSection?.Add(Constants.Keys.UseIrixCpuReporting, value.ToString());
-#endif
     }
 
     private void LoadSections()
@@ -384,12 +378,7 @@ public sealed class AppConfig
             .AddIfMissing(Constants.Keys.ShowMetreDiskNumerically, true.ToString())
             .AddIfMissing(Constants.Keys.ShowMetreMemNumerically, true.ToString())
             .AddIfMissing(Constants.Keys.ShowMetreSwapNumerically, true.ToString())
-#if __WIN32__            
             .AddIfMissing(Constants.Keys.UseIrixCpuReporting, false.ToString());
-#endif
-#if __APPLE__
-            .AddIfMissing(Constants.Keys.UseIrixCpuReporting, true.ToString());
-#endif
 
         if (!iniConfig.ContainsSection(uxSection.Name)) {
             iniConfig.AddConfigSection(uxSection);

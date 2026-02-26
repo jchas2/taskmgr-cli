@@ -18,7 +18,7 @@ public sealed partial class ProcessControl : Control
         public string Process { get; init; } = string.Empty;
         public int NumProcs { get; init; }
     }
-    
+
     private readonly IProcessor processor;
     private readonly AppConfig appConfig;
     private readonly ListView sortView;
@@ -34,18 +34,18 @@ public sealed partial class ProcessControl : Control
     private const int ControlGutter = 1;
 
     private const int InvalidSelectedItemIndex = -1;
-    
+
     public event EventHandler<ListViewItemEventArgs>? ProcessItemSelected;
-    
+
     public ProcessControl(
-        IProcessor processor, 
-        ISystemTerminal terminal, 
+        IProcessor processor,
+        ISystemTerminal terminal,
         AppConfig appConfig)
         : base(terminal)
     {
         this.processor = processor;
         this.appConfig = appConfig;
-        
+
         cmdLineFilters = new CmdLineFilters {
             Pid = appConfig.FilterPid,
             UserName = appConfig.FilterUserName,
@@ -54,21 +54,21 @@ public sealed partial class ProcessControl : Control
         };
 
         Statistics sortStatistic = appConfig.SortColumn;
-        
+
         sortColumn = sortStatistic switch {
-            Statistics.Pid     => Columns.Pid,
+            Statistics.Pid => Columns.Pid,
             Statistics.Process => Columns.Process,
-            Statistics.User    => Columns.User,
-            Statistics.Pri     => Columns.Priority,
-            Statistics.Cpu     => Columns.Cpu,
-            Statistics.Thrd    => Columns.Threads,
-            Statistics.Gpu     => Columns.Gpu,
-            Statistics.Mem     => Columns.Memory,
-            Statistics.Disk    => Columns.Disk,
-            Statistics.Path    => Columns.CommandLine,
+            Statistics.User => Columns.User,
+            Statistics.Pri => Columns.Priority,
+            Statistics.Cpu => Columns.Cpu,
+            Statistics.Thrd => Columns.Threads,
+            Statistics.Gpu => Columns.Gpu,
+            Statistics.Mem => Columns.Memory,
+            Statistics.Disk => Columns.Disk,
+            Statistics.Path => Columns.CommandLine,
             _ => Columns.Cpu
         };
-        
+
         sortView = new ListView(terminal) {
             Visible = mode == ControlMode.SortSelection,
             TabStop = true,
@@ -82,7 +82,7 @@ public sealed partial class ProcessControl : Control
             TabStop = true,
             TabIndex = 2
         };
-        
+
         processView.ColumnHeaders
             .Add(new ListViewColumnHeader(Columns.Process.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Pid.GetTitle()))
@@ -94,7 +94,7 @@ public sealed partial class ProcessControl : Control
             .Add(new ListViewColumnHeader(Columns.Memory.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.Disk.GetTitle()))
             .Add(new ListViewColumnHeader(Columns.CommandLine.GetTitle()));
-        
+
         Controls
             .Add(sortView)
             .Add(processView);
@@ -112,29 +112,29 @@ public sealed partial class ProcessControl : Control
 
         return targetControl;
     }
-    
+
     private void LoadSortItems()
     {
         IEnumerable<string> columns = Enum.GetValues<Columns>()
             .Where(c => c != Columns.Count)
             .Select(c => c.GetTitle());
-        
+
         foreach (var column in columns) {
             sortView.Items.Add(new ListViewItem(column));
         }
     }
-    
+
     protected override void OnDraw()
     {
         try {
             Control.DrawingLockAcquire();
-            
+
             if (sortView.Items.Count == 0) {
                 LoadSortItems();
             }
-        
+
             UpdateListViewItems();
-            
+
             sortView.Visible = mode == ControlMode.SortSelection;
             sortView.Draw();
             processView.Draw();
@@ -151,7 +151,7 @@ public sealed partial class ProcessControl : Control
             handled = true;
             return;
         }
-        
+
         try {
             Control? targetControl = GetTargetControl();
             Control.DrawingLockAcquire();
@@ -165,10 +165,10 @@ public sealed partial class ProcessControl : Control
     protected override void OnLoad()
     {
         base.OnLoad();
-        
+
         BackgroundColour = appConfig.DefaultTheme.Background;
         ForegroundColour = appConfig.DefaultTheme.Foreground;
-        
+
         ListView[] listViews = [sortView, processView];
 
         foreach (var listView in listViews) {
@@ -184,7 +184,7 @@ public sealed partial class ProcessControl : Control
                 columnHeader.ForegroundColour = appConfig.DefaultTheme.HeaderForeground;
             }
         }
-        
+
         processView.ColumnHeaders[(int)sortColumn].BackgroundColour = appConfig.DefaultTheme.BackgroundHighlight;
         processView.ColumnHeaders[(int)sortColumn].ForegroundColour = appConfig.DefaultTheme.ForegroundHighlight;
         processView.ShowCheckboxes = appConfig.MultiSelectProcesses;
@@ -206,7 +206,7 @@ public sealed partial class ProcessControl : Control
 
         int pX = X;
         int pWidth = Width;
-        
+
         if (mode == ControlMode.SortSelection) {
             pX = sortView.X + sortView.Width + ControlGutter;
             pWidth = Width - (sortView.Width + ControlGutter);
@@ -216,7 +216,7 @@ public sealed partial class ProcessControl : Control
         processView.Y = Y;
         processView.Width = pWidth;
         processView.Height = Height;
-        
+
         processView.ColumnHeaders[(int)Columns.Process].Width = ColumnProcessWidth;
         processView.ColumnHeaders[(int)Columns.Pid].Width = ColumnPidWidth;
         processView.ColumnHeaders[(int)Columns.User].Width = ColumnUserWidth;
@@ -246,18 +246,18 @@ public sealed partial class ProcessControl : Control
 
         int processViewWidth =
             processView.ShowCheckboxes ? processView.Width - ListView.CheckboxWidth : processView.Width;
-        
+
         processView.ColumnHeaders[(int)Columns.CommandLine].Width = total + ColumnCommandlineWidth < processViewWidth
             ? processView.ColumnHeaders[(int)Columns.CommandLine].Width = processViewWidth - total
-            : processView.ColumnHeaders[(int)Columns.CommandLine].Width = ColumnCommandlineWidth; 
-        
+            : processView.ColumnHeaders[(int)Columns.CommandLine].Width = ColumnCommandlineWidth;
+
         processView.Resize();
     }
 
     protected override void OnUnload()
     {
         base.OnUnload();
-        
+
         sortView.ItemSelected -= SortViewOnItemSelected;
         processView.ItemSelected -= ProcessViewOnItemSelected;
         processor.ProcessorUpdated -= ProcessorOnProcessorUpdated;
@@ -267,7 +267,7 @@ public sealed partial class ProcessControl : Control
     {
         allProcesses = e.ProcessInfos;
         systemStatistics = e.SystemStatistics;
-        
+
         Draw();
     }
 
@@ -279,7 +279,7 @@ public sealed partial class ProcessControl : Control
         get {
             try {
                 Control.DrawingLockAcquire();
-                
+
                 int GetItemPid(ListViewItem item)
                 {
                     ListViewSubItem selectedSubItem = item.SubItems[(int)Columns.Pid];
@@ -305,7 +305,7 @@ public sealed partial class ProcessControl : Control
             }
         }
     }
-    
+
     public int SelectedProcessId
     {
         get {
@@ -337,7 +337,7 @@ public sealed partial class ProcessControl : Control
 
         this.mode = mode;
         sortView.Visible = this.mode == ControlMode.SortSelection;
-        
+
         Control? targetControl = GetTargetControl();
         targetControl?.SetFocus();
 
@@ -345,17 +345,17 @@ public sealed partial class ProcessControl : Control
         Resize();
         Draw();
     }
-    
+
     private void SortViewOnItemSelected(object? sender, ListViewItemEventArgs e)
     {
         processView.ColumnHeaders[(int)sortColumn].BackgroundColour = appConfig.DefaultTheme.HeaderBackground;
         processView.ColumnHeaders[(int)sortColumn].ForegroundColour = appConfig.DefaultTheme.HeaderForeground;
-        
+
         sortColumn = Enum.GetValues<Columns>().Single(c => c.GetTitle() == e.Item.Text);
-        
+
         processView.ColumnHeaders[(int)sortColumn].BackgroundColour = appConfig.DefaultTheme.BackgroundHighlight;
         processView.ColumnHeaders[(int)sortColumn].ForegroundColour = appConfig.DefaultTheme.ForegroundHighlight;
-        
+
         mode = ControlMode.None;
         processView.SetFocus();
 
@@ -367,7 +367,7 @@ public sealed partial class ProcessControl : Control
     private void UpdateListViewItems()
     {
         IEnumerable<ProcessorInfo> filteredProcesses = allProcesses;
-        
+
         if (cmdLineFilters.Pid > -1) {
             filteredProcesses = filteredProcesses
                 .Where(p => p.Pid == cmdLineFilters.Pid);
@@ -388,7 +388,7 @@ public sealed partial class ProcessControl : Control
                             p.CmdLine.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase) ||
                             p.UserName.Contains(FilterText, StringComparison.CurrentCultureIgnoreCase));
         }
-
+        
         List<ProcessorInfo> sortedProcesses = sortColumn switch {
             Columns.Cpu         => filteredProcesses.OrderByDescending(p => p.CpuTimePercent).ToList(),
             Columns.Disk        => filteredProcesses.OrderByDescending(p => p.DiskUsage).ToList(),

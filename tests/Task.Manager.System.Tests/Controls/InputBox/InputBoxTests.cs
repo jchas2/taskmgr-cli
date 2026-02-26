@@ -10,7 +10,7 @@ public sealed class InputBoxTests
 {
     [Fact]
     public void InputBox_Canary_Test() =>
-        Assert.Equal(14, CanaryTestHelper.GetProperties<InputBoxControl>());
+        Assert.Equal(14, CanaryTestHelper.GetPropertyCount<InputBoxControl>());
     
     [Fact]
     public void Should_Construct_Default()

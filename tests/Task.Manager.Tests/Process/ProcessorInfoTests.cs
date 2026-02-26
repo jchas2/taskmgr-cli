@@ -8,7 +8,7 @@ public sealed class ProcessorInfoTests
 {
     [Fact]
     public void ProcessorInfo_Canary_Test() =>
-        Assert.Equal(25, CanaryTestHelper.GetProperties<ProcessorInfo>());
+        Assert.Equal(26, CanaryTestHelper.GetPropertyCount<ProcessorInfo>());
     
     [Fact]                                                                                                                             
     public void Default_Constructor_Initializes_With_Default_Values()                                                                  
@@ -28,7 +28,8 @@ public sealed class ProcessorInfoTests
         Assert.Equal(string.Empty, info.UserName);                                                                                     
         Assert.Equal(string.Empty, info.CmdLine);                                                                                      
         Assert.Equal(0, info.DiskUsage);                                                                                               
-        Assert.Equal(0UL, info.DiskOperations);                                                                                        
+        Assert.Equal(0UL, info.PrevDiskOperations);                                                                                        
+        Assert.Equal(0UL, info.CurrDiskOperations);                                                                                        
         Assert.Equal(0, info.UsedMemory);                                                                                              
         Assert.Equal(0.0, info.CpuTimePercent);                                                                                        
         Assert.Equal(0.0, info.CpuUserTimePercent);                                                                                    
@@ -60,7 +61,8 @@ public sealed class ProcessorInfoTests
             UserName = "testuser",                                                                                                     
             CmdLine = "/usr/bin/test --arg",                                                                                           
             DiskUsage = 1024,                                                                                                          
-            DiskOperations = 100,                                                                                                      
+            PrevDiskOperations = 100,                                                                                                      
+            CurrDiskOperations = 110,                                                                                                      
             UsedMemory = 2048,                                                                                                         
             CpuTimePercent = 15.5,                                                                                                     
             CpuUserTimePercent = 10.2,                                                                                                 
@@ -87,7 +89,8 @@ public sealed class ProcessorInfoTests
         Assert.Equal("testuser", info.UserName);                                                                                       
         Assert.Equal("/usr/bin/test --arg", info.CmdLine);                                                                             
         Assert.Equal(1024, info.DiskUsage);                                                                                            
-        Assert.Equal(100UL, info.DiskOperations);                                                                                      
+        Assert.Equal(100UL, info.PrevDiskOperations);                                                                                      
+        Assert.Equal(110UL, info.CurrDiskOperations);                                                                                      
         Assert.Equal(2048, info.UsedMemory);                                                                                           
         Assert.Equal(15.5, info.CpuTimePercent);                                                                                       
         Assert.Equal(10.2, info.CpuUserTimePercent);                                                                                   
@@ -119,7 +122,8 @@ public sealed class ProcessorInfoTests
             UserName = "testuser",                                                                                                     
             CmdLine = "/usr/bin/test",                                                                                                 
             DiskUsage = 1024,                                                                                                          
-            DiskOperations = 100,                                                                                                      
+            PrevDiskOperations = 100,
+            CurrDiskOperations = 110,
             UsedMemory = 2048,                                                                                                         
             CpuTimePercent = 15.5,                                                                                                     
             CpuUserTimePercent = 10.2,                                                                                                 
@@ -149,7 +153,8 @@ public sealed class ProcessorInfoTests
         Assert.Equal(original.UserName, copy.UserName);                                                                                
         Assert.Equal(original.CmdLine, copy.CmdLine);                                                                                  
         Assert.Equal(original.DiskUsage, copy.DiskUsage);                                                                              
-        Assert.Equal(original.DiskOperations, copy.DiskOperations);                                                                    
+        Assert.Equal(original.PrevDiskOperations, copy.PrevDiskOperations);                                                                    
+        Assert.Equal(original.CurrDiskOperations, copy.CurrDiskOperations);                                                                    
         Assert.Equal(original.UsedMemory, copy.UsedMemory);                                                                            
         Assert.Equal(original.CpuTimePercent, copy.CpuTimePercent);                                                                    
         Assert.Equal(original.CpuUserTimePercent, copy.CpuUserTimePercent);                                                            
@@ -247,7 +252,8 @@ public sealed class ProcessorInfoTests
             UserName = "user",                                                                                                         
             CmdLine = "/test",                                                                                                         
             DiskUsage = 100,                                                                                                           
-            DiskOperations = 10,                                                                                                       
+            PrevDiskOperations = 10,                                                                                                       
+            CurrDiskOperations = 20,                                                                                                       
             UsedMemory = 1024,                                                                                                         
             CpuTimePercent = 15.0,                                                                                                     
             CpuUserTimePercent = 10.0,                                                                                                 

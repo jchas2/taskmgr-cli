@@ -17,7 +17,8 @@ public class ProcessorInfo
     public string CmdLine { get; set; } = string.Empty;
     
     public long DiskUsage { get; set; }
-    public ulong DiskOperations { get; set; }
+    public ulong CurrDiskOperations { get; set; }
+    public ulong PrevDiskOperations { get; set; }
 
     public long UsedMemory { get; set; }
 
@@ -53,7 +54,8 @@ public class ProcessorInfo
         UserName = other.UserName;
         CmdLine = other.CmdLine;
         DiskUsage = other.DiskUsage;
-        DiskOperations = other.DiskOperations;
+        PrevDiskOperations = other.PrevDiskOperations;
+        CurrDiskOperations = other.CurrDiskOperations;
         UsedMemory = other.UsedMemory;
         CpuTimePercent = other.CpuTimePercent;
         CpuUserTimePercent = other.CpuUserTimePercent;
@@ -83,7 +85,8 @@ public class ProcessorInfo
             UserName == other.UserName &&
             CmdLine == other.CmdLine &&
             DiskUsage == other.DiskUsage &&
-            DiskOperations == other.DiskOperations &&
+            PrevDiskOperations == other.PrevDiskOperations &&
+            CurrDiskOperations == other.CurrDiskOperations &&
             UsedMemory == other.UsedMemory &&
             CpuTimePercent.Equals(other.CpuTimePercent) &&
             CpuUserTimePercent.Equals(other.CpuUserTimePercent) &&
@@ -130,7 +133,8 @@ public class ProcessorInfo
         hashCode.Add(UserName);
         hashCode.Add(CmdLine);
         hashCode.Add(DiskUsage);
-        hashCode.Add(DiskOperations);
+        hashCode.Add(PrevDiskOperations);
+        hashCode.Add(CurrDiskOperations);
         hashCode.Add(UsedMemory);
         hashCode.Add(CpuTimePercent);
         hashCode.Add(CpuUserTimePercent);

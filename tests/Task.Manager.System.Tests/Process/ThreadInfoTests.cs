@@ -8,7 +8,7 @@ public sealed class ThreadInfoTests
 {
     [Fact]
     public void InputBox_Canary_Test() =>
-        Assert.Equal(8, CanaryTestHelper.GetProperties<ThreadInfo>());
+        Assert.Equal(8, CanaryTestHelper.GetPropertyCount<ThreadInfo>());
 
     [Fact]
     public void ThreadInfo_Write_Read_Test()

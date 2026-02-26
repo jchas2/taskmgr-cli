@@ -12,7 +12,7 @@ public sealed class ScreenTests
 
     [Fact]
     public void InputBox_Canary_Test() =>
-        Assert.Equal(12, CanaryTestHelper.GetProperties<TestScreen1>());
+        Assert.Equal(12, CanaryTestHelper.GetPropertyCount<TestScreen1>());
 
     [Fact]
     public void Should_Construct_Default()

@@ -8,7 +8,7 @@ public sealed class ModuleInfoTests
 {
     [Fact]
     public void ModuleInfo_Canary_Test() =>
-        Assert.Equal(2, CanaryTestHelper.GetProperties<ModuleInfo>());
+        Assert.Equal(2, CanaryTestHelper.GetPropertyCount<ModuleInfo>());
 
     [Fact]
     public void ModuleInfo_Write_Read_Test()

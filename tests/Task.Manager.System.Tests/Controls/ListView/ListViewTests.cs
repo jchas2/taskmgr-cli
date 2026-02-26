@@ -25,7 +25,7 @@ public sealed class ListViewTests
     
     [Fact]
     public void ListView_Canary_Test() =>
-        Assert.Equal(24, CanaryTestHelper.GetProperties<System.Controls.ListView.ListView>());
+        Assert.Equal(24, CanaryTestHelper.GetPropertyCount<System.Controls.ListView.ListView>());
     
     [Fact]
     public void Should_Construct_Default()
