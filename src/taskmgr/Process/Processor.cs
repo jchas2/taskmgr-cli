@@ -58,6 +58,16 @@ public class Processor : IProcessor
             : DefaultDelayInMilliseconds;
     }
 
+    private void GetNetworkStats(ref NetworkStatistics networkStatistics)
+    {
+        if (!SystemInfo.GetNetworkStats(ref networkStatistics)) {
+            networkStatistics.NetworkBytesReceived = 0;
+            networkStatistics.NetworkBytesSent = 0;
+            networkStatistics.NetworkPacketsReceived = 0;
+            networkStatistics.NetworkPacketsSent = 0;
+        }
+    }
+    
     private void GetSystemTimes(ref SystemTimes systemTimes)
     {
         if (!SystemInfo.GetCpuTimes(ref systemTimes)) {
@@ -105,6 +115,8 @@ public class Processor : IProcessor
         SystemTimes sysTimesDeltas = new();
         ProcessTimeInfo prevProcTimes = new();
         ProcessTimeInfo currProcTimes = new();
+        NetworkStatistics prevNetworkStats = new();
+        NetworkStatistics currNetworkStats = new();
         TimeSpan delayInMs = new TimeSpan(0, 0, 0, 0, Delay);
         int iterationCount = 0;
         int irixFactor = 0;
@@ -112,13 +124,14 @@ public class Processor : IProcessor
         SystemInfo.GetSystemInfo(ref systemStatistics);
 
         while (!cancellationToken.IsCancellationRequested && iterationCount <= IterationLimit) {
-            GetSystemTimes(ref prevSysTimes);
-            ProcessInfo[] processInfos = processService.GetProcesses();
-            Dictionary<int, long> gpuTimes = gpuService.GetProcessStats();
-
             allProcessorInfos.Clear();
             processCount = 0;
             threadCount = 0;
+
+            GetSystemTimes(ref prevSysTimes);
+            GetNetworkStats(ref prevNetworkStats);
+            ProcessInfo[] processInfos = processService.GetProcesses();
+            Dictionary<int, long> gpuTimes = gpuService.GetProcessStats();
 
             for (int index = 0; index < processInfos.Length; index++) {
                 
@@ -194,6 +207,7 @@ public class Processor : IProcessor
             }            
             
             GetSystemTimes(ref currSysTimes);
+            GetNetworkStats(ref currNetworkStats);
 
             sysTimesDeltas.Idle = currSysTimes.Idle - prevSysTimes.Idle;
             sysTimesDeltas.Kernel = currSysTimes.Kernel - prevSysTimes.Kernel;
@@ -285,6 +299,20 @@ public class Processor : IProcessor
             systemStatistics.ProcessCount = processCount;
             systemStatistics.ThreadCount = threadCount;
 
+            systemStatistics.TotalNetworkBytesReceived = currNetworkStats.NetworkBytesReceived;
+            systemStatistics.TotalNetworkBytesSent = currNetworkStats.NetworkBytesSent;
+            systemStatistics.TotalNetworkPacketsReceived = currNetworkStats.NetworkPacketsReceived;
+            systemStatistics.TotalNetworkPacketsSent = currNetworkStats.NetworkPacketsSent;
+            
+            systemStatistics.NetworkBytesReceiveTime =
+                (ulong)((double)(currNetworkStats.NetworkBytesReceived - prevNetworkStats.NetworkBytesReceived) * (1000.0 / (double)Delay)); 
+            systemStatistics.NetworkBytesSendTime =
+                (ulong)((double)(currNetworkStats.NetworkBytesSent - prevNetworkStats.NetworkBytesSent) * (1000.0 / (double)Delay)); 
+            systemStatistics.NetworkPacketsReceiveTime =
+                (ulong)((double)(currNetworkStats.NetworkPacketsReceived - prevNetworkStats.NetworkPacketsReceived) * (1000.0 / (double)Delay)); 
+            systemStatistics.NetworkPacketsSendTime =
+                (ulong)((double)(currNetworkStats.NetworkPacketsSent - prevNetworkStats.NetworkPacketsSent) * (1000.0 / (double)Delay)); 
+            
             lock (@lock) {
                 allProcessorInfosCopy.Clear();
 

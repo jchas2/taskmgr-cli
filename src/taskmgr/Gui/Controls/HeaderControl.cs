@@ -20,9 +20,13 @@ public sealed class HeaderControl : Control
     private readonly MetreControl diskMetre;
     private readonly MetreControl gpuMetre;
     private readonly MetreControl gpuMemMetre;
+    private readonly MetreControl networkRecdMetre;
+    private readonly MetreControl networkSentMetre;
     private readonly ListView statisticsView;
     
     private double maxMbps = 0;
+    private ulong maxNetworkRecd = 0;
+    private ulong maxNetworkSend = 0;
     
     private const int MetreWidth = 52;
     private const int StatisticsViewColumnCount = 8;
@@ -78,6 +82,16 @@ public sealed class HeaderControl : Control
             Text = "Gpu Mem",
             DrawStacked = false,
         };
+
+        networkRecdMetre = new MetreControl(terminal) {
+            Text = "Net Rec",
+            DrawStacked = false,
+        };
+
+        networkSentMetre = new MetreControl(terminal) {
+            Text = "Net Snt",
+            DrawStacked = false,
+        };
         
         statisticsView = new ListView(terminal) {
             EnableScroll = false,
@@ -97,6 +111,8 @@ public sealed class HeaderControl : Control
             .Add(diskMetre)
             .Add(gpuMetre)
             .Add(gpuMemMetre)
+            .Add(networkSentMetre)
+            .Add(networkRecdMetre)
             .Add(statisticsView);
     }
     
@@ -163,14 +179,14 @@ public sealed class HeaderControl : Control
             virRatio = 1.0 - ((double)(systemStatistics.AvailablePageFile) / (double)(systemStatistics.TotalPageFile));    
         }
         
-        double mbps = systemStatistics.DiskUsage.ToMbpsFromBytes();
+        double diskMbps = systemStatistics.DiskUsage.ToMbpsFromBytes();
 
-        if (mbps > maxMbps) {
-            maxMbps = mbps;
+        if (diskMbps > maxMbps) {
+            maxMbps = diskMbps;
         }
 
-        double mbpsRatio = maxMbps > 0
-            ? mbps / maxMbps
+        double diskMbpsRatio = maxMbps > 0
+            ? diskMbps / maxMbps
             : 0;
 
         double gpuCpu = systemStatistics.GpuPercentTime;
@@ -179,6 +195,26 @@ public sealed class HeaderControl : Control
         if (systemStatistics.TotalGpuMemory > 0) {
             gpuMemRatio = 1.0 - ((double)(systemStatistics.AvailableGpuMemory) / (double)(systemStatistics.TotalGpuMemory));
         }
+
+        ulong networkRecd = systemStatistics.NetworkBytesReceiveTime;
+        
+        if (networkRecd > maxNetworkRecd) {
+            maxNetworkRecd = networkRecd;
+        }
+
+        double networkRecdRatio = maxNetworkRecd > 0
+            ? (double)networkRecd / (double)maxNetworkRecd
+            : 0;
+
+        ulong networkSend = systemStatistics.NetworkBytesSendTime;
+        
+        if (networkSend > maxNetworkSend) {
+            maxNetworkSend = networkSend;
+        }
+
+        double networkSentRatio = maxNetworkSend > 0
+            ? (double)networkSend / (double)maxNetworkSend
+            : 0;
         
         ConsoleColor userColour = totalCpu < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
             : totalCpu < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
@@ -197,8 +233,8 @@ public sealed class HeaderControl : Control
             : virRatio < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
             : appConfig.DefaultTheme.RangeHighBackground;
         
-        ConsoleColor mbpsColour = mbps < 10.0 ? appConfig.DefaultTheme.RangeLowBackground 
-            : mbps < 100.0 ? appConfig.DefaultTheme.RangeMidBackground
+        ConsoleColor diskMbpsColour = diskMbps < 10.0 ? appConfig.DefaultTheme.RangeLowBackground 
+            : diskMbps < 100.0 ? appConfig.DefaultTheme.RangeMidBackground
             : appConfig.DefaultTheme.RangeHighBackground;
 
         ConsoleColor gpuCpuColour = gpuCpu < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
@@ -207,6 +243,14 @@ public sealed class HeaderControl : Control
 
         ConsoleColor gpuMemColour = gpuMemRatio < 0.25 ? appConfig.DefaultTheme.RangeLowBackground
             : gpuMemRatio < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
+            : appConfig.DefaultTheme.RangeHighBackground;
+
+        ConsoleColor networkRecdColour = networkRecdRatio < 0.50 ? appConfig.DefaultTheme.RangeLowBackground 
+            : networkRecdRatio < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
+            : appConfig.DefaultTheme.RangeHighBackground;
+
+        ConsoleColor networkSentColour = networkSentRatio < 0.50 ? appConfig.DefaultTheme.RangeLowBackground 
+            : networkSentRatio < 0.75 ? appConfig.DefaultTheme.RangeMidBackground
             : appConfig.DefaultTheme.RangeHighBackground;
         
         cpuMetre.PercentageSeries1 = systemStatistics.CpuPercentKernelTime;
@@ -238,17 +282,17 @@ public sealed class HeaderControl : Control
         
         virtualMemoryMetre.Draw();
 
-        diskMetre.PercentageSeries1 = mbpsRatio;
-        diskMetre.ColourSeries1 = mbpsColour;
+        diskMetre.PercentageSeries1 = diskMbpsRatio;
+        diskMetre.ColourSeries1 = diskMbpsColour;
         diskMetre.LabelSeries1 = appConfig.ShowMetreDiskNumerically
-            ? $"{mbps} MB/s"
+            ? $"{diskMbps} MB/s"
             : string.Empty;
         
         diskMetre.Draw();
         
         gpuMetre.PercentageSeries1 = gpuCpu;
         gpuMetre.ColourSeries1 = gpuCpuColour;
-        gpuMetre.LabelSeries1 = appConfig.ShowMetreCpuNumerically
+        gpuMetre.LabelSeries1 = appConfig.ShowMetreGpuNumerically
             ? gpuMetre.LabelSeries1 = gpuCpu.ToString("000.0%")
             : string.Empty;
         
@@ -263,6 +307,22 @@ public sealed class HeaderControl : Control
         
         gpuMemMetre.Draw();
 
+        networkRecdMetre.PercentageSeries1 = networkRecdRatio;
+        networkRecdMetre.ColourSeries1 = networkRecdColour;
+        networkRecdMetre.LabelSeries1 = appConfig.ShowMetreNetworkNumerically
+            ? systemStatistics.NetworkBytesReceiveTime.ToFormattedByteSize()
+            : string.Empty;
+        
+        networkRecdMetre.Draw();
+
+        networkSentMetre.PercentageSeries1 = networkSentRatio;
+        networkSentMetre.ColourSeries1 = networkSentColour;
+        networkSentMetre.LabelSeries1 = appConfig.ShowMetreNetworkNumerically
+            ? systemStatistics.NetworkBytesSendTime.ToFormattedByteSize()
+            : string.Empty;
+        
+        networkSentMetre.Draw();
+        
         if (statisticsView.Items.Count == 0) {
             return;
         }
@@ -283,8 +343,8 @@ public sealed class HeaderControl : Control
         statisticsView.Items[0].SubItems[3].ForegroundColor = memColour;
         statisticsView.Items[0].SubItems[5].Text = virRatio.ToString("000.0%");
         statisticsView.Items[0].SubItems[5].ForegroundColor = virColour;
-        statisticsView.Items[0].SubItems[7].Text = string.Format("{0,5:####0.0} MB/s", mbps);
-        statisticsView.Items[0].SubItems[7].ForegroundColor = mbpsColour;
+        statisticsView.Items[0].SubItems[7].Text = string.Format("{0,5:####0.0} MB/s", diskMbps);
+        statisticsView.Items[0].SubItems[7].ForegroundColor = diskMbpsColour;
 
         statisticsView.Items[1].SubItems[1].Text = systemStatistics.CpuPercentUserTime.ToString("000.0%");
         statisticsView.Items[1].SubItems[1].ForegroundColor = userColour;
@@ -295,7 +355,7 @@ public sealed class HeaderControl : Control
             ((double)(systemStatistics.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB");
         statisticsView.Items[1].SubItems[5].ForegroundColor = ForegroundColour;
         statisticsView.Items[1].SubItems[7].Text = string.Format("{0,5:####0.0} MB/s", maxMbps);
-        statisticsView.Items[1].SubItems[7].ForegroundColor = mbpsColour;
+        statisticsView.Items[1].SubItems[7].ForegroundColor = diskMbpsColour;
 
         statisticsView.Items[2].SubItems[1].Text = systemStatistics.CpuPercentKernelTime.ToString("000.0%");
         statisticsView.Items[2].SubItems[1].ForegroundColor = kernelColour;
@@ -339,7 +399,15 @@ public sealed class HeaderControl : Control
             control.Load();
         }
         
-        MetreControl[] metres = [cpuMetre, memoryMetre, virtualMemoryMetre, diskMetre, gpuMetre, gpuMemMetre ];
+        MetreControl[] metres = [
+            cpuMetre, 
+            memoryMetre, 
+            virtualMemoryMetre, 
+            diskMetre, 
+            gpuMetre, 
+            gpuMemMetre,
+            networkRecdMetre,
+            networkSentMetre];
 
         foreach (MetreControl metreControl in metres) {
             metreControl.BackgroundColour = appConfig.DefaultTheme.Background;
@@ -396,7 +464,7 @@ public sealed class HeaderControl : Control
     protected override void OnResize()
     {
         Clear();
-
+        
         cpuMetre.X = X;
         cpuMetre.Y = Y + 3;
         cpuMetre.Width = MetreWidth;
@@ -432,6 +500,18 @@ public sealed class HeaderControl : Control
         gpuMemMetre.Width = MetreWidth;
         gpuMemMetre.Height = 1;
         gpuMemMetre.Resize();
+
+        networkRecdMetre.X = X;
+        networkRecdMetre.Y = Y + 9;
+        networkRecdMetre.Width = MetreWidth;
+        networkRecdMetre.Height = 1;
+        networkRecdMetre.Resize();
+
+        networkSentMetre.X = X;
+        networkSentMetre.Y = Y + 10;
+        networkSentMetre.Width = MetreWidth;
+        networkSentMetre.Height = 1;
+        networkSentMetre.Resize();
         
         statisticsView.X = X + cpuMetre.Width + 2;
         statisticsView.Y = cpuMetre.Y;

@@ -106,6 +106,73 @@ public static partial class SystemInfo
         return true;
     }
     
+    private static unsafe bool GetNetworkStatsInternal(ref NetworkStatistics networkStatistics)
+    {
+        networkStatistics.NetworkBytesSent = 0;
+        networkStatistics.NetworkBytesReceived = 0;
+        networkStatistics.NetworkPacketsSent = 0;
+        networkStatistics.NetworkPacketsReceived = 0;
+
+        ReadOnlySpan<int> sysctlName = [
+            (int)Sys.Selectors.CTL_NET,
+            Sys.PF_ROUTE,
+            0,
+            Sys.AF_UNSPEC,
+            (int)Sys.NetRouting.NET_RT_IFLIST2,
+            0
+        ];
+
+        byte* buffer = null;
+        int bytesLength = 0;
+
+        if (!Sys.Sysctl(sysctlName, ref buffer, ref bytesLength)) {
+            return false;
+        }
+
+        if (buffer == null || bytesLength == 0) {
+            Sys.FreeMemory(buffer);
+            return false;
+        }
+
+        byte* current = buffer;
+        byte* end = buffer + bytesLength;
+
+        while (current < end)
+        {
+            // Read the message header.
+            if (current + sizeof(ushort) > end) {
+                break;
+            }
+
+            ushort msgLen = *(ushort*)current;
+
+            if (msgLen == 0 || current + msgLen > end) {
+                break;
+            }
+
+            // Check if this is an interface info message.
+            if (current + 4 <= end) {
+                byte msgType = *(current + 3);
+
+                if (msgType == Sys.RTM_IFINFO2) {
+                    if (current + Marshal.SizeOf<Sys.if_msghdr2>() <= end) {
+                        Sys.if_msghdr2* ifMsg = (Sys.if_msghdr2*)current;
+                        networkStatistics.NetworkBytesSent += ifMsg->ifm_data.ifi_obytes;
+                        networkStatistics.NetworkBytesReceived += ifMsg->ifm_data.ifi_ibytes;
+                        networkStatistics.NetworkPacketsSent += ifMsg->ifm_data.ifi_opackets;
+                        networkStatistics.NetworkPacketsReceived += ifMsg->ifm_data.ifi_ipackets;
+                    }
+                }
+            }
+
+            // Move to next message.
+            current += msgLen;
+        }
+
+        Sys.FreeMemory(buffer);
+        return true;
+    }
+    
     private static unsafe int GetPageSize()
     {
         int pageSize = 0;
