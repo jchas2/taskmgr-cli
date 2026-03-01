@@ -295,10 +295,22 @@ public sealed class AppConfig
         set => uxSection?.Add(Constants.Keys.ShowMetreDiskNumerically, value.ToString());
     }
 
+    public bool ShowMetreGpuNumerically
+    {
+        get => uxSection?.GetBool(Constants.Keys.ShowMetreGpuNumerically, true) ?? true;
+        set => uxSection?.Add(Constants.Keys.ShowMetreGpuNumerically, value.ToString());
+    }
+
     public bool ShowMetreMemoryNumerically
     {
         get => uxSection?.GetBool(Constants.Keys.ShowMetreMemNumerically, true) ?? true;
         set => uxSection?.Add(Constants.Keys.ShowMetreMemNumerically, value.ToString());
+    }
+    
+    public bool ShowMetreNetworkNumerically
+    {
+        get => uxSection?.GetBool(Constants.Keys.ShowMetreNetworkNumerically, true) ?? true;
+        set => uxSection?.Add(Constants.Keys.ShowMetreNetworkNumerically, value.ToString());
     }
 
     public bool ShowMetreSwapNumerically
@@ -376,7 +388,9 @@ public sealed class AppConfig
             .AddIfMissing(Constants.Keys.MultiSelectProcesses, false.ToString())
             .AddIfMissing(Constants.Keys.ShowMetreCpuNumerically, true.ToString())
             .AddIfMissing(Constants.Keys.ShowMetreDiskNumerically, true.ToString())
+            .AddIfMissing(Constants.Keys.ShowMetreGpuNumerically, true.ToString())
             .AddIfMissing(Constants.Keys.ShowMetreMemNumerically, true.ToString())
+            .AddIfMissing(Constants.Keys.ShowMetreNetworkNumerically, true.ToString())
             .AddIfMissing(Constants.Keys.ShowMetreSwapNumerically, true.ToString())
             .AddIfMissing(Constants.Keys.UseIrixCpuReporting, false.ToString());
 

@@ -32,6 +32,14 @@ public struct SystemStatistics()
     // Network.
     public string PublicIPv4Address { get; set; } = string.Empty;
     public string PrivateIPv4Address { get; set; } = string.Empty;
+    public ulong TotalNetworkBytesSent { get; set; } = 0;
+    public ulong TotalNetworkBytesReceived { get; set; } = 0;
+    public ulong TotalNetworkPacketsSent { get; set; } = 0;
+    public ulong TotalNetworkPacketsReceived { get; set; } = 0;
+    public ulong NetworkBytesSendTime { get; set; } = 0;
+    public ulong NetworkBytesReceiveTime { get; set; } = 0;
+    public ulong NetworkPacketsSendTime { get; set; } = 0;
+    public ulong NetworkPacketsReceiveTime { get; set; } = 0;
     
     // Disk.
     public long DiskUsage { get; set; } = 0;

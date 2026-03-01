@@ -19,7 +19,7 @@ public sealed class MainScreen : Screen
     private Control activeControl;
     private Control footerControl;
     
-    private const int HeaderHeight = 10;
+    private const int HeaderHeight = 12;
     private const int FooterHeight = 1;
 
     public MainScreen(ScreenApplication screenApp, RunContext runContext)

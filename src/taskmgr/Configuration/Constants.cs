@@ -47,6 +47,8 @@ public sealed class Constants
         public const string ShowMetreDiskNumerically = "show-metre-disk-numerically";
         public const string ShowMetreMemNumerically = "show-metre-mem-numerically";
         public const string ShowMetreSwapNumerically = "show-metre-swap-numerically";
+        public const string ShowMetreGpuNumerically = "show-metre-gpu-numerically";
+        public const string ShowMetreNetworkNumerically = "show-metre-network-numerically";
         public const string UseIrixCpuReporting = "use-irix-cpu-reporting";
 
         // Theme keys.
