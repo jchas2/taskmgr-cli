@@ -390,7 +390,7 @@ public class Processor : IProcessor
     {
         try {
             ProcessInfo? processInfo = processService.GetProcessById(pid);
-
+            
             if (processInfo == null){
                 return false;
             }
