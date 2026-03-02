@@ -90,6 +90,8 @@ public static partial class SystemInfo
         networkStatistics.NetworkBytesReceived = 0;
         networkStatistics.NetworkPacketsSent = 0;
         networkStatistics.NetworkPacketsReceived = 0;
+
+        return true;
     }
     
     private static unsafe bool GetSystemMemoryInternal(ref SystemStatistics systemStatistics)

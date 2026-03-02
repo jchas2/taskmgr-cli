@@ -10,6 +10,7 @@ public class ProcessInfo(SysDiag::Process process)
     private SysDiag::ProcessModule? mainModule;
     private bool mainModuleInspected = false;
     private bool? isDaemon = null;
+    private nint? handle = null;
     private string? fileDescription;
     private string? fileName;
     private string? moduleName;
@@ -36,7 +37,15 @@ public class ProcessInfo(SysDiag::Process process)
     } 
     
     public int Pid => process.Id;
-    public nint Handle => process.Handle;
+
+    public nint Handle
+    {
+        get {
+            handle ??= process.Handle;
+            return handle.Value;
+        }
+    }
+
     public int ParentPid => 0;
     public string ProcessName => process.ProcessName;
 
