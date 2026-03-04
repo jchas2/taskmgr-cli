@@ -9,12 +9,12 @@ public static class CoreFoundation
 
     [DllImport(Libraries.CoreFoundation)]
     public static extern IntPtr CFArrayGetValueAtIndex(IntPtr array, long index);
-
+    
     [DllImport(Libraries.CoreFoundation)]
-    public static extern void CFDictionaryGetKeysAndValues(
-        IntPtr dict,
-        IntPtr[] keys,
-        IntPtr[] values);
+    public static unsafe extern void CFDictionaryGetKeysAndValues(
+        nint* dict,
+        nint* keys,
+        nint* values);
 
     [DllImport(Libraries.CoreFoundation)]
     public static extern long CFDictionaryGetCount(IntPtr dict);
@@ -27,11 +27,11 @@ public static class CoreFoundation
     
     [DllImport(Libraries.CoreFoundation)]
     public static extern void CFRelease(IntPtr cf);
-
+    
     [DllImport(Libraries.CoreFoundation)]
-    public static extern bool CFStringGetCString(
+    public static unsafe extern bool CFStringGetCString(
         IntPtr theString,
-        byte[] buffer,
+        byte* buffer,
         long bufferSize,
         int encoding);
 
@@ -41,28 +41,40 @@ public static class CoreFoundation
     public static void CFNumberGetValue(IntPtr number, out long value)
     {
         value = 0;
-        CFNumberGetValue(number, kCFNumberSInt64Type, out value);
+        
+        CFNumberGetValue(
+            number, 
+            kCFNumberSInt64Type, 
+            out value);
     }
 
-    public static string? GetString(IntPtr cfString)
+    public static unsafe string? GetString(IntPtr cfString)
     {
         if (cfString == IntPtr.Zero)
             return null;
 
-        byte[] buffer = new byte[1024];
-        
-        if (CFStringGetCString(cfString, buffer, buffer.Length, kCFStringEncodingUTF8)) {
-            int length = Array.IndexOf<byte>(buffer, 0);
+        Span<byte> buffer = stackalloc byte[1024];
+
+        fixed (byte* ptr = buffer) {
             
-            if (length >= 0) {
-                return System.Text.Encoding.UTF8.GetString(buffer, 0, length);
+            if (CFStringGetCString(
+                cfString, 
+                ptr, 
+                buffer.Length, 
+                kCFStringEncodingUTF8)) {
+                
+                int length = buffer.IndexOf<byte>(0);
+
+                if (length >= 0) {
+                    return System.Text.Encoding.UTF8.GetString(buffer.Slice(0, length));
+                }
             }
         }
 
         return null;
     }
     
-    public static Dictionary<string, IntPtr> ToDictionary(IntPtr cfDict)
+    public static unsafe Dictionary<string, IntPtr> ToDictionary(IntPtr cfDict)
     {
         Dictionary<string, IntPtr> result = new();
 
@@ -70,26 +82,36 @@ public static class CoreFoundation
             return result;
         }
 
-        long count = CFDictionaryGetCount(cfDict);
+        int count = (int)CFDictionaryGetCount(cfDict);
         
         if (count == 0) {
             return result;
         }
 
-        IntPtr[] keys = new IntPtr[count];
-        IntPtr[] values = new IntPtr[count];
+        Span<nint> keys = stackalloc nint[count];
+        Span<nint> values = stackalloc nint[count];
+        
+        fixed (nint* keysPtr = keys)
+        fixed (nint* valuesPtr = values) {
 
-        CFDictionaryGetKeysAndValues(
-            cfDict, 
-            keys, 
-            values);
+            CFDictionaryGetKeysAndValues(
+                (nint*)cfDict, 
+                keysPtr, 
+                valuesPtr);
 
-        for (int i = 0; i < count; i++)
-        {
-            string? key = GetString(keys[i]);
-            
-            if (key != null) {
-                result[key] = values[i];
+            nint* nextKey = keysPtr;
+            nint* nextVal = valuesPtr;
+
+            for (int i = 0; i < count; i++)
+            {
+                string? key = GetString(*nextKey);
+                
+                if (key != null) {
+                    result[key] = *nextVal;
+                }
+
+                nextKey++;
+                nextVal++;
             }
         }
 

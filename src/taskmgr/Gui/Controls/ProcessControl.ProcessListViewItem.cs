@@ -177,7 +177,7 @@ public partial class ProcessControl
         public void UpdateSubItems(ProcessorInfo processorInfo, ref SystemStatistics systemStatistics)
         {
             Debug.Assert(processorInfo.Pid == Pid);
-            
+
             SubItems[(int)Columns.Process].Text = processorInfo.FileDescription;
             SubItems[(int)Columns.Pid].Text = processorInfo.Pid.ToString();
             SubItems[(int)Columns.User].Text = processorInfo.UserName;

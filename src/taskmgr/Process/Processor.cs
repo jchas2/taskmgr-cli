@@ -270,8 +270,6 @@ public class Processor : IProcessor
                 
                 if (gpuTimeDelta > 0) {
 #if __WIN32__
-                    // gpuPercent = (float)gpuTimeDelta / Delay * 100.0;
-                    // allProcessorInfos[i].GpuTimePercent = gpuPercent;
                     double deltaSeconds = gpuTimeDelta / 10_000_000.0;
                     gpuPercent = deltaSeconds / ((double)Delay / 1000);
                     allProcessorInfos[i].GpuTimePercent = gpuPercent;
