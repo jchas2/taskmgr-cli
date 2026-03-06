@@ -84,6 +84,121 @@ public static partial class SystemInfo
         return true;
 	}
 
+    private static bool GetGpuMemoryInternal(ref SystemStatistics systemStatistics)
+    {
+        bool result = true;
+
+        if (systemStatistics.TotalGpuMemory == 0) {
+            result = GetGpuMemoryInternalTotal(ref systemStatistics);
+        }
+        
+        systemStatistics.AvailableGpuMemory = 0;
+        return result && GetGpuMemoryInternalUsed(ref systemStatistics);
+    }
+
+    private static bool GetGpuMemoryInternalTotal(ref SystemStatistics systemStatistics)
+    {
+        // NVIDIA + AMD GPUs store memory info in the display adapter key.
+        const string RegPath = @"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}";
+        const string RegKeyMemorySize = "HardwareInformation.qwMemorySize";
+        
+        using RegistryKey? key = Registry.LocalMachine.OpenSubKey(RegPath);
+        
+        if (key == null) {
+            return false;
+        }                
+
+        // Subkey for each adapter (0000, 0001, 0002 etc).
+        foreach (var subKeyName in key.GetSubKeyNames())
+        {
+            if (!subKeyName.StartsWith("0")) {
+                continue;
+            }
+
+            using RegistryKey? subKey = key.OpenSubKey(subKeyName);
+            object? memorySize = subKey?.GetValue(RegKeyMemorySize);
+
+            if (memorySize == null) {
+                continue;
+            }
+            
+            // REG_QWORD.
+            if (memorySize is long memLong && memLong > 0) {
+                systemStatistics.TotalGpuMemory += memLong;
+            }
+            else if (memorySize is ulong memULong && memULong > 0) {
+                systemStatistics.TotalGpuMemory += (long)memULong;
+            }
+            else if (memorySize is byte[] bytes && bytes.Length == 8) {
+                long memory = BitConverter.ToInt64(bytes, 0);
+                systemStatistics.TotalGpuMemory += memory;
+            }
+        }
+        
+        return true;
+    }
+    
+    private static bool GetGpuMemoryInternalUsed(ref SystemStatistics systemStatistics)
+    {
+        const string AdapterMemoryCounterPath = @"\GPU Adapter Memory(*)\Dedicated Usage";
+        
+        IntPtr hQuery;
+        IntPtr hCounter;
+
+        if (Pdh.PdhOpenQuery(
+            null,
+            IntPtr.Zero,
+            out hQuery) != Pdh.ERROR_SUCCESS) {
+
+            return false;
+        }
+
+        Pdh.PdhAddEnglishCounter(
+            hQuery, 
+            AdapterMemoryCounterPath, 
+            IntPtr.Zero, 
+            out hCounter);
+        
+        Pdh.PdhCollectQueryData(hQuery);
+
+        uint bufferSize = 0;
+        uint itemCount = 0;
+        long usedDedicatedMemory = 0;
+
+        Pdh.PdhGetRawCounterArray(hCounter, ref bufferSize, ref itemCount, IntPtr.Zero);
+
+        if (bufferSize <= 0) {
+            Pdh.PdhCloseQuery(hQuery);
+            return false;
+        }
+
+        IntPtr buffer = Marshal.AllocHGlobal((int)bufferSize);
+
+        if (Pdh.PdhGetRawCounterArray(
+            hCounter, 
+            ref bufferSize, 
+            ref itemCount, 
+            buffer) == Pdh.ERROR_SUCCESS) {
+        
+            int structSize = Marshal.SizeOf(typeof(Pdh.PDH_RAW_COUNTER_ITEM));
+            
+            for (int i = 0; i < itemCount; i++) {
+                IntPtr currentItemPtr = new IntPtr(buffer.ToInt64() + (i * structSize));
+                Pdh.PDH_RAW_COUNTER_ITEM item = Marshal.PtrToStructure<Pdh.PDH_RAW_COUNTER_ITEM>(currentItemPtr);
+
+                if (item.RawValue.CStatus == Pdh.PDH_CSTATUS_VALID_DATA) {
+                    usedDedicatedMemory += item.RawValue.FirstValue;
+                }
+            }
+        }
+        
+        Marshal.FreeHGlobal(buffer);
+        Pdh.PdhCloseQuery(hQuery);
+        
+        systemStatistics.AvailableGpuMemory = systemStatistics.TotalGpuMemory - usedDedicatedMemory;
+        return true;        
+    }
+
     private static unsafe bool GetNetworkStatsInternal(ref NetworkStatistics networkStatistics)
     {
         networkStatistics.NetworkBytesSent = 0;

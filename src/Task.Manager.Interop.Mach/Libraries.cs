@@ -6,6 +6,7 @@ internal static class Libraries
     internal const string IOKit = "/System/Library/Frameworks/IOKit.framework/IOKit";
     internal const string LibC = "libc";
     internal const string LibProc = "libproc";
+    internal const string LibProcDyLib = "libproc.dylib";
     internal const string LibSystemDyLib = "libSystem.dylib";
     internal const string LibSystemNative = "libSystem.Native";
 }

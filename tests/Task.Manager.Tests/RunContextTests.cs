@@ -16,7 +16,6 @@ public class RunContextTests
         Mock<IFileSystem> fileSystem = new();
         Mock<ISystemTerminal> terminal = new();
         Mock<IProcessService> processService = new();
-        Mock<IGpuService> gpuService = new();
         Mock<IModuleService> moduleService = new();
         Mock<IThreadService> threadService = new();
         Mock<IProcessor> processor = new();
@@ -27,7 +26,6 @@ public class RunContextTests
             fileSystem.Object,
             terminal.Object,
             processService.Object,
-            gpuService.Object,
             moduleService.Object,
             threadService.Object,
             processor.Object,
@@ -37,7 +35,6 @@ public class RunContextTests
         Assert.True(context.FileSystem == fileSystem.Object);
         Assert.True(context.Terminal == terminal.Object);
         Assert.True(context.ProcessService == processService.Object);
-        Assert.True(context.GpuService == gpuService.Object);
         Assert.True(context.ModuleService == moduleService.Object);
         Assert.True(context.ThreadService == threadService.Object);
         Assert.True(context.Processor == processor.Object);

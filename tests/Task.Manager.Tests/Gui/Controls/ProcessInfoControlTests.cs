@@ -52,8 +52,12 @@ public sealed class ProcessInfoControlTests
     public void Should_Draw_Info()
     {
         using SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
-        processServiceFake.AddProcessInfo(new ProcessInfo(currentProcess));
+        ProcessInfo? processInfo = new ProcessService().GetProcessById(currentProcess.Id);
+
+        Assert.NotNull(processInfo);
         
+        processServiceFake.AddProcessInfo(processInfo);
+
         threadServiceFake.Add(
             new ThreadInfo {
                 CpuKernelTime = new TimeSpan(hours: 0, minutes: 2, seconds: 7),

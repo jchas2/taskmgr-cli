@@ -11,13 +11,15 @@ public sealed class ProcessorTests
       public void Run_With_Single_Process_Completes_One_Iteration()                                                                      
       {                                                                                                                                  
           ProcessServiceFake processService = new();
-          GpuServiceFake gpuService = new();
                                                                                                                                          
-          using var currentProcess = SysDiag::Process.GetCurrentProcess();                                                     
-          ProcessInfo currentProcessInfo = new(currentProcess);                                                                          
+          using SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
+          ProcessInfo? currentProcessInfo = new ProcessService().GetProcessById(currentProcess.Id);
+
+          Assert.NotNull(currentProcessInfo);
+          
           processService.AddProcessInfo(currentProcessInfo);                                                                             
                                                                                                                                          
-          Processor processor = new(processService, gpuService) {                                                                                    
+          Processor processor = new(processService) {                                                                                    
               IterationLimit = 1,                                                                               
               Delay = Processor.MinimumDelayInMilliseconds                                         
           };                                                                                                                             
@@ -72,13 +74,15 @@ public sealed class ProcessorTests
       public void Stop_Cancels_Running_Processor()                                                                                              
       {                                                                                                                                         
           ProcessServiceFake processService = new();
-          Mock<IGpuService> gpuService = new();
                                                                                                                                                 
-          using var currentProcess = SysDiag::Process.GetCurrentProcess();                                                            
-          ProcessInfo currentProcessInfo = new(currentProcess);                                                                                 
+          using SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
+          ProcessInfo? currentProcessInfo = new ProcessService().GetProcessById(currentProcess.Id);
+
+          Assert.NotNull(currentProcessInfo);
+          
           processService.AddProcessInfo(currentProcessInfo);                                                                                    
                                                                                                                                                 
-          Processor processor = new(processService, gpuService.Object) {                                                                                           
+          Processor processor = new(processService) {                                                                                           
               IterationLimit = 0,  // Run indefinitely.                                                                                          
               Delay = Processor.MinimumDelayInMilliseconds * 2                                                                                      
           };                                                                                                                                    

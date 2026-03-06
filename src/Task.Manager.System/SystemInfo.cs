@@ -26,6 +26,8 @@ public static partial class SystemInfo
         }
     }
 
+    public static bool GetGpuMemory(ref SystemStatistics systemStatistics) => GetGpuMemoryInternal(ref systemStatistics);
+
     public static bool GetNetworkStats(ref NetworkStatistics networkStatistics) => GetNetworkStatsInternal(ref networkStatistics);
     
     private static IPAddress? GetPreferredIpAddress()

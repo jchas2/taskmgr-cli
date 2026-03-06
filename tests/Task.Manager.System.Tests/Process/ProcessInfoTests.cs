@@ -15,8 +15,9 @@ public sealed class ProcessInfoTests
     public void Should_Construct_ProcessInfo_From_Process()
     {
         using SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
-        ProcessInfo processInfo = new(currentProcess);
-        
+        ProcessInfo? processInfo = new ProcessService().GetProcessById(currentProcess.Id);
+
+        Assert.NotNull(processInfo);
         Assert.InRange(processInfo.Pid, 0, int.MaxValue);
         ProcessInfoHelpers.AssertProcessInfoProperties(processInfo);
         ProcessInfoHelpers.AssertProcessInfoProperties(currentProcess, processInfo);
