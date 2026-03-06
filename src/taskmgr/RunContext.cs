@@ -11,7 +11,6 @@ public class RunContext(
     IFileSystem fileSystem,
     ISystemTerminal terminal,
     IProcessService processService,
-    IGpuService gpuService,
     IModuleService moduleService,
     IThreadService threadService,
     IProcessor processor,
@@ -21,7 +20,6 @@ public class RunContext(
     public IFileSystem FileSystem { get; } = fileSystem;
     public ISystemTerminal Terminal { get; } = terminal;
     public IProcessService ProcessService { get; } = processService;
-    public IGpuService GpuService { get; } = gpuService;
     public IModuleService ModuleService { get; } = moduleService;
     public IThreadService ThreadService { get; } = threadService;
     public IProcessor Processor { get; } = processor;

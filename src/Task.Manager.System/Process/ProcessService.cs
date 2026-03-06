@@ -1,23 +1,13 @@
-﻿using SysDiag = System.Diagnostics;
+﻿namespace Task.Manager.System.Process;
 
-namespace Task.Manager.System.Process;
-
-public class ProcessService : IProcessService
+public sealed partial class ProcessService : IProcessService
 {
-    public ProcessInfo[] GetProcesses()
+    public IEnumerable<ProcessInfo> GetProcesses()
     {
-        SysDiag::Process[] processes = SysDiag::Process.GetProcesses();
-        ProcessInfo[] processInfos = new ProcessInfo[processes.Length]; 
-
-        for (int i = 0; i < processes.Length; i++) {
-            processInfos[i] = new ProcessInfo(processes[i]);
+        foreach (ProcessInfo processInfo in GetProcessInfosInternal()) {
+            yield return processInfo;
         }
-
-        return processInfos;
     }
 
-    public ProcessInfo? GetProcessById(int pid) =>
-        ProcessUtils.TryGetProcessByPid(pid, out SysDiag::Process? process)
-            ? new ProcessInfo(process!)
-            : null;
+    public ProcessInfo? GetProcessById(int pid) => GetProcessInfoInternal(pid);
 }

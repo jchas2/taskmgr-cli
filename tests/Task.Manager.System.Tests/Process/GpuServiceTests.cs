@@ -7,16 +7,7 @@ public sealed class GpuServiceTests
     [Fact]
     public void Should_Run_Gpu_Process_Stats()
     {
-        GpuService service = new();
-        Dictionary<int, long> data = service.GetProcessStats();
+        Dictionary<int, long> data = GpuService.GetProcessStats();
         Assert.NotNull(data);
-    }
-
-    [Fact]
-    public void Should_Run_Gpu_Memory_Stats()
-    {
-        SystemStatistics systemStatistics = new();
-        GpuService service = new();
-        service.GetGpuMemory(ref systemStatistics);
     }
 }

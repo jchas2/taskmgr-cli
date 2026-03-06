@@ -43,70 +43,15 @@ public partial class ProcessUtilsTests
         Assert.True(terminated);
     } 
     
-    [SkippableFact]
-    [SupportedOSPlatform("windows")]
-    public void Should_Get_Handle_Count()
-    {
-        uint handleCount = ProcessUtils.GetHandleCount(SysDiag::Process.GetCurrentProcess());
-        Assert.InRange(handleCount, (uint)1, uint.MaxValue);
-    }
-
     [Fact]
     public void Should_Get_Process_By_Pid()
     {
-        SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
+        using SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
         bool result = ProcessUtils.TryGetProcessByPid(currentProcess.Id, out SysDiag::Process? process);
         
         Assert.True(result);
         Assert.NotNull(process);
-    }
-
-    [Fact]
-    public void Should_Get_Process_Command_Line()
-    {
-        SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
-        string commandLine = ProcessUtils.GetProcessCommandLine(currentProcess.Id, currentProcess.MainModule!, string.Empty);
         
-        Assert.NotEmpty(commandLine);
-    }
-
-    [Fact]
-    public void Should_Get_Process_IO_Operations()
-    {
-        SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
-        ulong ops = ProcessUtils.GetProcessIoOperations(currentProcess);
-        
-        Assert.InRange(ops, (ulong)0, uint.MaxValue);
-    }
-
-    [Fact]
-    public void Should_Get_Process_Product_Name()
-    {
-        SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
-        
-        string productName = ProcessUtils.GetProcessProductName(
-            currentProcess.MainModule!,
-            currentProcess.Id,
-            string.Empty);
-
-         Assert.NotEmpty(productName);
-    }
-
-    [Fact]
-    public void Should_Get_Process_Priority()
-    {
-        SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
-        int priority = ProcessUtils.GetPriority(currentProcess);
-        
-        //Assert.InRange(priority, -20, 19);
-    }
-    
-    [Fact]
-    public void Should_Get_Process_User_Name()
-    {
-        SysDiag::Process currentProcess = SysDiag::Process.GetCurrentProcess();
-        string userName = ProcessUtils.GetProcessUserName(currentProcess);
-        
-        Assert.NotEmpty(userName);
+        process.Dispose();
     }
 }

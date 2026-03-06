@@ -25,6 +25,14 @@ public sealed class SystemInfoTests
         var result = SystemInfo.IsRunningAsRoot();
         Assert.True(true);
     }
+
+    [Fact]
+    public void Should_Get_Gpu_Memory()
+    {
+        SystemStatistics systemStatistics = new();
+        SystemInfo.GetGpuMemory(ref systemStatistics);
+        Assert.True(true);
+    }
     
     [Fact]
     public void Should_Get_System_Statistics()

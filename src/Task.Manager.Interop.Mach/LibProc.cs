@@ -11,4 +11,13 @@ public sealed class LibProc
         int pid,
         int flavor,
         SysResource.rusage_info_v3* buffer);
+
+    [DllImport(Libraries.LibProcDyLib, SetLastError = true)]
+    public static extern unsafe int proc_listallpids(int* buffer, int buffersize);
+    
+    [DllImport(Libraries.LibProcDyLib, SetLastError = true)]
+    public static extern unsafe int proc_pidpath(
+        int pid, 
+        byte* buffer, 
+        uint buffersize);
 }

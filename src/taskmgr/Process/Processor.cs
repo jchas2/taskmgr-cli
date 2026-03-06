@@ -1,9 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Task.Manager.Cli.Utils;
-using Task.Manager.Commands;
-using Task.Manager.Configuration;
 using Task.Manager.System;
-using Task.Manager.System.Configuration;
 using Task.Manager.System.Process;
 using WorkerTask = System.Threading.Tasks.Task;
 
@@ -16,14 +13,14 @@ public class Processor : IProcessor
     internal const int ExitIntervalInMilliseconds = 250;
     internal const int DefaultIterationLimit = 0;
 
-    private const int InitialBufferSize = 512;
+    private const int InitialCapacity = 2048;
 
     private readonly IProcessService processService;
-    private readonly IGpuService gpuService;
     private SystemStatistics systemStatistics;
     private readonly List<ProcessorInfo> allProcessorInfos;
     private readonly List<ProcessorInfo> allProcessorInfosCopy;
-    private readonly Dictionary<int, ProcessorInfo> processMap;
+    private readonly Dictionary<int, ProcessInfo> processInfoMap;
+    private readonly Dictionary<int, ProcessInfo> newProcessInfoMap;
     private WorkerTask? workerTask;
     private WorkerTask? monitorTask;
     private CancellationTokenSource? cancellationTokenSource;
@@ -37,15 +34,15 @@ public class Processor : IProcessor
     
     public event EventHandler<ProcessorEventArgs>? ProcessorUpdated;
     
-    public Processor(IProcessService processService, IGpuService gpuService)
+    public Processor(IProcessService processService)
     {
         this.processService = processService;
-        this.gpuService = gpuService;
         Delay = DefaultDelayInMilliseconds;
         systemStatistics = new SystemStatistics();
-        allProcessorInfos = new List<ProcessorInfo>(InitialBufferSize);
-        allProcessorInfosCopy = new List<ProcessorInfo>(InitialBufferSize);
-        processMap = new Dictionary<int, ProcessorInfo>();
+        allProcessorInfos = new List<ProcessorInfo>(InitialCapacity);
+        allProcessorInfosCopy = new List<ProcessorInfo>(InitialCapacity);
+        processInfoMap = new Dictionary<int, ProcessInfo>(InitialCapacity);
+        newProcessInfoMap = new Dictionary<int, ProcessInfo>(InitialCapacity);
         @lock = new Lock();
         isWindows = OperatingSystem.IsWindows();
     }
@@ -113,8 +110,6 @@ public class Processor : IProcessor
         SystemTimes prevSysTimes = new();
         SystemTimes currSysTimes = new();
         SystemTimes sysTimesDeltas = new();
-        ProcessTimeInfo prevProcTimes = new();
-        ProcessTimeInfo currProcTimes = new();
         NetworkStatistics prevNetworkStats = new();
         NetworkStatistics currNetworkStats = new();
         TimeSpan delayInMs = new TimeSpan(0, 0, 0, 0, Delay);
@@ -125,75 +120,24 @@ public class Processor : IProcessor
 
         while (!cancellationToken.IsCancellationRequested && iterationCount <= IterationLimit) {
             allProcessorInfos.Clear();
+            processInfoMap.Clear();
+            newProcessInfoMap.Clear();
             processCount = 0;
             threadCount = 0;
 
             GetSystemTimes(ref prevSysTimes);
             GetNetworkStats(ref prevNetworkStats);
-            ProcessInfo[] processInfos = processService.GetProcesses();
-            Dictionary<int, long> gpuTimes = gpuService.GetProcessStats();
 
-            for (int index = 0; index < processInfos.Length; index++) {
-                
-                if (cancellationToken.IsCancellationRequested) {
-                    return;
-                }
+            foreach (ProcessInfo processInfo in processService.GetProcesses()) {
 #if __WIN32__
                 // On Windows, ignore the system "idle" process auto assigned to Pid 0.
-                if (isWindows && processInfos[index].Pid == 0) {
+                if (isWindows && processInfo.Pid == 0) {
                     continue;
                 }
 #endif
-                // Skip any process that generates an "Access Denied" Exception.
-                if (!TryGetProcessHandle(processInfos[index], out _)) {
-                    continue;
-                }
-
-                if (!TryMapProcessTimeInfo(processInfos[index], ref prevProcTimes)) {
-                    continue;
-                }
-
-                if (!processMap.TryGetValue(processInfos[index].Pid, out ProcessorInfo? processorInfo)) {
-                    processorInfo = new ProcessorInfo();
-
-                    if (!TryMapProcessInfo(processInfos[index], processorInfo)) {
-                        continue;
-                    }
-
-                    processMap.Add(processorInfo.Pid, processorInfo);
-                }
-
-                if (!TryGetProcessStartTime(processInfos[index], out DateTime startTime)) {
-                    continue;
-                }
-
-                // Pid has been reallocated to new process.
-                if (!processorInfo.StartTime.Equals(startTime)) {
-
-                    if (!TryMapProcessInfo(processInfos[index], processorInfo)) {
-                        continue;
-                    }
-
-                    processMap[processorInfo.Pid] = processorInfo;
-                }
-
-                processorInfo.UsedMemory = processInfos[index].UsedMemory;
-                processorInfo.PrevDiskOperations = processInfos[index].DiskOperations ;
-                processorInfo.DiskUsage = 0;
-                processorInfo.CpuTimePercent = 0.0;
-                processorInfo.CpuUserTimePercent = 0.0;
-                processorInfo.CpuKernelTimePercent = 0.0;
-                processorInfo.PrevCpuKernelTime = prevProcTimes.KernelTime;
-                processorInfo.PrevCpuUserTime = prevProcTimes.UserTime;
-                processorInfo.CurrCpuKernelTime = 0;
-                processorInfo.CurrCpuUserTime = 0;
-                processorInfo.GpuTimePercent = 0.0;
-                processorInfo.PrevGpuTime = gpuTimes.GetValueOrDefault(processorInfo.Pid, 0);
-                processorInfo.CurrGpuTime = 0;
-
-                allProcessorInfos.Add(processorInfo);
+                processInfoMap.TryAdd(processInfo.Pid, processInfo);
                 processCount++;
-                threadCount += processInfos[index].ThreadCount; 
+                threadCount += processInfo.ThreadCount; 
             }
             
             if (cancellationToken.IsCancellationRequested) {
@@ -220,31 +164,41 @@ public class Processor : IProcessor
             systemStatistics.DiskUsage = 0;
 
             SystemInfo.GetSystemMemory(ref systemStatistics);
-            gpuService.GetGpuMemory(ref systemStatistics);
-            gpuTimes = gpuService.GetProcessStats();
 #if __WIN32__
             long totalSysTime = Environment.ProcessorCount * delayInMs.Ticks;
 #endif              
 #if __APPLE__
             long totalSysTime = sysTimesDeltas.Kernel + sysTimesDeltas.User + sysTimesDeltas.Idle;
 #endif
-            for (int i = 0; i < allProcessorInfos.Count; i++) {
-                
-                if (cancellationToken.IsCancellationRequested) {
-                    return;
-                }
+            foreach (ProcessInfo processInfo in processService.GetProcesses()) {
+                newProcessInfoMap.TryAdd(processInfo.Pid, processInfo);
+            }
 
-                currProcTimes.Clear();
+            foreach (int pid in processInfoMap.Keys) {
+                ProcessInfo processInfo = processInfoMap[pid];
+                ProcessInfo? newProcessInfo = newProcessInfoMap.GetValueOrDefault(pid);
 
-                if (!TryGetProcessTimes(allProcessorInfos[i].Pid, ref currProcTimes)) {
+                if (newProcessInfo == null) {
                     continue;
                 }
-                
-                allProcessorInfos[i].CurrCpuKernelTime = currProcTimes.KernelTime;
-                allProcessorInfos[i].CurrCpuUserTime = currProcTimes.UserTime;
 
-                long procKernelDiff = allProcessorInfos[i].CurrCpuKernelTime - allProcessorInfos[i].PrevCpuKernelTime;
-                long procUserDiff = allProcessorInfos[i].CurrCpuUserTime - allProcessorInfos[i].PrevCpuUserTime;
+                ProcessorInfo processorInfo = new() {
+                    Pid = processInfo.Pid,
+                    ParentPid = processInfo.ParentPid,
+                    IsDaemon = processInfo.IsDaemon,
+                    IsLowPriority = processInfo.IsLowPriority,
+                    ProcessName = processInfo.ProcessName,
+                    FileDescription = processInfo.FileDescription,
+                    UserName = processInfo.UserName,
+                    CmdLine = processInfo.CmdLine,
+                    StartTime = processInfo.StartTime,
+                    ThreadCount = processInfo.ThreadCount,
+                    HandleCount = processInfo.HandleCount,
+                    BasePriority = processInfo.BasePriority
+                };
+                
+                long procKernelDiff = newProcessInfo.KernelTime - processInfo.KernelTime;
+                long procUserDiff = newProcessInfo.UserTime - processInfo.UserTime;
                 long totalProc = procKernelDiff + procUserDiff;
 
                 if (totalSysTime == 0) {
@@ -255,40 +209,41 @@ public class Processor : IProcessor
                 // Non-Irix Mode is consistent with Windows Task Manager, where 100% is full utilisation of ALL cores on the system.
                 irixFactor = IrixMode ? Environment.ProcessorCount : 1;
 #if __WIN32__
-                allProcessorInfos[i].CpuTimePercent = irixFactor * (double)totalProc / (double)totalSysTime;
-                allProcessorInfos[i].CpuKernelTimePercent = irixFactor * (double)procKernelDiff / (double)totalSysTime;
-                allProcessorInfos[i].CpuUserTimePercent = irixFactor * (double)procUserDiff / (double)totalSysTime;
+                processorInfo.CpuTimePercent = irixFactor * (double)totalProc / (double)totalSysTime;
+                processorInfo.CpuKernelTimePercent = irixFactor * (double)procKernelDiff / (double)totalSysTime;
+                processorInfo.CpuUserTimePercent = irixFactor * (double)procUserDiff / (double)totalSysTime;
 #endif
 #if __APPLE__
-                allProcessorInfos[i].CpuTimePercent = irixFactor * (double)totalProc / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
-                allProcessorInfos[i].CpuKernelTimePercent = irixFactor * (double)procKernelDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
-                allProcessorInfos[i].CpuUserTimePercent = irixFactor * (double)procUserDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
+                processorInfo.CpuTimePercent = irixFactor * (double)totalProc / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
+                processorInfo.CpuKernelTimePercent = irixFactor * (double)procKernelDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
+                processorInfo.CpuUserTimePercent = irixFactor * (double)procUserDiff / (double)(delayInMs.Ticks * (long)Environment.ProcessorCount);
 #endif
-                allProcessorInfos[i].CurrGpuTime = gpuTimes.GetValueOrDefault(allProcessorInfos[i].Pid, 0);
-                long gpuTimeDelta = allProcessorInfos[i].CurrGpuTime - allProcessorInfos[i].PrevGpuTime;
+                long gpuTimeDelta = newProcessInfo.GpuTime - processInfo.GpuTime;
                 double gpuPercent = 0.0;
                 
                 if (gpuTimeDelta > 0) {
 #if __WIN32__
                     double deltaSeconds = gpuTimeDelta / 10_000_000.0;
                     gpuPercent = deltaSeconds / ((double)Delay / 1000);
-                    allProcessorInfos[i].GpuTimePercent = gpuPercent;
+                    processorInfo.GpuTimePercent = gpuPercent;
 #endif
 #if __APPLE__
                     // Convert nanoseconds to percentage of delay time.
                     double deltaSeconds = gpuTimeDelta / 1_000_000_000.0;
                     gpuPercent = deltaSeconds / ((double)Delay / 1000);
-                    allProcessorInfos[i].GpuTimePercent = gpuPercent;
+                    processorInfo.GpuTimePercent = gpuPercent;
 #endif
                     systemStatistics.GpuPercentTime += gpuPercent;
                 }
 
-                allProcessorInfos[i].CurrDiskOperations = ProcessUtils.GetProcessIoOperations(allProcessorInfos[i].Pid);
+                processorInfo.UsedMemory = newProcessInfo.UsedMemory;
                 
-                allProcessorInfos[i].DiskUsage = 
-                    (long)((double)(allProcessorInfos[i].CurrDiskOperations - allProcessorInfos[i].PrevDiskOperations) * (1000.0 / (double)Delay));
+                processorInfo.DiskUsage = 
+                    (long)((double)(newProcessInfo.DiskOperations - processInfo.DiskOperations) * (1000.0 / (double)Delay));
                 
-                systemStatistics.DiskUsage += allProcessorInfos[i].DiskUsage;
+                systemStatistics.DiskUsage += processorInfo.DiskUsage;
+                
+                allProcessorInfos.Add(processorInfo);
             }
 
             systemStatistics.CpuPercentUserTime = (double)sysTimesDeltas.User / (double)totalSysTime;
@@ -315,7 +270,7 @@ public class Processor : IProcessor
                 allProcessorInfosCopy.Clear();
 
                 for (int i = 0; i < allProcessorInfos.Count; i++) {
-                    allProcessorInfosCopy.Add(new ProcessorInfo(allProcessorInfos[i]));
+                    allProcessorInfosCopy.Add(allProcessorInfos[i]);
                 }
             }
 
@@ -371,7 +326,8 @@ public class Processor : IProcessor
     {
         // Method to only sleep the thread the minimum amount of required time
         // with checks every ExitIntervalInMilliseconds. For example, if the delay is 
-        // 3000ms, check every 250ms for a cancellation.
+        // 3000ms, check every 250ms for a cancellation. 
+        // This keeps the response to the ESC key interrupt snappy.
         TimeSpan remainingDelay = new TimeSpan(0, 0, 0, 0, delay);
         
         while (remainingDelay > TimeSpan.Zero) {
@@ -383,94 +339,6 @@ public class Processor : IProcessor
             remainingDelay = remainingDelay.Subtract(TimeSpan.FromMilliseconds(ExitIntervalInMilliseconds));
         }
     }
-    
-    private bool TryGetProcessTimes(in int pid, ref ProcessTimeInfo ptInfo)
-    {
-        try {
-            ProcessInfo? processInfo = processService.GetProcessById(pid);
-            
-            if (processInfo == null){
-                return false;
-            }
-            
-            TryMapProcessTimeInfo(processInfo, ref ptInfo);
-            return true;
-        }
-        catch (Exception ex) {
-            ExceptionHelper.HandleException(ex, $"Failed TryGetProcessTimes() {pid}");
-            return false;
-        }
-    }
-
-    private bool TryMapProcessTimeInfo(ProcessInfo processInfo, ref ProcessTimeInfo ptInfo)
-    {
-        ptInfo.DiskOperations = 0;
-        ptInfo.KernelTime = 0;
-        ptInfo.UserTime = 0;
-
-        // On MacOS, these properties can still throw an Exception when running as root.
-        try {
-            ptInfo.KernelTime = processInfo.KernelTime;
-            ptInfo.UserTime = processInfo.UserTime;
-            return true;
-        }
-        catch (Exception ex) {
-            ExceptionHelper.HandleException(ex, $"Failed TryMapProcessTimeInfo() {processInfo.ProcessName} {processInfo.Pid}");
-            return false;
-        }
-    }
-
-    private bool TryMapProcessInfo(ProcessInfo processInfo, ProcessorInfo processorInfo)
-    {
-        try {
-            processorInfo.Pid = processInfo.Pid;
-            processorInfo.ParentPid = processInfo.ParentPid;
-            processorInfo.IsDaemon = processInfo.IsDaemon;
-            processorInfo.IsLowPriority = processInfo.IsLowPriority;
-            processorInfo.ProcessName = processInfo.ProcessName;
-            processorInfo.FileDescription = processInfo.FileDescription;
-            processorInfo.UserName = processInfo.UserName;
-            processorInfo.CmdLine = processInfo.CmdLine;
-            processorInfo.StartTime = processInfo.StartTime;
-            processorInfo.ThreadCount = processInfo.ThreadCount;
-            processorInfo.HandleCount = processInfo.HandleCount;
-            processorInfo.BasePriority = processInfo.BasePriority;
-            return true;
-        }
-        catch (Exception ex) {
-            ExceptionHelper.HandleException(ex, $"Failed TryMapProcessInfo() {processInfo.ProcessName} {processInfo.Pid}");
-            return false;
-        }
-    }
 
     public int ThreadCount => threadCount;
-    
-    private bool TryGetProcessHandle(ProcessInfo processInfo, out IntPtr? processHandle)
-    {
-        try {
-             // On Windows (with elevated access) this call can still throw an
-             // "Access denied" Exception. This is usually for the "system"
-             // process assigned to Pid 4.
-            processHandle = processInfo.Handle;
-            return true;
-        }
-        catch (Exception ex) {
-            ExceptionHelper.HandleException(ex, $"Failed Handle() {processInfo.ProcessName} {processInfo.Pid}");
-            processHandle = null;
-            return false;
-        }
-    }
-
-    private bool TryGetProcessStartTime(ProcessInfo processInfo, out DateTime startTime)
-    {
-        try {
-            startTime = processInfo.StartTime;
-            return true;
-        }
-        catch (Exception ex) {
-            ExceptionHelper.HandleException(ex, $"Failed StartTime() {processInfo.ProcessName} {processInfo.Pid}");
-            startTime = DateTime.Now;
-            return false;
-        }
-    }
 }

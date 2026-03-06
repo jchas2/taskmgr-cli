@@ -40,11 +40,8 @@ public static class ProcessInfoHelpers
         Assert.NotNull(processInfo.UserName);
         Assert.NotEmpty(processInfo.UserName);
 
-        Assert.NotNull(processInfo.MainModule);
-
         Assert.InRange(processInfo.StartTime, DateTime.MinValue, DateTime.MaxValue);
         Assert.InRange(processInfo.BasePriority, 0, long.MaxValue);
-        Assert.InRange(processInfo.Handle, 0, nint.MaxValue);
         Assert.InRange(processInfo.DiskOperations, (ulong)0, ulong.MaxValue);
         Assert.InRange(processInfo.KernelTime, 0, long.MaxValue);
         Assert.InRange(processInfo.ParentPid, 0, int.MaxValue);

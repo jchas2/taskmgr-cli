@@ -11,7 +11,7 @@ public static partial class SystemInfo
 #if __APPLE__
     private const int NanosecondsTo100NanosecondsFactor = 100;
     
-    private static unsafe TimeSpan CalculateSystemTime(ulong systemTime)
+    internal static unsafe TimeSpan CalculateSystemTime(ulong systemTime)
     {
         MachTime.mach_timebase_info_data_t timeBase = default;
         int result = MachTime.mach_timebase_info(&timeBase);
@@ -103,6 +103,59 @@ public static partial class SystemInfo
         IntPtr size = new IntPtr((int)numCpuInfo * sizeof(int));
         MachHost.vm_deallocate(MachHost.mach_task_self(), cpuInfo, size);
 
+        return true;
+    }
+    
+    private static bool GetGpuMemoryInternal(ref SystemStatistics systemStatistics)
+    {
+        systemStatistics.TotalGpuMemory = 0;
+        systemStatistics.AvailableGpuMemory = 0;
+
+        IntPtr matching = IOKit.IOServiceMatching("IOAccelerator");
+        uint accelerator = IOKit.IOServiceGetMatchingService(0, matching);
+
+        if (accelerator == 0) {
+            return false;
+        }
+
+        IntPtr properties = IntPtr.Zero;
+
+        int result = IOKit.IORegistryEntryCreateCFProperties(
+            accelerator,
+            out properties,
+            IntPtr.Zero,
+            0);
+
+        if (result != 0 && properties == IntPtr.Zero) {
+            IOKit.IOObjectRelease(accelerator);
+            return false;
+        }
+        
+        Dictionary<string, nint> props = CoreFoundation.ToDictionary(properties);
+
+        if (!props.ContainsKey("PerformanceStatistics")) {
+            CoreFoundation.CFRelease(properties);
+            return false;
+        }
+        
+        Dictionary<string, nint> perfStats = CoreFoundation.ToDictionary(props["PerformanceStatistics"]);
+        long allocMemory = 0;
+        long inUseMemory = 0;
+
+        if (perfStats.TryGetValue("Alloc system memory", out var propAllocMemory)) {
+            CoreFoundation.CFNumberGetValue(propAllocMemory, out allocMemory);
+        }
+
+        if (perfStats.TryGetValue("In use system memory", out var propInUseMemory)) {
+            CoreFoundation.CFNumberGetValue(propInUseMemory, out inUseMemory);
+        }
+
+        systemStatistics.TotalGpuMemory = allocMemory;
+        systemStatistics.AvailableGpuMemory = allocMemory - inUseMemory;
+
+        CoreFoundation.CFRelease(properties);
+        IOKit.IOObjectRelease(accelerator);
+        
         return true;
     }
     

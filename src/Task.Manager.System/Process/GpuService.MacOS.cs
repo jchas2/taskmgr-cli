@@ -2,63 +2,10 @@ using Task.Manager.Interop.Mach;
 
 namespace Task.Manager.System.Process;
 
-public partial class GpuService
+public static partial class GpuService
 {
 #if __APPLE__
-    private static bool GetGpuMemoryInternal(ref SystemStatistics systemStatistics)
-    {
-        systemStatistics.TotalGpuMemory = 0;
-        systemStatistics.AvailableGpuMemory = 0;
-
-        IntPtr matching = IOKit.IOServiceMatching("IOAccelerator");
-        uint accelerator = IOKit.IOServiceGetMatchingService(0, matching);
-
-        if (accelerator == 0) {
-            return false;
-        }
-
-        IntPtr properties = IntPtr.Zero;
-
-        int result = IOKit.IORegistryEntryCreateCFProperties(
-            accelerator,
-            out properties,
-            IntPtr.Zero,
-            0);
-
-        if (result != 0 && properties == IntPtr.Zero) {
-            IOKit.IOObjectRelease(accelerator);
-            return false;
-        }
-        
-        Dictionary<string, nint> props = CoreFoundation.ToDictionary(properties);
-
-        if (!props.ContainsKey("PerformanceStatistics")) {
-            CoreFoundation.CFRelease(properties);
-            return false;
-        }
-        
-        Dictionary<string, nint> perfStats = CoreFoundation.ToDictionary(props["PerformanceStatistics"]);
-        long allocMemory = 0;
-        long inUseMemory = 0;
-
-        if (perfStats.TryGetValue("Alloc system memory", out var propAllocMemory)) {
-            CoreFoundation.CFNumberGetValue(propAllocMemory, out allocMemory);
-        }
-
-        if (perfStats.TryGetValue("In use system memory", out var propInUseMemory)) {
-            CoreFoundation.CFNumberGetValue(propInUseMemory, out inUseMemory);
-        }
-
-        systemStatistics.TotalGpuMemory = allocMemory;
-        systemStatistics.AvailableGpuMemory = allocMemory - inUseMemory;
-
-        CoreFoundation.CFRelease(properties);
-        IOKit.IOObjectRelease(accelerator);
-        
-        return true;
-    }
-
-    private Dictionary<int, long> GetProcessStatsInternal()
+    private static Dictionary<int, long> GetProcessStatsInternal()
     {
         Dictionary<int, long> gpuInfo = new();
         IntPtr matching = IOKit.IOServiceMatching("IOAccelerator");
