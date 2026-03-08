@@ -31,17 +31,16 @@ public static partial class SystemInfo
         systemStatistics.CpuName = string.Empty;
 
         using RegistryKey? key = Registry.LocalMachine.OpenSubKey(RegPath);
-#if DEBUG
-        Debug.Assert(null != key, $"Failed OpenSubKey() {RegPath}");
-#endif
-        if (null == key) {
+        Debug.Assert(key != null, $"Failed OpenSubKey() {RegPath}");
+        
+        if (key == null) {
             return false;
         }
         
         // REG_SZ
         object? processorName = key.GetValue(RegKeyProcessorName);
         
-        if (null == processorName) {
+        if (processorName == null) {
             return false;
         }
         
@@ -160,52 +159,56 @@ public static partial class SystemInfo
             out hCounter);
         
         Pdh.PdhCollectQueryData(hQuery);
-
-        uint bufferSize = 0;
-        uint itemCount = 0;
-        long usedDedicatedMemory = 0;
-
-        Pdh.PdhGetRawCounterArray(hCounter, ref bufferSize, ref itemCount, IntPtr.Zero);
-
-        if (bufferSize <= 0) {
-            Pdh.PdhCloseQuery(hQuery);
-            return false;
-        }
-
-        IntPtr buffer = Marshal.AllocHGlobal((int)bufferSize);
-
-        if (Pdh.PdhGetRawCounterArray(
-            hCounter, 
-            ref bufferSize, 
-            ref itemCount, 
-            buffer) == Pdh.ERROR_SUCCESS) {
-        
-            int structSize = Marshal.SizeOf(typeof(Pdh.PDH_RAW_COUNTER_ITEM));
-            
-            for (int i = 0; i < itemCount; i++) {
-                IntPtr currentItemPtr = new IntPtr(buffer.ToInt64() + (i * structSize));
-                Pdh.PDH_RAW_COUNTER_ITEM item = Marshal.PtrToStructure<Pdh.PDH_RAW_COUNTER_ITEM>(currentItemPtr);
-
-                if (item.RawValue.CStatus == Pdh.PDH_CSTATUS_VALID_DATA) {
-                    usedDedicatedMemory += item.RawValue.FirstValue;
-                }
-            }
-        }
-        
-        Marshal.FreeHGlobal(buffer);
-        Pdh.PdhCloseQuery(hQuery);
-        
+        long usedDedicatedMemory = SumRawCounterArray(hCounter);
         systemStatistics.AvailableGpuMemory = systemStatistics.TotalGpuMemory - usedDedicatedMemory;
+
+        Pdh.PdhCloseQuery(hQuery);
         return true;        
     }
 
-    private static unsafe bool GetNetworkStatsInternal(ref NetworkStatistics networkStatistics)
+    private static bool GetNetworkStatsInternal(ref NetworkStatistics networkStatistics)
     {
         networkStatistics.NetworkBytesSent = 0;
         networkStatistics.NetworkBytesReceived = 0;
         networkStatistics.NetworkPacketsSent = 0;
         networkStatistics.NetworkPacketsReceived = 0;
+        
+        const string BytesReceivedPath = @"\Network Interface(*)\Bytes Received/sec";
+        const string BytesSentPath     = @"\Network Interface(*)\Bytes Sent/sec";
 
+        IntPtr hQuery;
+        IntPtr hCounterReceived;
+        IntPtr hCounterSent;
+
+        if (Pdh.PdhOpenQuery(
+            null,
+            IntPtr.Zero,
+            out hQuery) != Pdh.ERROR_SUCCESS) {
+
+            return false;
+        }
+
+        Pdh.PdhAddEnglishCounter(
+            hQuery, 
+            BytesReceivedPath, 
+            IntPtr.Zero, 
+            out hCounterReceived);
+        
+        Pdh.PdhAddEnglishCounter(
+            hQuery, 
+            BytesSentPath,     
+            IntPtr.Zero, 
+            out hCounterSent);
+
+        Pdh.PdhCollectQueryData(hQuery);
+
+        long totalReceived = SumRawCounterArray(hCounterReceived);
+        long totalSent = SumRawCounterArray(hCounterSent);
+
+        networkStatistics.NetworkBytesReceived = (ulong)totalReceived;
+        networkStatistics.NetworkBytesSent = (ulong)totalSent;
+
+        Pdh.PdhCloseQuery(hQuery);
         return true;
     }
     
@@ -237,17 +240,53 @@ public static partial class SystemInfo
     
     private static bool IsRunningAsRootInternal()
     {
-        /* Compiler will still complain with a "CA1416: Validate platform compatibility" without guard */
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            using var identity = WindowsIdentity.GetCurrent();
-            WindowsPrincipal principal = new(identity);
-            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        using var identity = WindowsIdentity.GetCurrent();
+        WindowsPrincipal principal = new(identity);
+        return principal.IsInRole(WindowsBuiltInRole.Administrator);
+    }
+    
+    private static long SumRawCounterArray(IntPtr hCounter)
+    {
+        uint bufferSize = 0;
+        uint itemCount  = 0;
+
+        Pdh.PdhGetRawCounterArray(
+            hCounter, 
+            ref bufferSize, 
+            ref itemCount, 
+            IntPtr.Zero);
+
+        if (bufferSize <= 0) {
+            return -1;
         }
 
-        return false;
+        IntPtr buffer = Marshal.AllocHGlobal((int)bufferSize);
+
+        if (Pdh.PdhGetRawCounterArray(
+                hCounter,
+                ref bufferSize,
+                ref itemCount,
+                buffer) != Pdh.ERROR_SUCCESS) { 
+            
+            return 0;
+        }
+
+        long total = 0;
+        int structSize = Marshal.SizeOf(typeof(Pdh.PDH_RAW_COUNTER_ITEM));
+
+        for (int i = 0; i < itemCount; i++)
+        {
+            IntPtr ptr  = new IntPtr(buffer.ToInt64() + (i * structSize));
+            Pdh.PDH_RAW_COUNTER_ITEM item = Marshal.PtrToStructure<Pdh.PDH_RAW_COUNTER_ITEM>(ptr);
+
+            if (item.RawValue.CStatus == Pdh.PDH_CSTATUS_VALID_DATA) {
+                total += item.RawValue.FirstValue;
+            }
+        }
+
+        Marshal.FreeHGlobal(buffer);
+        return total;
     }
 #endif
 }
-
 #pragma warning restore CA1416 // Validate platform compatibility

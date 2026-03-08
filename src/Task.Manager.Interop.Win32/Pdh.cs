@@ -22,23 +22,23 @@ public static class Pdh
         public PDH_RAW_COUNTER RawValue;
     }
 
-    [DllImport("pdh.dll", CharSet = CharSet.Unicode)]
+    [DllImport(Libraries.Pdh, CharSet = CharSet.Unicode)]
     public static extern uint PdhOpenQuery(
         string? szDataSource, 
         IntPtr dwUserData, 
         out IntPtr phQuery);
     
-    [DllImport("pdh.dll", CharSet = CharSet.Unicode)]
+    [DllImport(Libraries.Pdh, CharSet = CharSet.Unicode)]
     public static extern uint PdhAddEnglishCounter(
         IntPtr hQuery, 
         string szFullCounterPath, 
         IntPtr dwUserData, 
         out IntPtr phCounter);
     
-    [DllImport("pdh.dll")]
+    [DllImport(Libraries.Pdh)]
     public static extern uint PdhCollectQueryData(IntPtr hQuery);
     
-    [DllImport("pdh.dll", CharSet = CharSet.Unicode)]
+    [DllImport(Libraries.Pdh, CharSet = CharSet.Unicode)]
     public static extern uint PdhGetRawCounterArray(
         IntPtr hCounter, 
         ref uint lpdwBufferSize, 

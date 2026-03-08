@@ -1,10 +1,9 @@
 using Task.Manager.Cli.Utils;
-using Task.Manager.Interop.Win32;
 using SysDiag = System.Diagnostics;
 
 namespace Task.Manager.System.Process;
 
-public static partial class ProcessUtils
+public static class ProcessUtils
 {
     public static bool EndTask(int pid, int timeOutMilliseconds)
     {

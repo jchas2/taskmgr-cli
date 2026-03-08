@@ -12,7 +12,6 @@ public sealed class ProcessInfo
     public bool IsLowPriority { get; internal set; }
     public string UserName { get; internal set; } = string.Empty;
     public string CmdLine { get; internal set; } = string.Empty;
-    public DateTime StartTime { get; internal set; }
     public int ThreadCount { get; internal set; }
     public uint HandleCount { get; internal set; }
     public long BasePriority { get; internal set; }

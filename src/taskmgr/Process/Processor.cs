@@ -164,6 +164,7 @@ public class Processor : IProcessor
             systemStatistics.DiskUsage = 0;
 
             SystemInfo.GetSystemMemory(ref systemStatistics);
+            SystemInfo.GetGpuMemory(ref systemStatistics);
 #if __WIN32__
             long totalSysTime = Environment.ProcessorCount * delayInMs.Ticks;
 #endif              
@@ -191,7 +192,6 @@ public class Processor : IProcessor
                     FileDescription = processInfo.FileDescription,
                     UserName = processInfo.UserName,
                     CmdLine = processInfo.CmdLine,
-                    StartTime = processInfo.StartTime,
                     ThreadCount = processInfo.ThreadCount,
                     HandleCount = processInfo.HandleCount,
                     BasePriority = processInfo.BasePriority

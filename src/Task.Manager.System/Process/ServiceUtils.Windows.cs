@@ -28,7 +28,10 @@ public static partial class ServiceUtils
         for (int i = 0; i < services.Length; i++) {
             ServiceController service = services[i];
 
-            IntPtr hService = WinService.OpenService(hSCM, service.ServiceName, WinService.SERVICE_QUERY_STATUS);
+            IntPtr hService = WinService.OpenService(
+                hSCM, 
+                service.ServiceName, 
+                WinService.SERVICE_QUERY_STATUS);
 
             if (hService == IntPtr.Zero) {
                 continue;
@@ -42,6 +45,8 @@ public static partial class ServiceUtils
 
             serviceMap[pid] = service;
         }
+
+        WinService.CloseServiceHandle(hSCM);
     }
 
     public static bool GetService(int pid, out ServiceController? service)

@@ -55,7 +55,7 @@ public sealed class MetreControlTests
     }
 
     [Fact]
-    private void Should_Draw_Metre_With_Bogus_Percentage()
+    private void Should_Draw_Metre_With_Improper_Percentage()
     {
         Mock<ISystemTerminal> terminal = new();
         terminal.Setup(t => t.WindowWidth).Returns(64);
@@ -69,6 +69,33 @@ public sealed class MetreControlTests
             LabelSeries1 = "553648131.2%",
             ColourSeries1 = ConsoleColor.Green,
             PercentageSeries1 = 5536481.31,
+            Text = "Gpu"
+        };
+        
+        ctrl.Draw();
+
+        terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Gpu"))), Times.Once);
+        terminal.Verify(t => t.Write(It.Is<char>(c => c == '[')), Times.Once);
+        terminal.Verify(t => t.Write(It.Is<char>(c => c == ']')), Times.Once);
+
+        MockInvocationsHelper.WriteInvocations(terminal.Invocations, outputHelper);
+    } 
+    
+    [Fact]
+    private void Should_Draw_Metre_With_Negative_Percentage()
+    {
+        Mock<ISystemTerminal> terminal = new();
+        terminal.Setup(t => t.WindowWidth).Returns(64);
+        terminal.Setup(t => t.WindowHeight).Returns(24);
+        
+        MetreControl ctrl = new(terminal.Object) {
+            DrawStacked = false,
+            Height = 1,
+            Width = 20,
+            MetreStyle = MetreControlStyle.Dots,
+            LabelSeries1 = "-20.0%",
+            ColourSeries1 = ConsoleColor.Green,
+            PercentageSeries1 = -0.2,
             Text = "Gpu"
         };
         
