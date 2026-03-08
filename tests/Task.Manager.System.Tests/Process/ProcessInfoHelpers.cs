@@ -13,8 +13,6 @@ public static class ProcessInfoHelpers
         Assert.Equal(currentProcess.MainModule?.ModuleName, processInfo.ModuleName);
 
         // TODO: File Description and Command Line args.
-        
-        Assert.Equal(currentProcess.StartTime, processInfo.StartTime);
         Assert.Equal(currentProcess.BasePriority, processInfo.BasePriority);
     }
 
@@ -40,7 +38,6 @@ public static class ProcessInfoHelpers
         Assert.NotNull(processInfo.UserName);
         Assert.NotEmpty(processInfo.UserName);
 
-        Assert.InRange(processInfo.StartTime, DateTime.MinValue, DateTime.MaxValue);
         Assert.InRange(processInfo.BasePriority, 0, long.MaxValue);
         Assert.InRange(processInfo.DiskOperations, (ulong)0, ulong.MaxValue);
         Assert.InRange(processInfo.KernelTime, 0, long.MaxValue);

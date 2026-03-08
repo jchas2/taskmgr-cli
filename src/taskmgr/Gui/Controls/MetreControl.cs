@@ -27,10 +27,7 @@ public sealed class MetreControl : Control
     {
         using TerminalColourRestorer _ = new();
 
-        if (percentage > 1.0) {
-            percentage = 1.0;
-        }
-        
+        percentage = Math.Clamp(percentage, 0.0, 1.0);
         int units = (int)(percentage * (double)MetreWidth);
         int labelSegmentWidth = label.Length;
 
@@ -54,11 +51,12 @@ public sealed class MetreControl : Control
             int numChars = segmentWidth - units;
             int colourStrLen = labelSegmentWidth - numChars;
 
-            label = label.Substring(0, colourStrLen).ToColour(unitFg, unitBg) +
-                    label.Substring(colourStrLen, label.Length - colourStrLen)
-                         .ToColour(ForegroundColour, BackgroundColour);
-            
-            units -= colourStrLen;
+            if (colourStrLen <= label.Length) {
+                label = label.Substring(0, colourStrLen).ToColour(unitFg, unitBg) +
+                        label.Substring(colourStrLen, label.Length - colourStrLen)
+                            .ToColour(ForegroundColour, BackgroundColour);
+                units -= colourStrLen;
+            }
         }
         else {
             label = label.ToColour(ForegroundColour, BackgroundColour);

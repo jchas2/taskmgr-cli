@@ -11,10 +11,8 @@ public partial class ModuleService
             return [];
         }
         
-        if (!GetModulesInternal(process, out var moduleInfos)) {
-            return [];
-        }
-        
+        GetModulesInternal(process, out List<ModuleInfo> moduleInfos);
+        process.Dispose();
         return moduleInfos;
     }
 }

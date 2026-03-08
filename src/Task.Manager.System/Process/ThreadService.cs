@@ -11,10 +11,8 @@ public class ThreadService : IThreadService
             return [];
         }
 
-        if (!TryGetThreadsInternal(process, out var threadInfos)) {
-            return [];
-        }
-        
+        TryGetThreadsInternal(process, out var threadInfos);
+        process.Dispose();
         return threadInfos;
     }
 
