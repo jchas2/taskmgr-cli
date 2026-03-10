@@ -39,7 +39,9 @@ public static class ProcessInfoHelpers
         Assert.NotEmpty(processInfo.UserName);
 
         Assert.InRange(processInfo.BasePriority, 0, long.MaxValue);
-        Assert.InRange(processInfo.DiskOperations, (ulong)0, ulong.MaxValue);
+        Assert.InRange(processInfo.DiskReadBytes, 0U, ulong.MaxValue);
+        Assert.InRange(processInfo.DiskWriteBytes, 0U, ulong.MaxValue);
+        Assert.InRange(processInfo.DiskOperations, 0U, ulong.MaxValue);
         Assert.InRange(processInfo.KernelTime, 0, long.MaxValue);
         Assert.InRange(processInfo.ParentPid, 0, int.MaxValue);
         Assert.InRange(processInfo.ThreadCount, 1, int.MaxValue);

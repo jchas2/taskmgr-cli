@@ -16,6 +16,8 @@ public class ProcessorInfo
     public string UserName { get; set; } = string.Empty;
     public string CmdLine { get; set; } = string.Empty;
     
+    public ulong DiskReadBytes { get; internal set; }
+    public ulong DiskWriteBytes { get; internal set; }
     public long DiskUsage { get; set; }
 
     public long UsedMemory { get; set; }

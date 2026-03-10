@@ -67,7 +67,15 @@ public sealed partial class ProcessService
         processInfo.UserTime = userTime;
         
         processInfo.GpuTime = gpuTime;
-        processInfo.DiskOperations = GetProcessIoOperations(hProcess);
+        
+        GetProcessIoOperations(
+            hProcess,
+            out ulong diskReadBytes,
+            out ulong diskWriteBytes);
+
+        processInfo.DiskReadBytes = diskReadBytes;
+        processInfo.DiskWriteBytes = diskWriteBytes;
+        processInfo.DiskOperations = diskReadBytes + diskReadBytes;
 
         Kernel32.CloseHandle(hProcess);
         return processInfo;
@@ -159,19 +167,21 @@ public sealed partial class ProcessService
         Kernel32.CloseHandle(hSnapshot);
     }
     
-    private static ulong GetProcessIoOperations(IntPtr hProcess)
+    private static void GetProcessIoOperations(
+        IntPtr hProcess, 
+        out ulong readBytes, 
+        out ulong writeBytes)
     {
-        try {
-            if (!WinNt.GetProcessIoCounters(hProcess, out WinNt.IO_COUNTERS counters)) {
-                Win32ErrorHelpers.AssertOnLastError(nameof(WinNt.GetProcessIoCounters));
-                return 0;
-            }
+        readBytes = 0;
+        writeBytes = 0;
 
-            return counters.ReadTransferCount + counters.WriteTransferCount;
-        } 
-        catch {
-            return 0;
+        if (!WinNt.GetProcessIoCounters(hProcess, out WinNt.IO_COUNTERS counters)) {
+            Win32ErrorHelpers.AssertOnLastError(nameof(WinNt.GetProcessIoCounters));
+            return;
         }
+
+        readBytes = counters.ReadTransferCount; 
+        writeBytes = counters.WriteTransferCount;
     }
 
     private void GetProcessMemCounters(IntPtr hProcess, ref PsApi.PROCESS_MEMORY_COUNTERS counters)

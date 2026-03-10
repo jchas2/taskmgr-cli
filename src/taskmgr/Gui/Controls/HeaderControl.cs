@@ -29,15 +29,19 @@ public sealed class HeaderControl : Control
     private ulong maxNetworkSend = 0;
     
     private const int MetreWidth = 52;
-    private const int StatisticsViewColumnCount = 8;
+    private const int StatisticsViewColumnCount = 12;
     private const int CpuLabelColumnWidth = 7;
     private const int CpuDataColumnWidth = 7;
     private const int MemoryLabelColumnWidth = 8;
     private const int MemoryDataColumnWidth = 10;
     private const int VirtualMemoryLabelColumnWidth = 7;
     private const int VirtualMemoryDataColumnWidth = 10;
-    private const int DiskLabelColumnWidth = 5;
-    private const int DiskDataColumnWidth = 14;
+    private const int GpuMemoryLabelColumnWidth = 9;
+    private const int GpuMemoryDataColumnWidth = 10;
+    private const int DiskLabelColumnWidth = 13;
+    private const int DiskDataColumnWidth = 16;
+    private const int NetworkLabelColumnWidth = 19;
+    private const int NetworkDataColumnWidth = 16;
 
     public HeaderControl(
         IProcessor processor, 
@@ -158,6 +162,7 @@ public sealed class HeaderControl : Control
         Terminal.WriteEmptyLineTo(Width - nchars);
 
         string cpuInfo = $"{systemStatistics.CpuName} (Cores {systemStatistics.CpuCores})";
+        
         if (appConfig.UseIrixReporting) {
             cpuInfo += " Irix Mode";
         }
@@ -170,11 +175,13 @@ public sealed class HeaderControl : Control
         double totalCpu = systemStatistics.CpuPercentKernelTime + systemStatistics.CpuPercentUserTime;
 
         double memRatio = 0.0;
+        
         if (systemStatistics.TotalPhysical > 0) {
             memRatio = 1.0 - ((double)(systemStatistics.AvailablePhysical) / (double)(systemStatistics.TotalPhysical));    
         }
         
         double virRatio = 0.0;
+        
         if (systemStatistics.TotalPageFile > 0) {
             virRatio = 1.0 - ((double)(systemStatistics.AvailablePageFile) / (double)(systemStatistics.TotalPageFile));    
         }
@@ -343,8 +350,12 @@ public sealed class HeaderControl : Control
         statisticsView.Items[0].SubItems[3].ForegroundColor = memColour;
         statisticsView.Items[0].SubItems[5].Text = virRatio.ToString("000.0%");
         statisticsView.Items[0].SubItems[5].ForegroundColor = virColour;
-        statisticsView.Items[0].SubItems[7].Text = string.Format("{0,5:####0.0} MB/s", diskMbps);
-        statisticsView.Items[0].SubItems[7].ForegroundColor = diskMbpsColour;
+        statisticsView.Items[0].SubItems[7].Text = gpuMemRatio.ToString("000.0%");
+        statisticsView.Items[0].SubItems[7].ForegroundColor = gpuMemColour;
+        statisticsView.Items[0].SubItems[9].Text = string.Format("{0,5:####0.0} MB/s", diskMbps);
+        statisticsView.Items[0].SubItems[9].ForegroundColor = diskMbpsColour;
+        statisticsView.Items[0].SubItems[11].Text = systemStatistics.TotalNetworkBytesReceived.ToString("N0");
+        statisticsView.Items[0].SubItems[11].ForegroundColor = ForegroundColour;
 
         statisticsView.Items[1].SubItems[1].Text = systemStatistics.CpuPercentUserTime.ToString("000.0%");
         statisticsView.Items[1].SubItems[1].ForegroundColor = userColour;
@@ -354,8 +365,13 @@ public sealed class HeaderControl : Control
         statisticsView.Items[1].SubItems[5].Text =
             ((double)(systemStatistics.TotalPageFile) / 1024 / 1024 / 1024).ToString("0000.0GB");
         statisticsView.Items[1].SubItems[5].ForegroundColor = ForegroundColour;
-        statisticsView.Items[1].SubItems[7].Text = string.Format("{0,5:####0.0} MB/s", maxMbps);
-        statisticsView.Items[1].SubItems[7].ForegroundColor = diskMbpsColour;
+        statisticsView.Items[1].SubItems[7].Text =
+            ((double)(systemStatistics.TotalGpuMemory) / 1024 / 1024 / 1024).ToString("0000.0GB");
+        statisticsView.Items[1].SubItems[7].ForegroundColor = ForegroundColour;
+        statisticsView.Items[1].SubItems[9].Text = string.Format("{0,5:####0.0} MB/s", maxMbps);
+        statisticsView.Items[1].SubItems[9].ForegroundColor = diskMbpsColour;
+        statisticsView.Items[1].SubItems[11].Text = systemStatistics.TotalNetworkBytesSent.ToString("N0");
+        statisticsView.Items[1].SubItems[11].ForegroundColor = ForegroundColour;
 
         statisticsView.Items[2].SubItems[1].Text = systemStatistics.CpuPercentKernelTime.ToString("000.0%");
         statisticsView.Items[2].SubItems[1].ForegroundColor = kernelColour;
@@ -367,8 +383,14 @@ public sealed class HeaderControl : Control
             ((double)(systemStatistics.TotalPageFile - systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024)
             .ToString("0000.0GB");
         statisticsView.Items[2].SubItems[5].ForegroundColor = ForegroundColour;
-        statisticsView.Items[2].SubItems[7].Text = string.Empty;
+        statisticsView.Items[2].SubItems[7].Text =
+            ((double)(systemStatistics.TotalGpuMemory - systemStatistics.AvailableGpuMemory) / 1024 / 1024 / 1024)
+            .ToString("0000.0GB");
         statisticsView.Items[2].SubItems[7].ForegroundColor = ForegroundColour;
+        statisticsView.Items[2].SubItems[9].Text = systemStatistics.TotalDiskReadBytes.ToString("N0");
+        statisticsView.Items[2].SubItems[9].ForegroundColor = ForegroundColour;
+        statisticsView.Items[2].SubItems[11].Text = systemStatistics.TotalNetworkPacketsReceived.ToString("N0");
+        statisticsView.Items[2].SubItems[11].ForegroundColor = ForegroundColour;
 
         statisticsView.Items[3].SubItems[1].Text = systemStatistics.CpuPercentIdleTime.ToString("000.0%");
         statisticsView.Items[3].SubItems[1].ForegroundColor = ForegroundColour;
@@ -378,8 +400,13 @@ public sealed class HeaderControl : Control
         statisticsView.Items[3].SubItems[5].Text =
             ((double)(systemStatistics.AvailablePageFile) / 1024 / 1024 / 1024).ToString("0000.0GB");
         statisticsView.Items[3].SubItems[5].ForegroundColor = ForegroundColour;
-        statisticsView.Items[3].SubItems[7].Text = string.Empty;
+        statisticsView.Items[3].SubItems[7].Text =
+            ((double)(systemStatistics.AvailableGpuMemory) / 1024 / 1024 / 1024).ToString("0000.0GB");
         statisticsView.Items[3].SubItems[7].ForegroundColor = ForegroundColour;
+        statisticsView.Items[3].SubItems[9].Text = systemStatistics.TotalDiskWriteBytes.ToString("N0");
+        statisticsView.Items[3].SubItems[9].ForegroundColor = ForegroundColour;
+        statisticsView.Items[3].SubItems[11].Text = systemStatistics.TotalNetworkPacketsSent.ToString("N0");
+        statisticsView.Items[3].SubItems[11].ForegroundColor = ForegroundColour;
 
         statisticsView.Items[4].SubItems[1].Text = systemStatistics.ProcessCount.ToString();
         statisticsView.Items[4].SubItems[1].ForegroundColor = ForegroundColour;
@@ -389,6 +416,10 @@ public sealed class HeaderControl : Control
         statisticsView.Items[4].SubItems[5].ForegroundColor = ForegroundColour;
         statisticsView.Items[4].SubItems[7].Text = string.Empty;
         statisticsView.Items[4].SubItems[7].ForegroundColor = ForegroundColour;
+        statisticsView.Items[4].SubItems[9].Text = string.Empty;
+        statisticsView.Items[4].SubItems[9].ForegroundColor = ForegroundColour;
+        statisticsView.Items[4].SubItems[11].Text = string.Empty;
+        statisticsView.Items[4].SubItems[11].ForegroundColor = ForegroundColour;
 
         statisticsView.Draw();
     }
@@ -429,8 +460,12 @@ public sealed class HeaderControl : Control
             MemoryDataColumnWidth,
             VirtualMemoryLabelColumnWidth,
             VirtualMemoryDataColumnWidth,
+            GpuMemoryLabelColumnWidth,
+            GpuMemoryDataColumnWidth,
             DiskLabelColumnWidth,
-            DiskDataColumnWidth
+            DiskDataColumnWidth,
+            NetworkLabelColumnWidth,
+            NetworkDataColumnWidth
         ];
 
         for (int i = 0; i < columnWidths.Length; i++) {
@@ -447,15 +482,15 @@ public sealed class HeaderControl : Control
         statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Vir:   ", "", "Disk:", ""]));
 #endif
 #if __APPLE__
-        statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Swap:  ", "", "Disk:", ""]));
+        statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Swap:  ", "", "Gpu Mem:", "",  "Disk:", "", "Net Read Bytes:   ", ""]));
 #endif
-        statisticsView.Items.Add(new(["User:  ", "", "Total:  ", "", "Total: ", "", "Peak:", ""]));
-        statisticsView.Items.Add(new(["Kernel:", "", "Used:   ", "", "Used:  ", "", "", ""]));
-        statisticsView.Items.Add(new(["Idle:  ", "", "Free:   ", "", "Free:  ", "", "", ""]));
+        statisticsView.Items.Add(new(["User:  ", "", "Total:  ", "", "Total: ", "", "Total:  ", "",  "Peak:", "", "Net Write Bytes:  ", ""]));
+        statisticsView.Items.Add(new(["Kernel:", "", "Used:   ", "", "Used:  ", "", "Used:   ", "", "Read Bytes:", "", "Net Read Packets: ", ""]));
+        statisticsView.Items.Add(new(["Idle:  ", "", "Free:   ", "", "Free:  ", "", "Free:   ", "", "Write Bytes:", "", "Net Write Packets:", ""]));
 #if DEBUG
-        statisticsView.Items.Add(new(["Proc:  ", "", "Threads:", "", "Ghosts:", "", "", ""]));
+        statisticsView.Items.Add(new(["Proc:  ", "", "Threads:", "", "Ghosts:", "", "", "", "", "", "", ""]));
 #else
-        statisticsView.Items.Add(new(["Procs  :",       "", "Threads:",      "", "",         "", "",      ""]));
+        statisticsView.Items.Add(new(["Procs: ", "", "Threads:", "", "       ", "", "", "", "", "", "", ""]));
 #endif
 
         processor.ProcessorUpdated += OnProcessorUpdated; 

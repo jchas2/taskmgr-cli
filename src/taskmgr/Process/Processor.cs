@@ -101,10 +101,10 @@ public class Processor : IProcessor
         monitorTask = WorkerTask.Run(() => RunMonitorInternal(cancellationTokenSource.Token));
     }
 
-    // NOTE: NoOptimization is REQUIRED on macOS Release builds.                                                                                  
-    // Without it, the JIT aggressively optimizes and pegs the CPU.                                                                                  
-    // This only affects macOS ARM64 Release builds. 
+#if __APPLE__    
+    // Required for MacOS Arm64, otherwise aggressively optimizes and pegs the CPU.                                                                                  
     [MethodImpl(MethodImplOptions.NoOptimization)]
+#endif
     private void RunInternal(CancellationToken cancellationToken)
     {
         SystemTimes prevSysTimes = new();
@@ -161,6 +161,8 @@ public class Processor : IProcessor
             systemStatistics.CpuPercentUserTime = 0.0;
             systemStatistics.CpuPercentKernelTime = 0.0;
             systemStatistics.GpuPercentTime = 0.0;
+            systemStatistics.TotalDiskReadBytes = 0;
+            systemStatistics.TotalDiskWriteBytes = 0;
             systemStatistics.DiskUsage = 0;
 
             SystemInfo.GetSystemMemory(ref systemStatistics);
@@ -237,10 +239,14 @@ public class Processor : IProcessor
                 }
 
                 processorInfo.UsedMemory = newProcessInfo.UsedMemory;
+                processorInfo.DiskReadBytes = newProcessInfo.DiskReadBytes;
+                processorInfo.DiskWriteBytes = newProcessInfo.DiskWriteBytes;
                 
                 processorInfo.DiskUsage = 
                     (long)((double)(newProcessInfo.DiskOperations - processInfo.DiskOperations) * (1000.0 / (double)Delay));
-                
+
+                systemStatistics.TotalDiskReadBytes += (long)processorInfo.DiskReadBytes;
+                systemStatistics.TotalDiskWriteBytes += (long)processorInfo.DiskWriteBytes;
                 systemStatistics.DiskUsage += processorInfo.DiskUsage;
                 
                 allProcessorInfos.Add(processorInfo);
@@ -251,7 +257,7 @@ public class Processor : IProcessor
             systemStatistics.CpuPercentIdleTime = (double)sysTimesDeltas.Idle / (double)totalSysTime;
             systemStatistics.ProcessCount = processCount;
             systemStatistics.ThreadCount = threadCount;
-
+            
             systemStatistics.TotalNetworkBytesReceived = currNetworkStats.NetworkBytesReceived;
             systemStatistics.TotalNetworkBytesSent = currNetworkStats.NetworkBytesSent;
             systemStatistics.TotalNetworkPacketsReceived = currNetworkStats.NetworkPacketsReceived;
@@ -284,7 +290,10 @@ public class Processor : IProcessor
         }
     }
 
+#if __APPLE__    
+    // Required for MacOS Arm64, otherwise aggressively optimizes and pegs the CPU.                                                                                  
     [MethodImpl(MethodImplOptions.NoOptimization)]
+#endif
     private void RunMonitorInternal(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested) {
@@ -318,10 +327,10 @@ public class Processor : IProcessor
         }
     }
 
-    // NOTE: NoOptimization is REQUIRED on macOS Release builds.                                                                                  
-    // Without it, the JIT aggressively optimizes and pegs the CPU.                                                                                  
-    // This only affects macOS ARM64 Release builds. 
-    [MethodImpl(MethodImplOptions.NoOptimization)] 
+#if __APPLE__    
+    // Required for MacOS Arm64, otherwise aggressively optimizes and pegs the CPU.                                                                                  
+    [MethodImpl(MethodImplOptions.NoOptimization)]
+#endif
     private void ThreadSleep(CancellationToken cancellationToken, int delay)
     {
         // Method to only sleep the thread the minimum amount of required time
