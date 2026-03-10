@@ -42,6 +42,8 @@ public struct SystemStatistics()
     public ulong NetworkPacketsReceiveTime { get; set; } = 0;
     
     // Disk.
+    public long TotalDiskReadBytes { get; set; }
+    public long TotalDiskWriteBytes { get; set; }
     public long DiskUsage { get; set; } = 0;
     
     // Processes.

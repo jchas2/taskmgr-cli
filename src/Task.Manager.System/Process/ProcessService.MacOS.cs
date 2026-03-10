@@ -51,10 +51,6 @@ public sealed partial class ProcessService
         processInfo.IsLowPriority = procTaskInfo.pbsd.pbi_nice > 0;
         processInfo.UserName = GetProcessUserName(ref procTaskInfo);
         processInfo.CmdLine = processInfo.FileName;
-        processInfo.StartTime = 
-            (DateTime.UnixEpoch + 
-             TimeSpan.FromSeconds((double)procTaskInfo.pbsd.pbi_start_tvsec + 
-                                  (double)procTaskInfo.pbsd.pbi_start_tvusec / 1000000.0)).ToLocalTime();
         processInfo.ThreadCount = procTaskInfo.ptinfo.pti_threadnum;
         processInfo.HandleCount = 0;
         processInfo.BasePriority = procTaskInfo.pbsd.pbi_nice;
@@ -62,6 +58,8 @@ public sealed partial class ProcessService
         processInfo.KernelTime = SystemInfo.CalculateSystemTime(info.ri_system_time).Ticks;
         processInfo.UserTime = SystemInfo.CalculateSystemTime(info.ri_user_time).Ticks;
         processInfo.GpuTime = gpuTime;
+        processInfo.DiskReadBytes = info.ri_diskio_bytesread;
+        processInfo.DiskWriteBytes = info.ri_diskio_byteswritten;
         processInfo.DiskOperations = info.ri_diskio_bytesread + info.ri_diskio_byteswritten;
 
         return processInfo;

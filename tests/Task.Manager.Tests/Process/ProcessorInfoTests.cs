@@ -8,7 +8,7 @@ public sealed class ProcessorInfoTests
 {
     [Fact]
     public void ProcessorInfo_Canary_Test() =>
-        Assert.Equal(18, CanaryTestHelper.GetPropertyCount<ProcessorInfo>());
+        Assert.Equal(20, CanaryTestHelper.GetPropertyCount<ProcessorInfo>());
     
     [Fact]                                                                                                                             
     public void Default_Constructor_Initializes_With_Default_Values()                                                                  
@@ -26,7 +26,9 @@ public sealed class ProcessorInfoTests
         Assert.Equal(string.Empty, info.ProcessName);                                                                                  
         Assert.Equal(string.Empty, info.FileDescription);                                                                              
         Assert.Equal(string.Empty, info.UserName);                                                                                     
-        Assert.Equal(string.Empty, info.CmdLine);                                                                                      
+        Assert.Equal(string.Empty, info.CmdLine);   
+        Assert.Equal(0U, info.DiskReadBytes);
+        Assert.Equal(0U, info.DiskWriteBytes);
         Assert.Equal(0, info.DiskUsage);                                                                                               
         Assert.Equal(0, info.UsedMemory);                                                                                              
         Assert.Equal(0.0, info.CpuTimePercent);                                                                                        
@@ -51,7 +53,9 @@ public sealed class ProcessorInfoTests
             ProcessName = "test.exe",                                                                                                  
             FileDescription = "Test Process",                                                                                          
             UserName = "testuser",                                                                                                     
-            CmdLine = "/usr/bin/test --arg",                                                                                           
+            CmdLine = "/usr/bin/test --arg",    
+            DiskReadBytes = 999888,
+            DiskWriteBytes = 222333,
             DiskUsage = 1024,                                                                                                          
             UsedMemory = 2048,                                                                                                         
             CpuTimePercent = 15.5,                                                                                                     
@@ -71,7 +75,9 @@ public sealed class ProcessorInfoTests
         Assert.Equal("test.exe", info.ProcessName);                                                                                    
         Assert.Equal("Test Process", info.FileDescription);                                                                            
         Assert.Equal("testuser", info.UserName);                                                                                       
-        Assert.Equal("/usr/bin/test --arg", info.CmdLine);                                                                             
+        Assert.Equal("/usr/bin/test --arg", info.CmdLine);  
+        Assert.Equal(999888U, info.DiskReadBytes);
+        Assert.Equal(222333U, info.DiskWriteBytes);
         Assert.Equal(1024, info.DiskUsage);                                                                                            
         Assert.Equal(2048, info.UsedMemory);                                                                                           
         Assert.Equal(15.5, info.CpuTimePercent);                                                                                       

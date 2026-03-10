@@ -19,6 +19,8 @@ public sealed class ProcessInfo
     public long KernelTime { get; internal set; }
     public long UserTime { get; internal set; }
     public long GpuTime { get; internal set; }
+    public ulong DiskReadBytes { get; internal set; }
+    public ulong DiskWriteBytes { get; internal set; }
     public ulong DiskOperations { get; internal set; }
 }
 

@@ -61,7 +61,13 @@ public sealed class HeaderControlTests
             OsVersion = "Unix 14.1.0",
             PublicIPv4Address = "",
             PrivateIPv4Address = "192.168.1.110",
+            TotalDiskReadBytes = 98324528934,
+            TotalDiskWriteBytes = 21983484324,
             DiskUsage = 30037,
+            TotalNetworkBytesReceived = 89213742,
+            TotalNetworkBytesSent = 298346234,
+            TotalNetworkPacketsReceived = 763442,
+            TotalNetworkPacketsSent = 346723,
             ProcessCount = 739,
             ThreadCount = 4993,
         };
@@ -72,7 +78,7 @@ public sealed class HeaderControlTests
             processorFake,
             runContext.Terminal, 
             runContext.AppConfig) {
-            Width = 128,
+            Width = 256,
             Height = 10
         };
 
@@ -98,38 +104,50 @@ public sealed class HeaderControlTests
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Dsk"))), Times.Once);
         //runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("0.1 MB/s"))), Times.AtLeastOnce);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Cpu:   "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("025.2% "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Mem:    "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("   097.6% "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Swap:  ") || s.Contains("Vir:   "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("   062.0% "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Disk "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("     0.1 MB/s "))), Times.AtLeastOnce);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("User:  "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("013.3% "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Total:  "))), Times.AtLeastOnce);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Cpu:"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("025.2%"))), Times.AtLeastOnce);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Mem:"))), Times.AtLeastOnce);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 097.6% "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Swap:") || s.Contains("Vir:   "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 062.0% "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Disk:"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 0.1 MB/s "))), Times.AtLeastOnce);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Net Read Bytes:"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 89,213,742 "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("User:"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("013.3%"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Total:"))), Times.AtLeastOnce);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 0036.0GB "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Total: "))), Times.AtLeastOnce);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Total:"))), Times.AtLeastOnce);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 0002.0GB "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Peak "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("     0.1 MB/s "))), Times.AtLeastOnce);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Peak:"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 0.1 MB/s "))), Times.AtLeastOnce);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Net Write Bytes:"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 298,346,234 "))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Kernel "))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("011.9% "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Used:   "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Used:"))), Times.AtLeastOnce);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 0035.1GB "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Used:  "))), Times.AtLeastOnce);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Used:"))), Times.AtLeastOnce);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 0001.2GB "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Idle:  "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Read Bytes:"))), Times.AtLeastOnce);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 98,324,528,934 "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Net Read Packets:"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 763,442 "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Idle:"))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("074.8% "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Free:   "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Free:"))), Times.AtLeastOnce);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 0000.9GB "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Free:  "))), Times.AtLeastOnce);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Free:"))), Times.AtLeastOnce);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 0000.8GB "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Proc:  "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("   739 "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Write Bytes:"))), Times.AtLeastOnce);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 21,983,484,324 "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Net Write Packets:"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 346,723 "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Proc:"))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 739 "))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Threads "))), Times.Once);
-        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("     4993 "))), Times.Once);
+        runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains(" 4993 "))), Times.Once);
         runContextHelper.terminal.Verify(t => t.Write(It.Is<string>(s => s.Contains("Ghosts "))), Times.Once);
         
         ctrl.Unload();

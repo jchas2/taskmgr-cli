@@ -28,7 +28,7 @@ public static unsafe class Sys
         NET_RT_IFLIST = 0x03,       /* Get interface list */
         NET_RT_IFLIST2 = 0x06,      /* Enhanced interface list (macOS specific) */
     }
-
+    
     public const int VM_SWAPUSAGE = 5;
     public const int PF_ROUTE = 17;     /* Protocol family for routing */
     public const int AF_UNSPEC = 0;     /* Address family unspecified */

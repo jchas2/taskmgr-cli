@@ -33,7 +33,7 @@ class Program
             return;
         }
         
-        var unhandledError = $"Unhandled error: {ev.ExceptionObject.GetType().Name}";
+        string unhandledError = $"Unhandled error: {ev.ExceptionObject.GetType().Name}";
         OutputWriter.Error.WriteLine(unhandledError.ToRed());
         Debug.WriteLine(unhandledError);
     }
@@ -45,6 +45,11 @@ class Program
             Environment.Exit(UnhandledExceptionExitCode);
         };
 
+        Console.CancelKeyPress += (sender, args) => {
+            Console.ResetColor();
+            Console.CursorVisible = true;
+        };
+
         using TerminalUtf8Encoder _ = new();
         Console.OutputEncoding = Encoding.UTF8;
 
@@ -52,9 +57,11 @@ class Program
         
         if (args.Any(arg => arg.Equals("--debug", StringComparison.CurrentCultureIgnoreCase))) {
             OutputWriter.Out.WriteLine($"Waiting for debugger attach to Pid {Environment.ProcessId}");
+            
             while (false == Debugger.IsAttached) {
                 Thread.Sleep(DebugWait);
             }
+            
             Debugger.Break();
         }
         
@@ -85,6 +92,8 @@ class Program
         }
         catch (Exception e) {
             HandleException(new UnhandledExceptionEventArgs(e, isTerminating: true));
+            Console.ResetColor();
+            Console.CursorVisible = true;
             Environment.Exit(UnhandledExceptionExitCode);
         }
 
