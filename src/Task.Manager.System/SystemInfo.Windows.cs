@@ -272,7 +272,7 @@ public static partial class SystemInfo
         }
 
         long total = 0;
-        int structSize = Marshal.SizeOf(typeof(Pdh.PDH_RAW_COUNTER_ITEM));
+        int structSize = Marshal.SizeOf<Pdh.PDH_RAW_COUNTER_ITEM>();
 
         for (int i = 0; i < itemCount; i++)
         {
