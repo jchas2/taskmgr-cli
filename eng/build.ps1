@@ -1,6 +1,7 @@
 ﻿[CmdletBinding(PositionalBinding=$false)]
 Param(
     [string][Alias('config')]$configuration = "Debug",
+    [string][Alias('r')]$runtime = "win-x64",
     [switch] $clean,
     [switch] $restore,
     [switch] $build,
@@ -12,9 +13,9 @@ Param(
 $SolutionPath = $PSScriptRoot + "\..\src\taskmgr.sln"
 $ProjectPath = $PSScriptRoot + "\..\src\taskmgr\taskmgr.csproj"
 
-function Publish([string] $config) {
-    # dotnet publish $ProjectPath -c $config -r win-x64 --self-contained true /p:PublishTrimmed=false /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:UseAppHost=true
-    & "dotnet" publish $ProjectPath -c $config -r win-x64 --self-contained -p:PublishAot=true
+function Publish([string] $config, [string] $rid) {
+    Write-Host "🛠️ Publishing project with configuration: $config, runtime: $rid"
+    & "dotnet" publish $ProjectPath -c $config -r $rid --self-contained -p:PublishAot=true
 }
 
 if ($clean) {
@@ -34,9 +35,9 @@ if ($test) {
 }
 
 if ($publish) {
-    Publish -config $configuration
+    Publish -config $configuration -rid $runtime
 }
 
 if ($deploy) {
-    Publish -config Release    
+    Publish -config Release -rid $runtime
 }

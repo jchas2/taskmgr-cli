@@ -33,38 +33,87 @@ A powerful, cross-platform command-line task manager with real-time process moni
 - Platform-specific optimizations using native APIs (Win32, Mach kernel)
 - No generic cross-platform wrappers - direct system calls for maximum performance
 
-#### Build from Source
+## Installation
+
+### macOS (Homebrew)
+
+The easiest way to install on macOS:
+
+```bash
+brew tap jchas2/taskmgr
+brew install taskmgr
+```
+
+To update to the latest version:
+
+```bash
+brew update
+brew upgrade taskmgr
+```
+
+### Direct Download
+
+Download the latest release for your platform:
+
+**macOS:**
+- [macOS ARM64 (Apple Silicon)](https://github.com/jchas2/taskmgr-cli/releases/latest) - for M1/M2/M3 Macs
+- [macOS x64 (Intel)](https://github.com/jchas2/taskmgr-cli/releases/latest) - for Intel Macs
+
+**Windows:**
+- [Windows x64](https://github.com/jchas2/taskmgr-cli/releases/latest)
+
+After downloading:
+1. Extract the archive
+2. Run with elevated privileges:
+   - **macOS**: `sudo ./taskmgr`
+   - **Windows**: Run PowerShell or Command Prompt as Administrator, then run `taskmgr.exe`
+
+### Build from Source
 
 **Prerequisites:**
 - .NET 10.0 SDK or later
 - macOS 11+ or Windows 10+
 
-**macOS:**
+**Clone and Build:**
+
+macOS:
 ```bash
-git clone https://github.com/yourusername/taskmgr-cli.git
+git clone https://github.com/jchas2/taskmgr-cli.git
 cd taskmgr-cli
-./build.sh
+./eng/build.sh --restore --build --config Release
 ```
 
-**Windows:**
+Windows:
 ```powershell
-git clone https://github.com/yourusername/taskmgr-cli.git
+git clone https://github.com/jchas2/taskmgr-cli.git
 cd taskmgr-cli
-.\build.ps1
+.\eng\build.ps1 -restore -build -config Release
 ```
 
 **Run Tests:**
 ```bash
-./test.sh           # macOS/Linux
-.\test.ps1          # Windows
+./eng/build.sh --test           # macOS
+.\eng\build.ps1 -test           # Windows
 ```
 
-**Publish Portable Executable:**
+**Publish Native Executable:**
+
+macOS (ARM64):
 ```bash
-./publish.sh        # macOS/Linux
-.\publish.ps1       # Windows
+./eng/build.sh --publish --config Release --runtime osx-arm64
 ```
-Published binaries are located in `src/taskmgr/bin/Release/net9.0/{RID}/publish/`.
+
+macOS (Intel):
+```bash
+./eng/build.sh --publish --config Release --runtime osx-x64
+```
+
+Windows:
+```powershell
+.\eng\build.ps1 -publish -config Release -runtime win-x64
+```
+
+Published binaries are located in `src/taskmgr/bin/Release/net10.0/{runtime}/publish/`.
 
 ## Configuration
 

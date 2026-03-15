@@ -1,12 +1,14 @@
 #!/bin/bash
 
 configuration="Debug"
+runtime="osx-arm64"
 
 usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
     echo "  -c, --config <config>   Specify the build configuration (e.g., Release). Default: Debug"
+    echo "  -r, --runtime <rid>     Specify the runtime identifier (e.g., osx-arm64, osx-x64). Default: osx-arm64"
     echo "  --clean                 Clean the solution."
     echo "  --restore               Restore NuGet packages."
     echo "  --build                 Build the solution."
@@ -15,7 +17,7 @@ usage() {
     echo "  --deploy                Publish the project with 'Release' configuration (overrides --config)."
     echo "  -h, --help              Display this help message."
     echo ""
-    echo "Example: $0 --clean --restore --build --test --publish --config Release"
+    echo "Example: $0 --clean --restore --build --test --publish --config Release --runtime osx-x64"
     exit 1
 }
 
@@ -23,6 +25,10 @@ while [[ "$#" -gt 0 ]]; do
     case "$1" in
         -c|--config)
             configuration="$2"
+            shift # Skip argument name
+            ;;
+        -r|--runtime)
+            runtime="$2"
             shift # Skip argument name
             ;;
         --clean)
@@ -64,12 +70,9 @@ ProjectPath="$ScriptDir/../src/taskmgr/taskmgr.csproj"
 
 function publish_project() {
     local config=$1
-    echo "🛠️ Publishing project with configuration: $config"
-    # For a general macOS build, you can use 'osx-x64' or 'osx-arm64' depending on the target machine,
-    # or omit the '-r' flag entirely to build for the current host environment.
-    # We will omit it for a general host build. If you need a specific RID, uncomment and change the line below:
-    # dotnet publish "$ProjectPath" -c "$config" -r osx-x64 --self-contained -p:PublishAot=true
-    dotnet publish "$ProjectPath" -c "$config" -r osx-arm64 --self-contained -p:PublishAot=true
+    local rid=$2
+    echo "🛠️ Publishing project with configuration: $config, runtime: $rid"
+    dotnet publish "$ProjectPath" -c "$config" -r "$rid" --self-contained -p:PublishAot=true
 }
 
 if [[ "$clean" == true ]]; then
@@ -94,12 +97,12 @@ if [[ "$test" == true ]]; then
 fi
 
 if [[ "$publish" == true ]]; then
-    publish_project "$configuration"
+    publish_project "$configuration" "$runtime"
 fi
 
 if [[ "$deploy" == true ]]; then
     # Overrides any passed configuration to force 'Release'
-    publish_project "Release"
+    publish_project "Release" "$runtime"
 fi
 
 echo "Script finished."
