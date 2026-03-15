@@ -1,5 +1,9 @@
 <Project>
     <PropertyGroup>
+        <!-- Check for RELEASE_VERSION environment variable for semantic versioning in CI -->
+        <ReleaseVersion Condition="'$(RELEASE_VERSION)' != ''">$(RELEASE_VERSION)</ReleaseVersion>
+
+        <!-- Dynamic versioning for development builds -->
         <MajorVersion>1</MajorVersion>
         <MinorVersion>2</MinorVersion>
         <BaseDate>$([System.DateTime]::Parse('2000-01-01'))</BaseDate>
@@ -7,7 +11,11 @@
         <BuildDays>$([System.DateTime]::Now.Subtract($(BaseDate)).Days)</BuildDays>
         <SecondsSinceMidnight>$([System.DateTime]::Now.TimeOfDay.TotalSeconds)</SecondsSinceMidnight>
         <Revision>$([System.Math]::Floor($([MSBuild]::Divide($(SecondsSinceMidnight), 2))))</Revision>
-        <GeneratedVersion>$(MajorVersion).$(MinorVersion).$(BuildDays).$(Revision)</GeneratedVersion>
+
+        <!-- Use RELEASE_VERSION if set, otherwise use dynamic versioning -->
+        <GeneratedVersion Condition="'$(ReleaseVersion)' != ''">$(ReleaseVersion)</GeneratedVersion>
+        <GeneratedVersion Condition="'$(ReleaseVersion)' == ''">$(MajorVersion).$(MinorVersion).$(BuildDays).$(Revision)</GeneratedVersion>
+
         <AssemblyVersion>$(GeneratedVersion)</AssemblyVersion>
         <FileVersion>$(GeneratedVersion)</FileVersion>
         <InformationalVersion>$(GeneratedVersion)</InformationalVersion>

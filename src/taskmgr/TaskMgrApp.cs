@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Reflection;
 using Task.Manager.Cli.Utils;
 using Task.Manager.Configuration;
 using Task.Manager.Gui;
@@ -48,7 +49,7 @@ public sealed class TaskMgrApp(RunContext runContext)
         Option<bool?> bypassOption = new(
             name: "--bypass-root",
             description: "Bypass run as root user.");
-        
+
         RootCommand rootCommand = new("Task Manager for the command line.") {
             pidOption,
             usernameOption,
@@ -60,7 +61,7 @@ public sealed class TaskMgrApp(RunContext runContext)
             nprocsOption,
             themeOption,
             debugOption,
-            bypassOption
+            bypassOption,
         };
         
         rootCommand.SetHandler(context =>
@@ -156,6 +157,15 @@ public sealed class TaskMgrApp(RunContext runContext)
     
     public int Run(string[] args)
     {
+        // Handle --version flag early, before root check
+        if (args.Any(arg => arg.Equals("--version", StringComparison.CurrentCultureIgnoreCase))) {
+            var version = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion ?? "Unknown";
+            Console.WriteLine($"taskmgr version {version}");
+            return 0;
+        }
+
 #if !DEBUG
         if (false == SystemInfo.IsRunningAsRoot()) {
             if (!args.Any(arg => arg.Equals("--bypass-root", StringComparison.CurrentCultureIgnoreCase))) {
