@@ -86,6 +86,16 @@ public class HelpScreen : Screen
                             " / mid".ToColour(theme.RangeMidBackground, bg) + 
                             " / high".ToColour(theme.RangeHighBackground, bg) + 
                             " used / total] Dedicated Memory".ToColour(fg, bg));
+        helpText.AppendLine("Net Rec metre: [".ToColour(fg, bg) +
+                            "low".ToColour(theme.RangeLowBackground, bg) + 
+                            " / mid".ToColour(theme.RangeMidBackground, bg) + 
+                            " / high".ToColour(theme.RangeHighBackground, bg) + 
+                            " ] Network bytes received".ToColour(fg, bg));
+        helpText.AppendLine("Net Snt metre: [".ToColour(fg, bg) +
+                            "low".ToColour(theme.RangeLowBackground, bg) + 
+                            " / mid".ToColour(theme.RangeMidBackground, bg) + 
+                            " / high".ToColour(theme.RangeHighBackground, bg) + 
+                            " ] Network bytes sent".ToColour(fg, bg));
         
         helpText.AppendLine();
         helpText.AppendLine("Process and Path Colours".ToColour(fg, bg));
