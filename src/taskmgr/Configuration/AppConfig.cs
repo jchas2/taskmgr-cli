@@ -12,6 +12,12 @@ public sealed class AppConfig
     private Config iniConfig;
     private Theme defaultTheme = new();
     private readonly List<Theme> allThemes = new();
+    
+#if __WIN32__
+    private bool useIrixMode = false;
+#elif __APPLE__
+    private bool useIrixMode = true;
+#endif
 
     private ConfigSection? filterSection;
     private ConfigSection? iterationSection;
@@ -321,7 +327,7 @@ public sealed class AppConfig
 
     public bool UseIrixReporting
     {
-        get => uxSection?.GetBool(Constants.Keys.UseIrixCpuReporting, false) ?? false;
+        get => uxSection?.GetBool(Constants.Keys.UseIrixCpuReporting, useIrixMode) ?? useIrixMode;
         set => uxSection?.Add(Constants.Keys.UseIrixCpuReporting, value.ToString());
     }
 
@@ -392,7 +398,7 @@ public sealed class AppConfig
             .AddIfMissing(Constants.Keys.ShowMetreMemNumerically, true.ToString())
             .AddIfMissing(Constants.Keys.ShowMetreNetworkNumerically, true.ToString())
             .AddIfMissing(Constants.Keys.ShowMetreSwapNumerically, true.ToString())
-            .AddIfMissing(Constants.Keys.UseIrixCpuReporting, false.ToString());
+            .AddIfMissing(Constants.Keys.UseIrixCpuReporting, useIrixMode.ToString());
 
         if (!iniConfig.ContainsSection(uxSection.Name)) {
             iniConfig.AddConfigSection(uxSection);
