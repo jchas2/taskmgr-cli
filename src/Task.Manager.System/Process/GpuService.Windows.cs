@@ -57,7 +57,7 @@ public static partial class GpuService
             ref itemCount, 
             buffer) == Pdh.ERROR_SUCCESS) {
             
-            int structSize = Marshal.SizeOf(typeof(Pdh.PDH_RAW_COUNTER_ITEM));
+            int structSize = Marshal.SizeOf<Pdh.PDH_RAW_COUNTER_ITEM>();
             
             for (int i = 0; i < itemCount; i++) {
                 IntPtr currentItemPtr = new IntPtr(buffer.ToInt64() + (i * structSize));

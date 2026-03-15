@@ -479,7 +479,7 @@ public sealed class HeaderControl : Control
         statisticsView.Items.Clear();
         
 #if __WIN32__
-        statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Vir:   ", "", "Disk:", ""]));
+        statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Vir:   ", "", "Gpu Mem:", "",  "Disk:", "", "Net Read Bytes:   ", ""]));
 #endif
 #if __APPLE__
         statisticsView.Items.Add(new(["Cpu:   ", "", "Mem:    ", "", "Swap:  ", "", "Gpu Mem:", "",  "Disk:", "", "Net Read Bytes:   ", ""]));
